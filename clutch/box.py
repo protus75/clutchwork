@@ -458,3 +458,11 @@ def read_registry(repo: Path) -> list[tuple[DecisionRecord, str]]:
         except (OSError, BoxError) as exc:
             raise BoxError(f"invalid decision record {path}: {exc}; restore it from its last commit") from exc
     return sorted(records, key=lambda item: item[0].id)
+
+
+def suggest(state_dir, fs, journal, summary, *, origin="session", occurrence_id=None):
+    from clutch.runner import Refusal
+
+    if not summary.strip():
+        raise Refusal("blank summary", "pass the idea as one quoted argument", code="blank_summary")
+    return Box(state_dir / BOX_DIR, fs, rereport=RereportJournal(journal)).enqueue(message_class="suggestion", origin=origin, summary=summary, occurrence_id=occurrence_id)

@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from dataclasses import replace
 from pathlib import Path
 
-from clutch import git, runner, triage
+from clutch import git, observe, runner, seams, triage
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
@@ -850,3 +850,15 @@ async def serve(
 
     owner = build_serve(checkout, config_path=config_path, read=read, stems=stems, prepare=prepare, signals=signals, failure=failure, argv=argv, reexec=reexec)
     return await owner.run()
+
+
+def start_detached(repo, state_dir, verb, *, config_path=None, env, spawn=seams.spawn_detached):
+    if observe.lock_holder(state_dir) is not None:
+        raise runner.Refusal("writer lock held", "wait for the current writer to finish, then retry", code="lock_held")
+    output = state_dir / f"{verb}.out"
+    if verb == "serve":
+        prior_size, prior_lifecycle = capture_startup_baseline(state_dir, output)
+    pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(config_path)] if config_path else []), "engine", verb], cwd=repo, env=env, output=output)
+    if verb == "serve" and not wait_detached_startup(state_dir, pid, output, prior_size=prior_size, prior_lifecycle=prior_lifecycle):
+        raise runner.Refusal("detached serve startup timed out", f"inspect {output} and check the engine status")
+    return pid, output

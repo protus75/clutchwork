@@ -1067,3 +1067,14 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
         "steps": steps,
         "blockedCount": len(blocked_stems) + len(invalid),
     }
+
+
+def ping_engine(state_dir, read=Path.read_bytes):
+    from clutch import control
+
+    alive = lock_holder(state_dir) is not None
+    holder = json.loads(read(state_dir / "clutch.lock")) if alive else {}
+    verb = lock_verb(holder, "clutch.lock") if alive else None
+    engine = verb in ENGINE_VERBS
+    lifecycle, hold = control.read_active(state_dir, read) if engine else (None, None)
+    return {"alive": alive, "engine": engine, "verb": verb, "pid": holder.get("pid"), "started_at": holder.get("started_at"), "lifecycle_id": lifecycle, "hold_id": hold}

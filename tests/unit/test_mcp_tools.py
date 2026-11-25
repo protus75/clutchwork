@@ -4,8 +4,8 @@
 # purpose: Unit tests of the MCP server's tool and prompt catalog, tool routing to shared clutch functions (snapshot, status, stats, roadmap, wait_event, evidence, context_suggest, prompt), repo routing, error mapping, and shared prompt resolution.
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/context.py, clutch/journal.py, clutch/mcp.py, clutch/observe.py, clutch/runner.py]
 # owner: engine
-# verified: d3def5f4
-# hash: 9f1c09a044fdd58ff4372f1138580628ac39785535c1b3b2cf53eca1ed0f775f
+# verified: fbabb2aa
+# hash: b3e0141f7f96ad76377c69d938596f7d49e55e39728e9d6e09886e0dcd73ce3a
 from types import SimpleNamespace
 
 import pytest
@@ -26,6 +26,19 @@ def test_schemas_and_prompts(tmp_path, monkeypatch):
         "clutch_evidence_show",
         "clutch_context_suggest",
         "clutch_prompt",
+        "clutch_ticket_new",
+        "clutch_ticket_lint",
+        "clutch_ticket_order",
+        "clutch_ticket_confirm",
+        "clutch_ticket_reject",
+        "clutch_app_ticket_confirm",
+        "clutch_app_ticket_reject",
+        "clutch_box_suggest",
+        "clutch_box_triage",
+        "clutch_box_dismiss",
+        "clutch_engine_start",
+        "clutch_engine_control",
+        "clutch_engine_retro",
     }
     prompts = server.dispatch("prompts/list", {})["prompts"]
     assert {p["name"] for p in prompts} == set(ask.KINDS)

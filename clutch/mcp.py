@@ -1,4 +1,4 @@
-"""Read-only MCP server using the stdio JSON-RPC transport."""
+"""MCP server using the stdio JSON-RPC transport."""
 
 import asyncio
 import dataclasses
@@ -7,23 +7,25 @@ import os
 import re
 import sys
 import time
+from contextlib import redirect_stdout
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
+from typing import Literal
 
 import duckdb
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from clutch import ask, context, events, observe, roadmap, runner, stats
+from clutch import ask, box, context, events, hostfiles, observe, roadmap, runner, seams, serve, stats, tickets
 from clutch.box import UnknownBoxId
 from clutch.config import ConfigError, load_config
 from clutch.evidence import views
 from clutch.evidence.store import SKIP, CaptureNotFound, CaptureUnreadable, EvidenceStore, size_warning
 from clutch.git import Git, GitError
 from clutch.journal import Journal, JournalCorruption
-from clutch.lockfile import CommitLock
-from clutch.providers import child_env
-from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.lockfile import CommitLock, CommitLockTimeout, LockHeld
+from clutch.providers import ProviderSetupError, child_env
+from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
 
 
 class Repo(BaseModel):
@@ -69,6 +71,47 @@ class Prompt(Repo):
     name: str | None = None
 
 
+class TicketNew(Repo):
+    stem: str
+    kind: tickets.Kind = "feature"
+    evidence: list[str] = []
+    reference: list[str] = []
+    inputs: list[str] = []
+
+
+class TicketLint(Repo):
+    stems: list[str] = []
+
+
+class TicketOrder(Suggest):
+    priority: tickets.Priority | None = None
+    runs_before: list[str] | None = None
+
+
+class TicketReject(Suggest):
+    reason: str | None = None
+
+
+class BoxSuggest(Repo):
+    summary: str
+
+
+class BoxTriage(Repo):
+    ids: list[str] = []
+
+
+class BoxDismiss(Repo):
+    ids: list[str] = Field(min_length=1)
+
+
+class EngineStart(Repo):
+    mode: Literal["drain", "serve"]
+
+
+class EngineControl(Repo):
+    action: Literal["ping", "pause", "resume", "stop", "kill"]
+
+
 TOOLS = {
     "clutch_snapshot": Snapshot,
     "clutch_status": Status,
@@ -79,6 +122,19 @@ TOOLS = {
     "clutch_evidence_show": Show,
     "clutch_context_suggest": Suggest,
     "clutch_prompt": Prompt,
+    "clutch_ticket_new": TicketNew,
+    "clutch_ticket_lint": TicketLint,
+    "clutch_ticket_order": TicketOrder,
+    "clutch_ticket_confirm": Suggest,
+    "clutch_ticket_reject": TicketReject,
+    "clutch_app_ticket_confirm": Suggest,
+    "clutch_app_ticket_reject": TicketReject,
+    "clutch_box_suggest": BoxSuggest,
+    "clutch_box_triage": BoxTriage,
+    "clutch_box_dismiss": BoxDismiss,
+    "clutch_engine_start": EngineStart,
+    "clutch_engine_control": EngineControl,
+    "clutch_engine_retro": Repo,
 }
 
 
@@ -99,13 +155,29 @@ def _json(value):
 
 
 def _error(exc):
+    if isinstance(exc, LockHeld):
+        return {"code": "lock_held", "message": str(exc), "paved_road": "wait for the current writer to finish, then retry"}
     if isinstance(exc, runner.Refusal):
         return {"code": exc.code, "message": exc.message, "paved_road": exc.paved_road}
     return {"code": type(exc).__name__, "message": str(exc) or type(exc).__name__, "paved_road": "check the repository and retry"}
 
 
 class ClutchMCPServer:
-    def __init__(self, *, default_cwd=None, config_path=None, env=None, clock=None, sleep=time.sleep, monotonic=time.monotonic, exec_factory=SubprocessExec, git_factory=Git, connect=duckdb.connect):
+    def __init__(
+        self,
+        *,
+        default_cwd=None,
+        config_path=None,
+        env=None,
+        clock=None,
+        sleep=time.sleep,
+        monotonic=time.monotonic,
+        exec_factory=SubprocessExec,
+        git_factory=Git,
+        connect=duckdb.connect,
+        spawn=seams.spawn_detached,
+    ):
+        self.spawn = spawn
         self.cwd = Path(default_cwd or Path.cwd()).resolve()
         self.config_path = config_path
         self.env = dict(os.environ if env is None else env)
@@ -192,6 +264,48 @@ class ClutchMCPServer:
         elif name == "clutch_context_suggest":
             files, chunks = context.suggest_for_stem(cfg.state_dir, checkout.repo, args.stem, fs=fs, connect=self.connect)
             value = {"stem": args.stem, "files": files, "chunks": chunks}
+        elif name == "clutch_ticket_new":
+            rel, guide, findings = tickets.new_ticket(checkout.repo, args.stem, args.kind, evidence=args.evidence, reference=args.reference, inputs=args.inputs, fs=fs)
+            value = {"stem": args.stem, "path": rel, "guide": guide, "findings": findings}
+        elif name == "clutch_ticket_lint":
+            result = asyncio.run(tickets.lint_tickets(checkout, args.stems))
+            if result["exit_code"] == 2:
+                first = result["refusals"][0]
+                raise runner.Refusal(first["message"], first["paved_road"], code="lint_refused")
+            value = {"valid": result["valid"], "total": result["total"], "valid_all": result["exit_code"] == 0, "findings": result["findings"]}
+        elif name == "clutch_ticket_order":
+            value = tickets.order_ticket(checkout, args.stem, priority=args.priority, runs_before=args.runs_before)
+        elif name in {"clutch_ticket_confirm", "clutch_ticket_reject", "clutch_app_ticket_confirm", "clutch_app_ticket_reject"}:
+            value = asyncio.run(runner.submit_verdict(args.stem, checkout, kill=name.endswith("reject"), extension=name.startswith("clutch_app_"), reason=getattr(args, "reason", None)))
+        elif name == "clutch_box_suggest":
+            id_, created = box.suggest(cfg.state_dir, fs, checkout.journal, args.summary)
+            value = {"id": id_, "created": created}
+        elif name == "clutch_box_dismiss":
+            value = {"lines": asyncio.run(runner.dismiss_boxes(checkout, args.ids, lock_ctx_factory=runner._locked))}
+        elif name == "clutch_box_triage":
+            from clutch.__main__ import _preflighted_llm, build_control
+
+            value = asyncio.run(runner.triage_or_submit(checkout, args.ids, lock_ctx_factory=runner._locked, build_control_fn=build_control, preflighted_llm_fn=_preflighted_llm))
+        elif name == "clutch_engine_start":
+            pid, output = serve.start_detached(checkout.repo, cfg.state_dir, args.mode, config_path=self.config_path if checkout.repo == self.cwd else None, env=self.env, spawn=self.spawn)
+            value = {"pid": pid, "output": output}
+        elif name == "clutch_engine_control":
+            value = observe.ping_engine(cfg.state_dir) if args.action == "ping" else asyncio.run(runner.control_engine(checkout, args.action))
+        elif name == "clutch_engine_retro":
+            from clutch.__main__ import _config_reloader, build_control
+
+            value = {
+                "outcome": asyncio.run(
+                    runner.run_or_submit_retro(
+                        checkout,
+                        runner.pipeline,
+                        config_path=self.config_path if checkout.repo == self.cwd else None,
+                        lock_ctx_factory=runner._locked,
+                        build_control_fn=build_control,
+                        config_reloader_fn=_config_reloader,
+                    )
+                )
+            }
         else:
             text, catalog = self.prompt(checkout, ctx, args.kind, args.stems, args.name)
             value = catalog if catalog is not None else {"text": text}
@@ -210,7 +324,17 @@ class ClutchMCPServer:
         if method == "ping":
             return {}
         if method == "tools/list":
-            return {"tools": [{"name": name, "description": name.replace("_", " "), "inputSchema": model.model_json_schema()} for name, model in TOOLS.items()]}
+            return {
+                "tools": [
+                    {
+                        "name": name,
+                        "description": name.replace("_", " "),
+                        "inputSchema": model.model_json_schema(),
+                        **({"_meta": {"ui": {"visibility": ["app"]}}} if name.startswith("clutch_app_") else {}),
+                    }
+                    for name, model in TOOLS.items()
+                ]
+            }
         if method == "prompts/list":
             result = []
             for kind in ask.KINDS:
@@ -230,7 +354,20 @@ class ClutchMCPServer:
             try:
                 value, text = self.call_tool(name, args)
                 return {"content": [{"type": "text", "text": text or "(empty)"}], "structuredContent": _json(value)}
-            except (runner.Refusal, ConfigError, JournalCorruption, GitError, UnknownBoxId, ValueError) as exc:
+            except (
+                runner.Refusal,
+                LockHeld,
+                CommitLockTimeout,
+                tickets.IntakeRefused,
+                ProviderSetupError,
+                ExecutableNotFound,
+                hostfiles.MarkerCorruption,
+                ConfigError,
+                JournalCorruption,
+                GitError,
+                UnknownBoxId,
+                ValueError,
+            ) as exc:
                 value = _error(exc)
                 return {"isError": True, "content": [{"type": "text", "text": value["message"]}], "structuredContent": value}
         if method == "prompts/get":
@@ -299,7 +436,8 @@ def serve_stdio(*, stdin=None, stdout=None, **kwargs):
             try:
                 if not isinstance(request.get("params", {}), dict):
                     raise InvalidParams("params must be an object")
-                result = server.dispatch(request["method"], request.get("params", {}))
+                with redirect_stdout(sys.stderr):
+                    result = server.dispatch(request["method"], request.get("params", {}))
             except InvalidParams as exc:
                 raise RPCError(-32602, str(exc)) from None
             except UnknownMethod:

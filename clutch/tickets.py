@@ -1095,3 +1095,209 @@ def template(kind: Kind) -> str:
         sections["Render"] = "- mode: generate\n- artifact: <repo-relative output path>\n- input: <repo-relative input path>\n- candidates: 3"
     body = "".join(f"\n## {name}\n{content}\n" for name, content in sections.items())
     return f"---\nstate: draft\nsource: human\npriority: P2\nkind: {kind}\n---\n" + body
+
+
+def new_ticket(
+    repo,
+    stem,
+    kind="feature",
+    *,
+    evidence=(),
+    reference=(),
+    inputs=(),
+    fs=None,
+    template_fn=template,
+    validate_fn=validate_ticket,
+    lint_fn=lint_findings,
+    evidence_fn=evidence_findings,
+    missing_evidence_fn=missing_evidence_findings,
+):
+    """Author a ticket and its evidence outside the lock fence."""
+    import clutch
+    from clutch import runner
+    from clutch.seams import LocalFileSystem
+
+    if kind not in get_args(Kind):
+        raise runner.Refusal("unknown ticket kind", "choose feature, bug, chore, or graphics", code="invalid_kind")
+    if kind == "bug" and not evidence:
+        raise runner.Refusal(
+            "a bug ticket needs its evidence first", f"save the observed failure (output, log excerpt, or captured command output) to a file, then rerun ticket new {stem} --kind bug --evidence <file>"
+        )
+    if kind != "bug" and evidence:
+        raise runner.Refusal("evidence is for bug tickets", "omit --evidence or choose --kind bug")
+    if kind != "graphics" and (reference or inputs):
+        raise runner.Refusal("reference and input files are for graphics tickets", "omit --reference and --input or choose --kind graphics")
+    sources = [repo / path for path in (*evidence, *reference, *inputs)]
+    for source in sources:
+        if source.is_symlink() or not source.is_file():
+            raise runner.Refusal(f"invalid evidence file: {source}", "supply an existing regular file that is not a symlink")
+    if len({source.name for source in sources}) != len(sources):
+        raise runner.Refusal("evidence files have duplicate names", "supply files with distinct names")
+    if findings := stem_findings(stem):
+        raise runner.Refusal(findings[0].message, findings[0].paved_road)
+    rel = ticket_path(stem)
+    guide = Path(clutch.__file__).parent / "docs" / "host-authoring.md"
+    if (repo / rel).exists():
+        raise runner.Refusal(f"{rel} already exists", f"read {guide}, then edit it in place, or pick a new stem")
+    text = template_fn(kind)
+    fs = fs if fs is not None else LocalFileSystem()
+    fs.write(repo / rel, text.encode())
+    for source in sources:
+        directory = "evidence" if kind == "bug" else "reference"
+        fs.write(repo / "tickets" / stem / directory / source.name, source.read_bytes())
+    findings = []
+    try:
+        ticket = validate_fn(stem, text, repo)
+        findings = lint_fn(ticket, repo) + evidence_fn(ticket, repo)
+    except TicketInvalid as e:
+        findings = e.findings
+        if kind == "bug":
+            findings += missing_evidence_fn(stem, repo)
+    return rel, guide, findings
+
+
+def order_ticket(
+    checkout,
+    stem,
+    *,
+    priority=None,
+    runs_before=None,
+    empty_road="supply priority or runs_before",
+    stem_findings_fn=stem_findings,
+    admission_facts_fn=None,
+    lock_holder_fn=None,
+    order_admission_fn=None,
+    order_fn=order,
+    validate_fn=validate_ticket,
+):
+    from clutch import observe, runner, status
+
+    admission_facts_fn = admission_facts_fn or status.admission_facts
+    order_admission_fn = order_admission_fn or status.order_admission
+    lock_holder_fn = lock_holder_fn or observe.lock_holder
+    if findings := stem_findings_fn(stem):
+        raise runner.Refusal(findings[0].message, findings[0].paved_road)
+    if priority is None and runs_before is None:
+        raise runner.Refusal("no ordering option supplied", empty_road)
+    path = checkout.repo / ticket_path(stem)
+    exists = path.is_file()
+    events = checkout.journal.read() if exists else ()
+    facts = admission_facts_fn(events)
+    state = facts.states.get(stem)
+    holder = lock_holder_fn(checkout.config.state_dir) if state == "running" and stem in facts.orphans else None
+    admission = order_admission_fn(stem, facts, exists, holder)
+    if admission.outcome == "refuse":
+        raise runner.Refusal(admission.message, admission.paved_road)
+    text = path.read_bytes().decode()
+    try:
+        try:
+            changed = order_fn(text, priority=priority, runs_before=runs_before)
+        except ValueError, StopIteration:
+            validate_fn(stem, text, checkout.repo)
+            raise runner.Refusal("ticket ordering fields cannot be edited", "use ordinary priority and section headings, then retry ticket order") from None
+        ticket = validate_fn(stem, changed, checkout.repo)
+        if priority is not None and ticket.frontmatter.priority != priority:
+            raise runner.Refusal("priority line cannot be edited", "write priority as a plain `priority: P2` line, then retry ticket order")
+    except TicketInvalid as exc:
+        admission = order_admission_fn(stem, facts, exists, holder, exc.findings)
+        raise runner.Refusal(admission.message, admission.paved_road) from None
+    checkout.fs.write(path, changed.encode())
+    # CLI validation seams may return only the fields the CLI consumes.
+    return {"stem": stem, "path": ticket_path(stem), "priority": ticket.frontmatter.priority, "runs_before": list(getattr(ticket, "runs_before", ()))}
+
+
+def stuck_ceiling_finding(stuck_minutes: int, ceiling: int) -> str | None:
+    if stuck_minutes > ceiling:
+        return f"`## Time budget` stuck {stuck_minutes}m exceeds drain.max_ticket_minutes ({ceiling}m); lower `- stuck:` to at most {ceiling}m or split the ticket"
+    return None
+
+
+async def lint_tickets(
+    checkout,
+    stems=(),
+    *,
+    admission_facts_fn=None,
+    lint_admission_fn=None,
+    pending_fn=_pending,
+    porcelain_fn=_porcelain,
+    intake_claims_fn=_intake_claims,
+    validate_fn=validate_ticket,
+    lint_fn=lint_findings,
+    evidence_fn=evidence_findings,
+    judge_fn=None,
+    stuck_ceiling_fn=None,
+):
+    from clutch import status
+    from clutch.git import GitError
+
+    admission_facts_fn = admission_facts_fn or status.admission_facts
+    lint_admission_fn = lint_admission_fn or status.lint_admission
+    rows, refusals = [], []
+    from clutch.providers import judge_independence_finding
+
+    judge_fn = judge_fn or judge_independence_finding
+    stuck_ceiling_fn = stuck_ceiling_fn or stuck_ceiling_finding
+    root = checkout.repo / "tickets"
+    valid = total = 0
+    exit_code = 0
+    try:
+        entries = list(root.iterdir())  # Unlike glob, unreadable directories must refuse.
+        selected = list(dict.fromkeys(stems)) if stems else sorted(p.name for p in entries if (p / "ticket.md").is_file())
+        common_dir = await checkout.git.git_common_dir(checkout.repo)
+        repo = checkout.repo.resolve()
+        state_dir = checkout.config.state_dir.resolve()
+        journal = checkout.journal
+        if common_dir.parent != repo and state_dir.is_relative_to(repo):
+            journal = Journal(common_dir.parent / state_dir.relative_to(repo), checkout.clock)
+        events = journal.read()
+        facts = admission_facts_fn(events)
+        pending = pending_fn(checkout.repo, porcelain_fn(await checkout.git.status_porcelain(checkout.repo)))
+        for stem in selected:
+            rel = ticket_path(stem)
+            path = checkout.repo / rel
+            # Check existence before the stem grammar, without following an escaped path.
+            inside = Path(stem).name == stem and stem not in {".", ".."} and path.resolve().is_relative_to(root.resolve())
+            admission = lint_admission_fn(stem, facts, inside and path.is_file())
+            if admission.outcome == "refuse":
+                print(f"{rel}: {admission.message} ({admission.paved_road})")
+                refusals.append({"path": rel, "message": admission.message, "paved_road": admission.paved_road})
+                total += 1
+                exit_code = 2
+                continue
+            if admission.outcome == "noop":
+                continue
+            total += 1
+            text, findings = intake_claims_fn(stem, path.read_text(), pending.get(stem, False))
+            ceiling_finding = None
+            judge_finding = None
+            try:
+                if findings:
+                    raise TicketInvalid(findings)
+                ticket = validate_fn(stem, text, checkout.repo)
+                judge_finding = judge_fn(checkout.config) if ticket.frontmatter.kind == "graphics" else None
+                ceiling_finding = stuck_ceiling_fn(ticket.stuck_minutes, checkout.config.drain.max_ticket_minutes)
+                paths = await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"tickets/{stem}/evidence/")
+                findings = lint_fn(ticket, checkout.repo) + evidence_fn(ticket, checkout.repo, paths=paths.split("\0"))
+            except TicketInvalid as exc:
+                findings = exc.findings
+            for finding in findings:
+                message = " ".join(finding.message.splitlines())
+                road = " ".join(finding.paved_road.splitlines())
+                print(f"{finding.path or rel}: {message} ({road})")
+                rows.append({"path": finding.path or rel, "code": finding.code, "message": message, "paved_road": road})
+            if ceiling_finding:
+                print(f"{rel}: {ceiling_finding}")
+                rows.append({"path": rel, "code": "stuck_ceiling", "message": ceiling_finding, "paved_road": "lower the stuck budget or split the ticket"})
+            if judge_finding:
+                print(f"{rel}: {judge_finding}")
+                rows.append({"path": rel, "code": "judge_independence", "message": judge_finding, "paved_road": "configure an independent graphics judge"})
+            if findings or ceiling_finding or judge_finding:
+                exit_code = max(exit_code, 1)
+            else:
+                valid += 1
+    except (OSError, UnicodeError, GitError) as exc:
+        print(f"{root}: {exc} (restore ticket and repository readability, then retry clutch ticket lint)")
+        refusals.append({"path": str(root), "message": str(exc), "paved_road": "restore ticket and repository readability, then retry clutch ticket lint"})
+        exit_code = 2
+    print(f"lint: {valid}/{total} tickets valid")
+    return {"valid": valid, "total": total, "exit_code": exit_code, "findings": rows, "refusals": refusals}

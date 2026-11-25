@@ -7,13 +7,18 @@ Exit codes: 0 merged, 1 a non-ok ticket terminal, 2 an engine-plane refusal.
 import ast
 import asyncio
 import fnmatch
+import io
 import os
 import re
 import sys
 from collections.abc import Awaitable, Callable, Mapping
+from contextlib import AsyncExitStack, asynccontextmanager, redirect_stdout
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, assert_never, cast
+from uuid import uuid4
+
+from clutch import control
 
 if TYPE_CHECKING:
     from clutch.daemon import PauseConsumer
@@ -28,10 +33,10 @@ from clutch.effects import Effects
 from clutch.enginelog import engine_log
 from clutch.evidence.store import SKIP, CaptureNotFound, CaptureUnreadable, EvidenceStore
 from clutch.git import Git, GitError
-from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, require_transition, run_seq
+from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, JournalCorruption, dispatch_of, require_transition, run_seq
 from clutch.journal import Dispatch as JournalDispatch
 from clutch.llm import LLM
-from clutch.lockfile import Lockfile
+from clutch.lockfile import ENGINE_VERBS, Lockfile, LockHeld
 from clutch.merge import compose_pipeline, merge
 from clutch.providers import ADAPTERS, ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.reconcile import reconcile
@@ -905,3 +910,164 @@ async def apply_admission(stem, verb, key, actor, c, *, reason=None):
         except (Refusal, IntakeRefused) as exc:
             refusal = str(exc)
     return {"refusal": refusal}
+
+
+def _require_engine(exc):
+    holder = (exc.holder or {}).get("verb") or "unknown holder"
+    if holder not in ENGINE_VERBS:
+        raise Refusal(f"writer lock held by {holder}", f"wait for {holder} to finish, then retry", code="lock_held")
+
+
+async def submit_engine(checkout, exc, verb, *, stem=None, extension=False, ids=None, reason=None, read_active_fn=None, publish_fn=None, uuid_fn=uuid4):
+    _require_engine(exc)
+    if verb == "reject" and reason is not None and not reason.strip():
+        raise Refusal("blank reason", "omit reason or supply a nonblank reason", code="blank_reason")
+    if stem is not None and await ticket_pending(checkout.git, checkout.repo, stem):
+        from clutch.tickets import intake
+
+        result = await intake(checkout.repo, checkout.git, checkout.journal, checkout.fs, stems={stem})
+        if refused := result.refused.get(stem):
+            raise Refusal(f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in refused), "fix the ticket and retry the verdict")
+    try:
+        lifecycle, hold = read_active_fn(checkout.config.state_dir, Path.read_bytes) if read_active_fn else control.read_active(checkout.config.state_dir, Path.read_bytes)
+    except ValueError as exc:
+        raise Refusal("current control identity unavailable", str(exc)) from exc
+    if verb == "triage":
+        request = control.TriageRequest(uuid_fn().hex, lifecycle, verb, list(ids), None, "operator")
+    elif stem is not None:
+        request = control.AdmissionRequest(uuid_fn().hex, lifecycle, verb, stem, None, "extension" if extension else "operator", operator_reason=reason)
+    else:
+        if verb == "resume" and hold is None:
+            raise Refusal("no current hold identity", "read the running engine's current control identity and submit a new request")
+        request = control.ControlRequest(uuid_fn().hex, lifecycle, verb, hold if verb == "resume" else None)
+    if publish_fn:
+        publish_fn(checkout.config.state_dir, request, checkout.fs)
+    else:
+        control.publish_request(checkout.config.state_dir, request, checkout.fs)
+    return request
+
+
+async def run_or_submit_retro(checkout, pipeline_fn, *, config_path=None, lock_ctx_factory, build_control_fn, config_reloader_fn, submit_fn=submit_engine, reap_fn=None):
+    reap_fn = reap_fn or reap
+    from clutch.retro import Retro, RetroConstructionError, measurements, project_window, suppressing_failure
+
+    async with AsyncExitStack() as stack:
+        try:
+            await stack.enter_async_context(lock_ctx_factory(checkout.config.state_dir, "retro", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock))
+        except LockHeld as exc:
+            request = await submit_fn(checkout, exc, "retro")
+            print(f"retro submitted: {request.request_id}; the running engine runs it between tickets")
+            return 0
+        try:
+            await reap_fn(checkout)
+            checkout = replace(checkout, control=build_control_fn(checkout))
+            checkout.control.load_config = config_reloader_fn(config_path, checkout.repo)
+            dispatch = pipeline_fn(checkout)
+            try:
+                window = project_window(checkout.journal.read())
+            except JournalCorruption as exc:
+                raise Refusal(str(exc), "restore journal readability from backup and retry engine retro") from None
+            selected = bool(measurements(window)["merged_count"])
+            suppressed = suppressing_failure(window) is not None
+            if selected and not suppressed and hasattr(dispatch, "prepare"):
+                await dispatch.prepare()
+            try:
+                result = await Retro(checkout, dispatch)(forced=True)
+            except RetroConstructionError as exc:
+                raise Refusal("retro Driver unavailable", str(exc)) from None
+            if not selected:
+                print("retro: no merge since the latest completed report")
+                return 0
+            if result is not None:
+                print(f"retro: committed tickets/retro/{window.sequence:06d}.md")
+                return 0
+            print("retro: no report committed; inspect status and the Suggestion Box")
+            return 1
+        finally:
+            if checkout.control is not None:
+                await checkout.control.providers.close()
+
+
+async def submit_verdict(stem, checkout, *, kill, extension=False, reason=None, submit_fn=submit_engine):
+    if kill and reason is not None and not reason.strip():
+        raise Refusal("blank reason", "omit reason or supply a nonblank reason", code="blank_reason")
+    verb = "reject" if kill else "confirm"
+    output = io.StringIO()
+    request = None
+    try:
+        with redirect_stdout(output):
+            outcome = await verdict(stem, checkout, kill=kill, extension=extension, **({"reason": reason} if reason is not None else {}))
+    except LockHeld as exc:
+        request = await submit_fn(checkout, exc, verb, stem=stem, extension=extension, reason=reason)
+        outcome = 0
+    return {
+        "stem": stem,
+        "verb": verb,
+        "actor": "extension" if extension else "operator",
+        "submitted": request is not None,
+        "request_id": request.request_id if request else None,
+        "outcome": outcome,
+        "output": output.getvalue(),
+    }
+
+
+@asynccontextmanager
+async def _locked(state_dir, verb, *, instance_id=None, clock, lock_factory=None):
+    if lock_factory is None:
+        lock = Lockfile(state_dir, verb=verb, instance_id=instance_id, clock=clock)
+    else:
+        lock = lock_factory(state_dir, verb=verb, instance_id=instance_id, clock=clock)
+    lock.acquire()
+    try:
+        yield
+    finally:
+        lock.release()
+
+
+async def control_engine(checkout, verb, *, lock_factory=Lockfile, submit_fn=submit_engine):
+    lock = lock_factory(checkout.config.state_dir, verb=verb, instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock)
+    try:
+        lock.acquire()
+    except LockHeld as exc:
+        request = await submit_fn(checkout, exc, verb)
+        return {"status": "submitted", "request_id": request.request_id}
+    try:
+        if verb in {"kill", "stop"}:
+            road = "start a drain before submitting kill" if verb == "kill" else "start a drain or serve before submitting stop"
+            raise Refusal(f"nothing running to {verb}", road, code="nothing_running")
+        return {"status": "nothing_running"}
+    finally:
+        lock.release()
+
+
+async def dismiss_boxes(checkout, ids, *, lock_ctx_factory, reap_fn=None, dismiss_fn=None):
+    from clutch import triage
+
+    reap_fn = reap_fn or reap
+    dismiss_fn = dismiss_fn or triage.dismiss
+    async with lock_ctx_factory(checkout.config.state_dir, "dismiss", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock):
+        await reap_fn(checkout)
+        return await dismiss_fn(checkout, ids)
+
+
+async def triage_or_submit(checkout, ids, *, lock_ctx_factory, build_control_fn, preflighted_llm_fn, submit_fn=submit_engine, reap_fn=None, validate_ids_fn=None, triage_pass_fn=None):
+    from clutch import triage
+
+    reap_fn = reap_fn or reap
+    validate_ids_fn = validate_ids_fn or triage.validate_ids
+    triage_pass_fn = triage_pass_fn or triage.triage_pass
+    async with AsyncExitStack() as stack:
+        try:
+            await stack.enter_async_context(lock_ctx_factory(checkout.config.state_dir, "triage", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock))
+        except LockHeld as exc:
+            request = await submit_fn(checkout, exc, "triage", ids=ids)
+            return {"submitted": True, "request_id": request.request_id}
+        await reap_fn(checkout)
+        session = build_control_fn(checkout).providers
+        try:
+            validate_ids_fn(checkout, ids)
+            llm = await preflighted_llm_fn(checkout, session)
+            lines = await triage_pass_fn(checkout, llm, frozenset(ids))
+            return {"submitted": False, "lines": lines}
+        finally:
+            await session.close()

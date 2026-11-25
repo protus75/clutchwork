@@ -13,7 +13,6 @@ import subprocess
 import sys
 import time
 from collections.abc import Awaitable, Callable, Mapping, Sequence, Set
-from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -22,14 +21,14 @@ from uuid import uuid4
 import duckdb
 
 import clutch
-from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, triage
+from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, tickets, triage
 from clutch.box import BOX_DIR, Box, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
-from clutch.git import Git, GitError
+from clutch.git import Git
 from clutch.journal import EventType, Journal, JournalCorruption, last_transition
 from clutch.llm import TIERS, LLMRequest
-from clutch.lockfile import ENGINE_VERBS, CommitLock, CommitLockTimeout, Lockfile, LockHeld
+from clutch.lockfile import CommitLock, CommitLockTimeout, Lockfile, LockHeld
 from clutch.notify import NOTIFY_TIMEOUT_S, NotificationReconciler
 from clutch.providers import (
     ADAPTERS,
@@ -91,14 +90,8 @@ def _fail(verb, message):
     return runner.EXIT_REFUSED
 
 
-@asynccontextmanager
-async def _locked(state_dir, verb, *, instance_id, clock):
-    lock = Lockfile(state_dir, verb=verb, instance_id=instance_id, clock=clock)
-    lock.acquire()
-    try:
-        yield
-    finally:
-        lock.release()
+def _locked(state_dir, verb, *, instance_id=None, clock):
+    return runner._locked(state_dir, verb, instance_id=instance_id, clock=clock, lock_factory=Lockfile)
 
 
 def _clock() -> datetime:
@@ -301,7 +294,7 @@ def _parser() -> argparse.ArgumentParser:
     mcp_group = sub.add_parser(
         "mcp",
         help="run the MCP server",
-        description="Run the read-only MCP server.",
+        description="Run MCP read, ticket, Suggestion Box, and detached engine-control tools.",
         epilog="Examples:\nclutch mcp serve\n  Serve MCP over stdio.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -309,11 +302,11 @@ def _parser() -> argparse.ArgumentParser:
     _command(
         mcp_sub,
         "serve",
-        summary="serve read-only MCP over stdio",
-        does="Serve read-only MCP tools and prompts over stdio.",
+        summary="serve MCP tools over stdio",
+        does="Serve read, ticket, Suggestion Box, and detached engine-control MCP tools and prompts over stdio.",
         reads="Repository config, tickets, journal, evidence and git state.",
-        writes="Updates the rebuildable journal cache.",
-        lock="None.",
+        writes="Tickets, Suggestion Box, control inbox, detached engine output, and rebuildable journal cache.",
+        lock="Per-tool domain locks; no lock held by the stdio server.",
         exits="0 on EOF or interruption; 2 on refusal.",
         examples=["clutch mcp serve"],
     )
@@ -1581,12 +1574,9 @@ def main(
         return 0
 
     def handle_suggest():
-        if not args.summary.strip():
-            raise runner.Refusal("blank summary", "pass the idea as one quoted argument")
-        from clutch.box import Box, RereportJournal
+        from clutch.box import suggest
 
-        box = Box(config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
-        id, created = box.enqueue(message_class="suggestion", origin="session", summary=args.summary, occurrence_id=uuid4().hex)
+        id, created = suggest(config.state_dir, checkout.fs, checkout.journal, args.summary, occurrence_id=uuid4().hex)
         print(f"suggest: filed {id}" if created else f"suggest: already in the box as {id}")
         return 0
 
@@ -1773,33 +1763,18 @@ def main(
         return 0 if passed else 1
 
     def handle_dismiss():
-        async def dismiss_messages():
-            async with _locked(config.state_dir, "dismiss", instance_id=await checkout.git.describe(repo), clock=clock):
-                await runner.reap(checkout)
-                return await triage.dismiss(checkout, args.ids)
-
-        print("\n".join(asyncio.run(dismiss_messages())))
+        print("\n".join(asyncio.run(runner.dismiss_boxes(checkout, args.ids, lock_ctx_factory=_locked, reap_fn=runner.reap, dismiss_fn=triage.dismiss))))
         return 0
 
     def handle_triage():
-        async def one_pass() -> list[tuple[str, str]]:
-            async with _locked(config.state_dir, "triage", instance_id=await checkout.git.describe(repo), clock=clock):
-                await runner.reap(checkout)
-                session = build_control(checkout).providers
-                try:
-                    triage.validate_ids(checkout, args.ids)
-                    llm = await _preflighted_llm(checkout, session)
-                    return await triage.triage_pass(checkout, llm, frozenset(args.ids))
-                finally:
-                    await session.close()
-
-        try:
-            lines = asyncio.run(one_pass())
-        except LockHeld as exc:
-            request = asyncio.run(_submit_engine(checkout, exc, "triage", ids=args.ids))
-            print(f"triage submitted: {request.request_id}")
-            return 0
-        print("\n".join(line for _, line in lines) if lines else "no pending suggestions")
+        result = asyncio.run(
+            runner.triage_or_submit(checkout, args.ids, lock_ctx_factory=_locked, build_control_fn=build_control, preflighted_llm_fn=_preflighted_llm, submit_fn=_submit_engine, reap_fn=runner.reap)
+        )
+        if result["submitted"]:
+            print(f"triage submitted: {result['request_id']}")
+        else:
+            lines = result["lines"]
+            print("\n".join(line for _, line in lines) if lines else "no pending suggestions")
         return 0
 
     def handle_serve():
@@ -1810,12 +1785,7 @@ def main(
 
     def handle_detach():
         verb = args.engine_verb
-        output = config.state_dir / f"{verb}.out"
-        if verb == "serve":
-            prior_size, prior_lifecycle = serve.capture_startup_baseline(config.state_dir, output)
-        pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "engine", verb], cwd=repo, env=env, output=output)
-        if verb == "serve" and not serve.wait_detached_startup(config.state_dir, pid, output, prior_size=prior_size, prior_lifecycle=prior_lifecycle):
-            raise runner.Refusal("detached serve startup timed out", f"inspect {output} and check the engine status")
+        pid, output = serve.start_detached(repo, config.state_dir, verb, config_path=args.config, env=env, spawn=spawn)
         print(f"{verb}: pid {pid}, output {output}")
         return 0
 
@@ -2155,144 +2125,37 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
     return 0 if verdict.verdict == "approve" else 1
 
 
-def _require_engine(exc: LockHeld) -> None:
-    verb = (exc.holder or {}).get("verb") or "unknown holder"
-    if verb not in ENGINE_VERBS:
-        raise runner.Refusal(f"writer lock held by {verb}", f"wait for {verb} to finish, then retry") from None
-
-
 async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False, ids=None, reason=None):
-    _require_engine(exc)
-    if stem is not None and await runner.ticket_pending(checkout.git, checkout.repo, stem):
-        from clutch.tickets import intake
-
-        result = await intake(checkout.repo, checkout.git, checkout.journal, checkout.fs, stems={stem})
-        if refused := result.refused.get(stem):
-            raise runner.Refusal(f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in refused), "fix the ticket and retry the verdict")
-    try:
-        lifecycle, hold = control.read_active(checkout.config.state_dir, Path.read_bytes)
-    except ValueError as exc:
-        raise runner.Refusal("current control identity unavailable", str(exc)) from exc
-    if verb == "triage":
-        request = control.TriageRequest(uuid4().hex, lifecycle, verb, list(ids), None, "operator")
-    elif stem is not None:
-        request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator", operator_reason=reason)
-    else:
-        if verb == "resume" and hold is None:
-            raise runner.Refusal("no current hold identity", "read the running engine's current control identity and submit a new request")
-        request = control.ControlRequest(uuid4().hex, lifecycle, verb, hold if verb == "resume" else None)
-    control.publish_request(checkout.config.state_dir, request, checkout.fs)
-    return request
+    return await runner.submit_engine(
+        checkout, exc, verb, stem=stem, extension=extension, ids=ids, reason=reason, read_active_fn=control.read_active, publish_fn=control.publish_request, uuid_fn=uuid4
+    )
 
 
 async def _retro(checkout, pipeline, *, config_path=None):
-    from clutch.retro import Retro, RetroConstructionError, measurements, project_window, suppressing_failure
-
-    async with AsyncExitStack() as stack:
-        try:
-            await stack.enter_async_context(_locked(checkout.config.state_dir, "retro", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock))
-        except LockHeld as exc:
-            request = await _submit_engine(checkout, exc, "retro")
-            print(f"retro submitted: {request.request_id}; the running engine runs it between tickets")
-            return 0
-        try:
-            await runner.reap(checkout)
-            checkout = replace(checkout, control=build_control(checkout))
-            checkout.control.load_config = _config_reloader(config_path, checkout.repo)
-            dispatch = pipeline(checkout)
-            try:
-                window = project_window(checkout.journal.read())
-            except JournalCorruption as exc:
-                raise runner.Refusal(str(exc), "restore journal readability from backup and retry engine retro") from None
-            selected = bool(measurements(window)["merged_count"])
-            suppressed = suppressing_failure(window) is not None
-            if selected and not suppressed and hasattr(dispatch, "prepare"):
-                await dispatch.prepare()
-            try:
-                result = await Retro(checkout, dispatch)(forced=True)
-            except RetroConstructionError as exc:
-                raise runner.Refusal("retro Driver unavailable", str(exc)) from None
-            if not selected:
-                print("retro: no merge since the latest completed report")
-                return 0
-            if result is not None:
-                print(f"retro: committed tickets/retro/{window.sequence:06d}.md")
-                return 0
-            print("retro: no report committed; inspect status and the Suggestion Box")
-            return 1
-        finally:
-            if checkout.control is not None:
-                await checkout.control.providers.close()
+    return await runner.run_or_submit_retro(
+        checkout, pipeline, config_path=config_path, lock_ctx_factory=_locked, build_control_fn=build_control, config_reloader_fn=_config_reloader, submit_fn=_submit_engine, reap_fn=runner.reap
+    )
 
 
 def stuck_ceiling_finding(stuck_minutes: int, ceiling: int) -> str | None:
-    if stuck_minutes > ceiling:
-        return f"`## Time budget` stuck {stuck_minutes}m exceeds drain.max_ticket_minutes ({ceiling}m); lower `- stuck:` to at most {ceiling}m or split the ticket"
-    return None
+    return tickets.stuck_ceiling_finding(stuck_minutes, ceiling)
 
 
 async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
-    from clutch.providers import judge_independence_finding
-
-    root = checkout.repo / "tickets"
-    valid = total = 0
-    exit_code = 0
-    try:
-        entries = list(root.iterdir())  # Unlike glob, unreadable directories must refuse.
-        selected = list(dict.fromkeys(stems)) if stems else sorted(p.name for p in entries if (p / "ticket.md").is_file())
-        common_dir = await checkout.git.git_common_dir(checkout.repo)
-        repo = checkout.repo.resolve()
-        state_dir = checkout.config.state_dir.resolve()
-        journal = checkout.journal
-        if common_dir.parent != repo and state_dir.is_relative_to(repo):
-            journal = Journal(common_dir.parent / state_dir.relative_to(repo), checkout.clock)
-        events = journal.read()
-        facts = admission_facts(events)
-        pending = _pending(checkout.repo, _porcelain(await checkout.git.status_porcelain(checkout.repo)))
-        for stem in selected:
-            rel = ticket_path(stem)
-            path = checkout.repo / rel
-            # Check existence before the stem grammar, without following an escaped path.
-            inside = Path(stem).name == stem and stem not in {".", ".."} and path.resolve().is_relative_to(root.resolve())
-            admission = lint_admission(stem, facts, inside and path.is_file())
-            if admission.outcome == "refuse":
-                print(f"{rel}: {admission.message} ({admission.paved_road})")
-                total += 1
-                exit_code = 2
-                continue
-            if admission.outcome == "noop":
-                continue
-            total += 1
-            text, findings = _intake_claims(stem, path.read_text(), pending.get(stem, False))
-            ceiling_finding = None
-            judge_finding = None
-            try:
-                if findings:
-                    raise TicketInvalid(findings)
-                ticket = validate_ticket(stem, text, checkout.repo)
-                judge_finding = judge_independence_finding(checkout.config) if ticket.frontmatter.kind == "graphics" else None
-                ceiling_finding = stuck_ceiling_finding(ticket.stuck_minutes, checkout.config.drain.max_ticket_minutes)
-                paths = await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"tickets/{stem}/evidence/")
-                findings = lint_findings(ticket, checkout.repo) + evidence_findings(ticket, checkout.repo, paths=paths.split("\0"))
-            except TicketInvalid as exc:
-                findings = exc.findings
-            for finding in findings:
-                message = " ".join(finding.message.splitlines())
-                road = " ".join(finding.paved_road.splitlines())
-                print(f"{finding.path or rel}: {message} ({road})")
-            if ceiling_finding:
-                print(f"{rel}: {ceiling_finding}")
-            if judge_finding:
-                print(f"{rel}: {judge_finding}")
-            if findings or ceiling_finding or judge_finding:
-                exit_code = max(exit_code, 1)
-            else:
-                valid += 1
-    except (OSError, UnicodeError, GitError) as exc:
-        print(f"{root}: {exc} (restore ticket and repository readability, then retry clutch ticket lint)")
-        exit_code = 2
-    print(f"lint: {valid}/{total} tickets valid")
-    return exit_code
+    result = await tickets.lint_tickets(
+        checkout,
+        stems,
+        admission_facts_fn=admission_facts,
+        lint_admission_fn=lint_admission,
+        pending_fn=_pending,
+        porcelain_fn=_porcelain,
+        intake_claims_fn=_intake_claims,
+        validate_fn=validate_ticket,
+        lint_fn=lint_findings,
+        evidence_fn=evidence_findings,
+        stuck_ceiling_fn=stuck_ceiling_finding,
+    )
+    return result["exit_code"]
 
 
 async def _stats(checkout, events, now, window):
@@ -2338,18 +2201,11 @@ def _engine_signals(stop: Callable[[], None]) -> Callable[[], None]:
 
 
 async def _control(checkout: runner.Checkout, verb: str) -> int:
-    async with AsyncExitStack() as stack:
-        try:
-            await stack.enter_async_context(_locked(checkout.config.state_dir, verb, instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock))
-        except LockHeld as exc:
-            request = await _submit_engine(checkout, exc, verb)
-            print(f"{verb} submitted: {request.request_id}")
-        else:
-            if verb == "kill":
-                raise runner.Refusal("nothing running to kill", "start a drain before submitting kill")
-            if verb == "stop":
-                raise runner.Refusal("nothing running to stop", "start a drain or serve before submitting stop")
-            print(f"nothing running to {verb}")
+    result = await runner.control_engine(checkout, verb, lock_factory=Lockfile, submit_fn=_submit_engine)
+    if result["status"] == "submitted":
+        print(f"{verb} submitted: {result['request_id']}")
+    else:
+        print(f"nothing running to {verb}")
     return 0
 
 
@@ -2377,85 +2233,50 @@ async def _verdict(checkout, stem, verb, read_input, yes, extension, *, reason=N
     if answer.strip().lower() not in {"y", "yes"}:
         print("verdict aborted")
         return 1
-    try:
-        return await runner.verdict(stem, checkout, kill=verb == "reject", extension=extension, **({"reason": reason} if reason is not None else {}))
-    except LockHeld as exc:
-        request = await _submit_engine(checkout, exc, verb, stem=stem, extension=extension, reason=reason)
-    print(f"{verb} submitted: {request.request_id} -- `clutch view status` shows the outcome")
-    return 0
+    result = await runner.submit_verdict(stem, checkout, kill=verb == "reject", extension=extension, reason=reason, submit_fn=_submit_engine)
+    if result["submitted"]:
+        print(f"{verb} submitted: {result['request_id']} -- `clutch view status` shows the outcome")
+    elif result["output"]:
+        print(result["output"], end="")
+    return result["outcome"]
 
 
 def _order(checkout, stem, priority, runs_before):
-    if findings := stem_findings(stem):
-        raise runner.Refusal(findings[0].message, findings[0].paved_road)
-    if priority is None and runs_before is None:
-        raise runner.Refusal("no ordering option supplied", "supply --priority or --runs-before")
-    path = checkout.repo / ticket_path(stem)
-    exists = path.is_file()
-    events = checkout.journal.read() if exists else ()
-    facts = admission_facts(events)
-    state = facts.states.get(stem)
-    holder = observe.lock_holder(checkout.config.state_dir) if state == "running" and stem in facts.orphans else None
-    admission = order_admission(stem, facts, exists, holder)
-    if admission.outcome == "refuse":
-        raise runner.Refusal(admission.message, admission.paved_road)
-    text = path.read_bytes().decode()
-    try:
-        try:
-            changed = order(text, priority=priority, runs_before=runs_before)
-        except ValueError, StopIteration:
-            validate_ticket(stem, text, checkout.repo)
-            raise runner.Refusal("ticket ordering fields cannot be edited", "use ordinary priority and section headings, then retry ticket order") from None
-        ticket = validate_ticket(stem, changed, checkout.repo)
-        if priority is not None and ticket.frontmatter.priority != priority:
-            raise runner.Refusal("priority line cannot be edited", "write priority as a plain `priority: P2` line, then retry ticket order")
-    except TicketInvalid as exc:
-        admission = order_admission(stem, facts, exists, holder, exc.findings)
-        raise runner.Refusal(admission.message, admission.paved_road) from None
-    checkout.fs.write(path, changed.encode())
+    tickets.order_ticket(
+        checkout,
+        stem,
+        priority=priority,
+        runs_before=runs_before,
+        empty_road="supply --priority or --runs-before",
+        stem_findings_fn=stem_findings,
+        admission_facts_fn=admission_facts,
+        lock_holder_fn=observe.lock_holder,
+        order_admission_fn=order_admission,
+        order_fn=order,
+        validate_fn=validate_ticket,
+    )
     fields = ([f"priority: {priority}"] if priority is not None else []) + ([f"runs before: {', '.join(runs_before) or '(cleared)'}"] if runs_before is not None else [])
     print(f"ordered {stem}: {'; '.join(fields)}")
     return 0
 
 
 def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] = (), reference: Sequence[str] = (), inputs: Sequence[str] = ()) -> int:
-    """Author a ticket and its evidence outside the lock fence."""
-    if kind == "bug" and not evidence:
-        raise runner.Refusal(
-            "a bug ticket needs its evidence first", f"save the observed failure (output, log excerpt, or captured command output) to a file, then rerun ticket new {stem} --kind bug --evidence <file>"
-        )
-    if kind != "bug" and evidence:
-        raise runner.Refusal("evidence is for bug tickets", "omit --evidence or choose --kind bug")
-    if kind != "graphics" and (reference or inputs):
-        raise runner.Refusal("reference and input files are for graphics tickets", "omit --reference and --input or choose --kind graphics")
-    sources = [repo / path for path in (*evidence, *reference, *inputs)]
-    for source in sources:
-        if source.is_symlink() or not source.is_file():
-            raise runner.Refusal(f"invalid evidence file: {source}", "supply an existing regular file that is not a symlink")
-    if len({source.name for source in sources}) != len(sources):
-        raise runner.Refusal("evidence files have duplicate names", "supply files with distinct names")
-    if findings := stem_findings(stem):
-        raise runner.Refusal(findings[0].message, findings[0].paved_road)
-    rel = ticket_path(stem)
-    guide = Path(clutch.__file__).parent / "docs" / "host-authoring.md"
-    if (repo / rel).exists():
-        raise runner.Refusal(f"{rel} already exists", f"read {guide}, then edit it in place, or pick a new stem")
-    text = template(kind)
-    fs = LocalFileSystem()
-    fs.write(repo / rel, text.encode())
-    for source in sources:
-        directory = "evidence" if kind == "bug" else "reference"
-        fs.write(repo / "tickets" / stem / directory / source.name, source.read_bytes())
+    rel, guide, findings = tickets.new_ticket(
+        repo,
+        stem,
+        kind,
+        evidence=evidence,
+        reference=reference,
+        inputs=inputs,
+        fs=LocalFileSystem(),
+        template_fn=template,
+        validate_fn=validate_ticket,
+        lint_fn=lint_findings,
+        evidence_fn=evidence_findings,
+        missing_evidence_fn=missing_evidence_findings,
+    )
     print(f"authored {rel}")
     print(f"read the ticket authoring guide before filling sections: {guide}")
-    findings = []
-    try:
-        ticket = validate_ticket(stem, text, repo)
-        findings = lint_findings(ticket, repo)
-    except TicketInvalid as e:
-        findings = e.findings
-        if kind == "bug":
-            findings += missing_evidence_findings(stem, repo)
     if findings:
         print(f"fill these before `engine run {stem}`:")
         for f in findings:
