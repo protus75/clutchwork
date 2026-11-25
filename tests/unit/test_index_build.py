@@ -5,8 +5,8 @@
 # purpose: Checks the DuckDB index build: file, chunk, touch and call rows, metadata parsing, incremental updates and deletion, git and creator failures, and embeddings
 # relates: [clutch/evidence/store.py, clutch/git.py, clutch/index.py, clutch/seams.py]
 # owner: engine
-# verified: c015c627
-# hash: b382be003f06575702c28624321cf6ac604e7bfb1e71860e2bcdd3aa4c489b3d
+# verified: 01d081d3
+# hash: bccaae65b79299c60ffbf974a683d193bd8b83af09460869ccc02e200f2c24bc
 
 import hashlib
 from types import SimpleNamespace as NS
@@ -280,7 +280,7 @@ def test_default_creator():
     for kind in ("vss", "fts"):
         conn = Recorder()
         assert default_creator.load(conn, kind) == []
-        assert conn.calls == [f"INSTALL {kind}", f"LOAD {kind}"]
+        assert conn.calls == [f"LOAD {kind}"]
         conn.calls.clear()
         assert default_creator.create(conn, kind) == []
         assert (conn.calls[0].startswith("SET hnsw") and "USING HNSW" in conn.calls[1]) if kind == "vss" else conn.calls[0].startswith("PRAGMA create_fts_index")

@@ -31,10 +31,13 @@ class IndexCreator(Protocol):
 class _Creator:
     def load(self, connection, kind):
         try:
-            connection.execute(f"INSTALL {kind}")
             connection.execute(f"LOAD {kind}")
-        except duckdb.Error as exc:
-            return [f"{kind} unavailable: {exc}"]
+        except duckdb.Error:
+            try:
+                connection.execute(f"INSTALL {kind}")
+                connection.execute(f"LOAD {kind}")
+            except duckdb.Error as exc:
+                return [f"{kind} unavailable: {exc}"]
         return []
 
     def create(self, connection, kind):
