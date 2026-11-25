@@ -804,11 +804,11 @@ def _parser() -> argparse.ArgumentParser:
         release_sub,
         "publish",
         summary="build the tagged release and upload it when release.publish is true",
-        does="Build the version tagged at HEAD into <state_dir>/dist and list artifacts; upload only with release.publish: true; never bump.",
+        does="Run configured release.pre_build commands before building the version tagged at HEAD into <state_dir>/dist and list artifacts; upload only with release.publish: true; never bump.",
         reads="Config, tracked tree git status, uv's version, HEAD and its tag, and the variable named by release.pypi_token.",
         writes="Wheel and sdist under <state_dir>/dist, emptied on each run; an upload when enabled; no commit, tag or journal event.",
         lock="Writer lock; refuses while another process holds it.",
-        exits="0 when built (and uploaded when enabled); 2 on refusal (missing token, dirty tracked tree, missing or misplaced tag, uv failure or held lock).",
+        exits="0 when built (and uploaded when enabled); 2 on refusal (missing token, dirty tracked tree, missing or misplaced tag, pre-build or uv failure or held lock).",
         examples=["clutch release publish"],
     )
     _command(

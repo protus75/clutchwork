@@ -37,7 +37,7 @@ routing:
   - {tier: max, surface: review, candidates: [{provider: claude, model: claude-opus-5-5}]}
 scheduler:
   parallel: {enabled: true, max_runs: 2, shared_paths: [docs/how-clutch-works.md]}
-release: {publish: true, packages: [{argv: [uv, run, python, dev.py, vscode-package], kept: dist/vscode-clutchwork-*.vsix}]}
+release: {publish: true, pre_build: [[uv, run, python, dev.py, ui-bundle]], packages: [{argv: [uv, run, python, dev.py, vscode-package], kept: dist/vscode-clutchwork-*.vsix}]}
 review:
   autofix:
     - {code: ruff-fix, argv: [uv, run, ruff, check, --fix, --exit-zero], files: ["*.py"]}

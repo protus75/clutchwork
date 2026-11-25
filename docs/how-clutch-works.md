@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 0626363d
-hash: 6b9c06dab6d4a0a4233e419e8aaee98253592341ca9bcf2e8e9fa7fbb6409eaa
+verified: 403faee1
+hash: 69040f3bfac34917037cc9c1d037be4d1d45b049428344f527f7af58e61fc2db
 -->
 # How ClutchWork works
 
@@ -100,7 +100,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `box triage [id ...]` | try | One sequential pass over named pending messages, or all pending messages; submits to a running engine for its next idle point (section 9.2). |
 | `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, checks any committed Antigravity plugin bundle for edits, regenerates it using `clutch/antigravity.py::portable_bundle_files` when present, commits it with the three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
 | `release ship` | yes | Gates the current release, bumps and tags it, journals the release, optionally publishes, and runs configured packages. |
-| `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
+| `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, runs configured `release.pre_build` commands, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
 | `prompt host <name> [stem]` | no | Render a host-owned prompt. |
 | `prompt list` | no | List engine and host prompts and report invalid host files. |

@@ -86,6 +86,7 @@ async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
     await publishable(repo, git, env, config)
     token_name = config.release.pypi_token
     child = child_env(env, config)
+    child.pop("UV_PUBLISH_TOKEN", None)
     rc, out, err = await exec_.run(["uv", "version", "--short"], cwd=repo, env=child, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
@@ -99,6 +100,13 @@ async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
         tagged = None
     if tagged != head:
         raise Refusal(f"tag {tag} is missing or not on HEAD", "run clutch release bump --minor or clutch release bump --patch to tag the version at HEAD, then retry clutch release publish")
+    for argv in config.release.pre_build:
+        try:
+            rc, _, _ = await exec_.run(argv, cwd=repo, env=child, timeout=BUILD_TIMEOUT_S)
+        except (TimeoutError, ExecutableNotFound) as exc:
+            raise Refusal(f"release.pre_build command {argv[0]} failed: {type(exc).__name__}", "fix the pre-build command, then retry clutch release publish") from exc
+        if rc:
+            raise Refusal(f"release.pre_build command {argv[0]} failed (rc {rc})", "fix the pre-build command, then retry clutch release publish")
     dist = config.state_dir / "dist"
     rc, _, err = await exec_.run(["uv", "build", "--clear", "-o", str(dist)], cwd=repo, env=child, timeout=BUILD_TIMEOUT_S)
     if rc:

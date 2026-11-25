@@ -266,6 +266,7 @@ class Release(StrictModel):
     publish: bool = False
     pypi_token: str = "UV_PUBLISH_TOKEN"
     packages: list[Package] = []
+    pre_build: list[Argv] = []
 
 
 class Roadmap(StrictModel):

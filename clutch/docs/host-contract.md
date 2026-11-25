@@ -4,8 +4,8 @@ kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 1324cf62
-hash: 154b2cd6dc7fdb0b69b5ff6b669467879220077cac0370a1df0632be62a04556
+verified: 403faee1
+hash: e23e9a775597cbe91a28f4342a76971871c32465b85d230148be2f68bbe95f7b
 -->
 # Host contract
 
@@ -166,7 +166,7 @@ Config:
     worktree_root: unset
     snapshot_merged_limit: 100
     routing_default_tier: medium
-    release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
+    release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: [], pre_build: []}
     roadmap: {ahead: 2}
     evidence: {warn_gb: 20}
     training_data: {enabled: false, exclude: []}
@@ -209,7 +209,7 @@ TrainingData:
   defaults: {enabled: false, exclude: []}
 Release:
   required: []
-  defaults: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
+  defaults: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: [], pre_build: []}
 Package:
   required: [argv, kept]
   defaults: {}
@@ -308,6 +308,8 @@ nonempty lists where declared. Retro uses nested `merges`, `settled`, and `spike
 NUL-free strings.
 
 `release ship` runs each configured package after the tag and names the paths kept by the run.
+
+`release.pre_build` lists nonempty argv commands run in order before the release build; a failed command refuses publication.
 
 `release.pypi_token` names an environment variable, never a literal token; it is removed from every child and redacted like provider `auth`, and only the `clutch release publish` upload receives its value. `release.publish: true` is the owner's standing authorization to upload.
 

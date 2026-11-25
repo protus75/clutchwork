@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 0626363d
-hash: 6096e098c13c63963b6e55ecf70721f1524702e2f81bb5c3ed3b56070c4c7524
+verified: 403faee1
+hash: f7248ffd4333207b6cd5515b331e0ba47808b2d41b97dde2877b811c4c64a3bf
 -->
 # Running ClutchWork on a host
 
@@ -56,7 +56,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. With `--parallel`, `roadmap merged` counts only merges whose run overlapped another run and fails when any such ticket spent its conflict-rerun limit. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
 | `box triage` | Yes | Make one pass over named pending box IDs, or all pending messages. |
 | `release ship` | No | Gate the current release, bump and tag it, optionally publish, then run packages; takes the writer lock. |
-| `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
+| `release publish` | No | Run configured `release.pre_build` commands before building the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, check, regenerate and commit the Antigravity plugin bundle when present together with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `box dismiss` | No | Dismiss named box IDs without a model call. |
 | `evidence show` | Yes | Print call envelopes and stored normalized event lines. |

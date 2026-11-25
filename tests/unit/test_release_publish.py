@@ -5,8 +5,8 @@
 # purpose: Publish keeps tagged builds and credentials isolated.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/providers.py, clutch/redact.py, clutch/release.py, clutch/runner.py]
 # owner: engine
-# verified: 9a610809
-# hash: 6941257dd9ce5543ac770a9a27e0cf734e8c526f866ce8e9cc892f54d510960a
+# verified: 403faee1
+# hash: 29f34246ff50807e9fd27b6504b7da8ae5e5e9f1f8edd179fc0d35dc5d7e58be
 
 import asyncio
 from pathlib import Path
@@ -41,7 +41,7 @@ class Exec:
 
 
 def setup(upload=False, results=None, entries=FILES):
-    cfg = NS(state_dir=Path("/state"), release=NS(publish=upload, pypi_token="PYPI_TOKEN"), providers=[NS(auth="CLAUDE_KEY")])
+    cfg = NS(state_dir=Path("/state"), release=NS(publish=upload, pypi_token="PYPI_TOKEN", pre_build=[]), providers=[NS(auth="CLAUDE_KEY")])
     process = Exec(results if results is not None else [(0, "", ""), (0, "0.4.0\n", ""), (0, SHA, ""), (0, SHA, ""), (0, "", "")] + ([(0, "", "")] if upload else []))
     git = Git(process, env=child_env(ENV, cfg), timeout=1, commit_lock=FakeLock())
     return cfg, process, git, NS(entries=lambda path: entries)
@@ -107,7 +107,7 @@ def test_publish_command_failures_refuse(case):
 
 
 def test_release_token_is_a_configured_secret():
-    assert config.Release().model_dump() == {"publish": False, "pypi_token": "UV_PUBLISH_TOKEN", "packages": []}
+    assert config.Release().model_dump() == {"publish": False, "pypi_token": "UV_PUBLISH_TOKEN", "packages": [], "pre_build": []}
     cfg, _, _, _ = setup()
     env = {"PATH": "/bin", "CLAUDE_KEY": "k", "PYPI_TOKEN": "pypi-secret"}
     assert child_env(env, cfg) == {"PATH": "/bin"}
