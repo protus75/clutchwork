@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
+from urllib.parse import unquote, urlparse
 
 import duckdb
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -185,6 +186,7 @@ class ClutchMCPServer:
         *,
         default_cwd=None,
         ui_html_path: Path | None = None,
+        last_repo_path: Path | None = None,
         config_path=None,
         env=None,
         clock=None,
@@ -202,15 +204,33 @@ class ClutchMCPServer:
         self.cwd = Path(default_cwd or Path.cwd()).resolve()
         self.config_path = config_path
         self.env = dict(os.environ if env is None else env)
+        self.last_repo_path = (
+            last_repo_path if last_repo_path is not None else (Path(self.env["XDG_CONFIG_HOME"]) if self.env.get("XDG_CONFIG_HOME") else Path.home() / ".config") / "clutch" / "last-repo"
+        )
+        self.client_supports_roots = False
+        self.roots: list[Path] = []
+        self.last_repo: Path | None = None
         self.clock = clock or (lambda: datetime.now(UTC))
         self.sleep, self.monotonic = sleep, monotonic
         self.exec_factory, self.git_factory, self.connect = exec_factory, git_factory, connect
 
+    def default_repo(self):
+        if self.last_repo is None:
+            try:
+                remembered = self.last_repo_path.read_text(encoding="utf-8").strip()
+                self.last_repo = Path(remembered) if remembered else None
+            except OSError:
+                pass
+        for root in [*self.roots, self.cwd, self.last_repo]:
+            if root is not None and root.is_dir() and (root / "tickets").is_dir():
+                return root
+        return None
+
     def checkout(self, repo):
         if repo is not None and not repo.strip():
             raise runner.Refusal("blank repo", "supply a checkout containing tickets/", code="invalid_repo")
-        root = Path(repo).resolve() if repo is not None else self.cwd
-        if not root.is_dir() or not (root / "tickets").is_dir():
+        root = Path(repo).resolve() if repo is not None else self.default_repo()
+        if root is None or not root.is_dir() or not (root / "tickets").is_dir():
             raise runner.Refusal("repo is not a checkout containing tickets/", "supply a checkout containing tickets/", code="invalid_repo")
         path = self.config_path if root == self.cwd else None
         cfg = load_config(path, cwd=root)
@@ -219,6 +239,12 @@ class ClutchMCPServer:
         git = self.git_factory(exec_, env={**child_env(self.env, cfg), "GIT_OPTIONAL_LOCKS": "0"}, timeout=30.0, commit_lock=CommitLock(cfg.state_dir, clock=self.clock, sleep=asyncio.sleep))
         checkout = runner.Checkout(root, cfg, self.env, exec_, git, Journal(cfg.state_dir, self.clock), fs, self.clock)
         ctx = observe.Context(root, cfg.state_dir, (path or root / "config.yaml"), exec_, git, {**child_env(self.env, cfg), "GIT_OPTIONAL_LOCKS": "0"})
+        self.last_repo = root
+        try:
+            self.last_repo_path.parent.mkdir(parents=True, exist_ok=True)
+            self.last_repo_path.write_text(str(root), encoding="utf-8")
+        except OSError:
+            pass
         return checkout, ctx
 
     def prompt(self, checkout, ctx, kind, stems, name=None):
@@ -232,7 +258,7 @@ class ClutchMCPServer:
         return ask.resolve_prompt(kind, stems, name=name, config=checkout.config, repo=checkout.repo, running_stems=running, draft_stems=drafts)
 
     def call_tool(self, name, args):
-        if name == "clutch_open_dashboard" and args.repo is None and not (self.cwd / "tickets").is_dir():
+        if name == "clutch_open_dashboard" and args.repo is None and self.default_repo() is None:
             value = {"repo": None, "tab": args.tab, "ready": False, "version": version("clutchwork"), "message": "Supply a ClutchWork checkout path to load the dashboard."}
             return value, value["message"]
         checkout, ctx = self.checkout(args.repo)
@@ -362,6 +388,7 @@ class ClutchMCPServer:
 
     def dispatch(self, method, params):
         if method == "initialize":
+            self.client_supports_roots = isinstance(params.get("capabilities"), dict) and "roots" in params["capabilities"]
             requested = params.get("protocolVersion")
             return {
                 "protocolVersion": requested if requested in {"2025-03-26", "2024-11-05"} else "2025-03-26",
@@ -513,6 +540,8 @@ def serve_stdio(*, stdin=None, stdout=None, **kwargs):
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout
     server = ClutchMCPServer(**kwargs)
+    roots_counter = 0
+    pending_roots = set()
     for line in stdin:
         if not line.strip():
             continue
@@ -522,10 +551,29 @@ def serve_stdio(*, stdin=None, stdout=None, **kwargs):
                 request = json.loads(line)
             except json.JSONDecodeError:
                 raise RPCError(-32700, "Parse error") from None
+            if isinstance(request, dict) and request.get("jsonrpc") == "2.0" and "method" not in request and "result" in request:
+                if request.get("id") in pending_roots:
+                    pending_roots.remove(request["id"])
+                    result = request["result"]
+                    if isinstance(result, dict) and isinstance(result.get("roots"), list):
+                        server.roots = [
+                            Path(unquote(uri.path))
+                            for item in result["roots"]
+                            if isinstance(item, dict) and isinstance(item.get("uri"), str)
+                            for uri in [urlparse(item["uri"])]
+                            if uri.scheme == "file"
+                        ]
+                continue
             if not isinstance(request, dict) or request.get("jsonrpc") != "2.0" or not isinstance(request.get("method"), str):
                 raise RPCError(-32600, "Invalid Request")
             id_ = request.get("id")
             if "id" not in request:
+                if server.client_supports_roots and request["method"] in {"notifications/initialized", "notifications/roots/list_changed"}:
+                    roots_counter += 1
+                    root_id = f"roots-{roots_counter}"
+                    pending_roots.add(root_id)
+                    stdout.write(json.dumps({"jsonrpc": "2.0", "id": root_id, "method": "roots/list"}) + "\n")
+                    stdout.flush()
                 continue
             try:
                 if not isinstance(request.get("params", {}), dict):

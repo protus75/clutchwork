@@ -8,7 +8,7 @@ import { createBoxView } from "../../vscode-clutchwork/media/box.js";
 export async function createDashboardApp(options = {}) {
   const app = options.app || new App({ name: "ClutchWork", version: "1.0.0" });
   const root = options.root || document.getElementById("dashboard");
-  let snap, focus, repo = "", fileOpen = true, inFlight = 0, connected = false;
+  let snap, focus, explicitRepo = "", fileOpen = true, inFlight = 0, connected = false;
   const waiting = [];
   const el = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
   const button = (label, action) => { const n = el("button", label); n.addEventListener("click", () => Promise.resolve(action()).catch(showError)); return n; };
@@ -18,8 +18,8 @@ export async function createDashboardApp(options = {}) {
     if (inFlight >= 4) await new Promise(resolve => waiting.push(resolve));
     else inFlight++;
     try {
-      const result = await app.callServerTool({ name, arguments: { ...args, ...(repo ? { repo } : {}) } });
-      if (result.isError) throw new Error(result.structuredContent?.message || result.content?.[0]?.text || "Tool failed");
+      const result = await app.callServerTool({ name, arguments: { ...args, ...(explicitRepo ? { repo: explicitRepo } : {}) } });
+      if (result.isError) { const error = new Error(result.structuredContent?.message || result.content?.[0]?.text || "Tool failed"); error.code = result.structuredContent?.code; throw error; }
       return result.structuredContent;
     } finally { if (waiting.length) waiting.shift()(); else inFlight--; }
   }
@@ -43,6 +43,8 @@ export async function createDashboardApp(options = {}) {
   function select(kind, id) {
     focus = id ? { kind, id } : undefined;
     if (snap) { detailView.render(snap, focus); renderActions(); }
+  }
+  function attachContext(kind, id) {
     const row = kind === "ticket" ? snap?.rows.find(r => r.stem === id) : snap?.box.find(r => r.id === id);
     if (row?.path && app.getHostCapabilities()?.updateModelContext) {
       const absolute = row.path.startsWith("/") ? row.path : `${snap.root}/${row.path}`;
@@ -60,43 +62,52 @@ export async function createDashboardApp(options = {}) {
   const iconPaths = { play: "M4 2v12l9-6z", stop: "M3 3h10v10H3z", refresh: "M8 1a7 7 0 1 0 7 7h-2a5 5 0 1 1-1-3L9 5v2h6V1l-2 2A7 7 0 0 0 8 1z", gear: "M7 1h2l1 2 2-1 2 2-1 2 2 1v2l-2 1 1 2-2 2-2-1-1 2H7l-1-2-2 1-2-2 1-2-2-1V7l2-1-1-2 2-2 2 1zm1 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", folder: "M1 3h5l2 2h7v8H1z", warning: "M8 1 0 15h16zm-1 5h2v4H7zm0 5h2v2H7z" };
   const iconButton = (label, icon, action) => { const n = button(label, action); n.prepend(svgIcon(iconPaths[icon])); return n; };
   const repoInput = el("input"); repoInput.placeholder = "Repository path";
-  const repoButton = button("Load repository", () => { repo = repoInput.value.trim(); return refresh(); });
+  const repoButton = button("Load repository", () => { explicitRepo = repoInput.value.trim(); return refresh(); });
   const repoSwitcher = el("div", undefined, "repo-switcher"); repoSwitcher.append(repoInput, repoButton);
   let repoOpen = false, boxInitialized = false;
   const toolbar = el("header", undefined, "top-bar"), promptBar = el("details", undefined, "agent-actions");
-  const ticketsHeader = el("div"), ticketsList = el("div"), actions = el("div", undefined, "toolbar"), detail = el("div");
-  const boxHeader = el("div"), boxList = el("div"), boxActions = el("div", undefined, "toolbar"), steps = el("div"), stats = el("div", undefined, "stats-list"), help = el("div");
+  const ticketsHeader = el("div", undefined, "view-header"), ticketsList = el("div"), actions = el("div", undefined, "toolbar"), detail = el("div");
+  const boxHeader = el("div", undefined, "view-header"), boxList = el("div"), boxActions = el("div", undefined, "toolbar"), steps = el("div"), stats = el("div", undefined, "stats-list"), help = el("div");
   const windowSelect = el("select"); for (const w of ["24h", "7d", "30d", "20t"]) { const o = el("option", w); o.value = w; windowSelect.append(o); } windowSelect.value = "7d";
   windowSelect.addEventListener("change", () => loadStats().catch(showError));
-  const sections = {};
+  const sections = {}, bodies = {}; let dragged;
   for (const [key, name, opened] of [["tickets", "Tickets", true], ["details", "Details", true], ["steps", "Recent Steps", true], ["box", "Suggestion Box", false], ["stats", "Stats", false], ["help", "Help & Lifecycle", false]]) {
-    const section = el("details", undefined, "sidebar-section"), summary = el("summary"); section.dataset.section = key; section.open = opened;
-    summary.append(el("span", name, "section-title"), el("span", "", "section-count")); section.append(summary); sections[key] = section;
+    const section = el("details", undefined, "sidebar-section"), summary = el("summary"), body = el("div", undefined, "section-body"), resizer = el("div", undefined, "section-resizer"), controls = el("span", undefined, "section-controls"); section.dataset.section = key; section.open = opened;
+    for (const [label, direction] of [["▲", -1], ["▼", 1]]) { const move = el("button", label); move.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); const siblings = Array.from(root.children).filter(n => n.className === "sidebar-section"); const target = siblings[siblings.indexOf(section) + direction]; if (target) root.insertBefore(section, direction < 0 ? target : target.nextSibling); }); controls.append(move); }
+    summary.draggable = true; summary.addEventListener("dragstart", () => { dragged = section; }); summary.addEventListener("dragover", e => e.preventDefault()); summary.addEventListener("drop", e => { e.preventDefault(); if (dragged && dragged !== section) { const siblings = Array.from(root.children); root.insertBefore(dragged, siblings.indexOf(dragged) < siblings.indexOf(section) ? section.nextSibling : section); } dragged = undefined; });
+    resizer.addEventListener("pointerdown", e => { e.preventDefault(); const start = e.clientY, height = body.getBoundingClientRect().height; const move = e => { body.style.height = `${Math.max(60, height + e.clientY - start)}px`; }; const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); });
+    summary.append(el("span", name, "section-title"), el("span", "", "section-count"), controls); section.append(summary, body, resizer); sections[key] = section; bodies[key] = body;
   }
-  sections.tickets.append(ticketsHeader, ticketsList); sections.details.append(detail, actions); sections.steps.append(steps);
-  sections.box.append(boxHeader, boxList, boxActions); sections.stats.append(windowSelect, stats); sections.help.append(help);
+  bodies.tickets.append(ticketsHeader, ticketsList); bodies.details.append(detail, actions); bodies.steps.append(steps);
+  bodies.box.append(boxHeader, boxList, boxActions); bodies.stats.append(windowSelect, stats); bodies.help.append(help);
   root.replaceChildren(toolbar, repoSwitcher, notice, promptBar, ...Object.values(sections));
   const menu = el("div", undefined, "context-menu"); menu.hidden = true; root.append(menu);
   function closeMenu() { menu.hidden = true; menu.replaceChildren(); }
   document.addEventListener("click", e => { if (!menu.contains(e.target)) closeMenu(); });
-  window.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+  window.addEventListener("keydown", e => { if (e.key === "Escape") { closeMenu(); ticketsView.setPinned(undefined); } });
   function showMenu(e) { e.preventDefault(); menu.replaceChildren(); menu.hidden = false; menu.style.left = `${e.clientX}px`; menu.style.top = `${e.clientY}px`; }
   function menuItem(parent, label, action) { parent.append(button(label, async () => { closeMenu(); await action(); })); }
   const mutate = async (name, args) => { await callTool(name, args); await refresh(); };
   const ticketEntries = new WeakMap(), boxEntries = new WeakMap();
   function ticketContext(node, row) {
     const first = !ticketEntries.has(node); ticketEntries.set(node, { row }); if (!first) return;
+    node.addEventListener("click", () => attachContext("ticket", ticketEntries.get(node).row.stem));
     node.addEventListener("contextmenu", e => {
-      const { row } = ticketEntries.get(node); ticketsView.setPinned(row.stem); showMenu(e);
-      for (const [label, key, tool] of [["Confirm", "clutchConfirm", "clutch_app_ticket_confirm"], ["Reject", "clutchReject", "clutch_app_ticket_reject"]]) if (row.menu[key] === "on") menuItem(menu, label, () => mutate(tool, { stem: row.stem }));
-      if (row.menu.clutchPriority === "on") { const sub = el("div", undefined, "submenu"); sub.append(el("span", "Priority")); for (const choice of row.priorityChoices) menuItem(sub, choice.label, () => mutate("clutch_ticket_order", { stem: row.stem, priority: choice.label })); menu.append(sub); }
-      if (row.menu.clutchRunsBefore === "on") { const sub = el("div", undefined, "submenu"); sub.append(el("span", "Runs before...")); const selected = new Set(row.runsBeforeChoices.filter(c => c.picked).map(c => c.label)); for (const choice of row.runsBeforeChoices) { const label = el("label"); const input = el("input"); input.type = "checkbox"; input.checked = choice.picked; input.addEventListener("change", () => { if (input.checked) selected.add(choice.label); else selected.delete(choice.label); }); label.append(input, el("span", choice.label)); sub.append(label); } menuItem(sub, "Set runs before", () => mutate("clutch_ticket_order", { stem: row.stem, runs_before: [...selected] })); menu.append(sub); }
-      menuItem(menu, "Open ticket.md", () => openFile(row.path)); for (const name of ["run.md", "review.md", "diagnosis.json"]) menuItem(menu, `Open ${name}`, () => openFile(`tickets/${row.stem}/${name}`));
-      if (app.getHostCapabilities()?.message && row.menu.clutchAskDiagnose === "on") menuItem(menu, "Diagnose Stem", () => sendPrompt("diagnose", [row.stem]));
+      const { row } = ticketEntries.get(node); select("ticket", row.stem); showMenu(e);
+      const groups = [[], [], [], []];
+      groups[0].push(() => menuItem(menu, "Open ticket.md", () => openFile(row.path)));
+      if (row.menu.clutchRunsBefore === "on") groups[1].push(() => { const sub = el("div", undefined, "submenu"); sub.hidden = true; const toggle = button("Run before...", () => { sub.hidden = !sub.hidden; }); menu.append(toggle, sub); const selected = new Set(row.runsBeforeChoices.filter(c => c.picked).map(c => c.label)); for (const choice of row.runsBeforeChoices) { const label = el("label"), input = el("input"); input.type = "checkbox"; input.checked = choice.picked; input.addEventListener("change", () => { if (input.checked) selected.add(choice.label); else selected.delete(choice.label); }); label.append(input, el("span", choice.label)); sub.append(label); } menuItem(sub, "Set runs before", () => mutate("clutch_ticket_order", { stem: row.stem, runs_before: [...selected] })); });
+      if (row.menu.clutchPriority === "on") groups[1].push(() => { const sub = el("div", undefined, "submenu"); sub.hidden = true; menu.append(button("Set priority...", () => { sub.hidden = !sub.hidden; }), sub); for (const choice of row.priorityChoices) menuItem(sub, choice.label, () => mutate("clutch_ticket_order", { stem: row.stem, priority: choice.label })); });
+      if (row.menu.clutchLint === "on") groups[1].push(() => menuItem(menu, "Lint", async () => { const result = await callTool("clutch_ticket_lint", { stems: [row.stem] }); notice.textContent = `${result.valid}/${result.total} valid`; }));
+      for (const [label, key, tool] of [["Confirm (keep)", "clutchConfirm", "clutch_app_ticket_confirm"], ["Reject (kill)", "clutchReject", "clutch_app_ticket_reject"]]) if (row.menu[key] === "on") groups[2].push(() => menuItem(menu, label, () => mutate(tool, { stem: row.stem })));
+      if (app.getHostCapabilities()?.message) for (const [kind, key] of [["diagnose", "clutchAskDiagnose"], ["review", "clutchAskReview"], ["drafts", "clutchAskDrafts"]]) if (row.menu[key] === "on") groups[3].push(() => menuItem(menu, `Ask Agent: ${kind}`, () => sendPrompt(kind, kind === "drafts" ? [] : [row.stem])));
+      let previous = false; for (const group of groups) if (group.length) { if (previous) menu.append(el("hr", undefined, "menu-sep")); group.forEach(render => render()); previous = true; }
+
     });
   }
   function boxContext(node, row, ids) {
     const first = !boxEntries.has(node); boxEntries.set(node, { row, ids }); if (!first) return;
+    node.addEventListener("click", () => attachContext("box", boxEntries.get(node).row.id));
     node.addEventListener("contextmenu", e => {
       const { row, ids } = boxEntries.get(node); showMenu(e);
       const selected = ids.map(id => snap.box.find(r => r.id === id));
@@ -139,10 +150,11 @@ export async function createDashboardApp(options = {}) {
     try {
       const [data, ping] = await Promise.all([callTool("clutch_app_snapshot"), callTool("clutch_engine_control", { action: "ping" })]); snap = data;
       const running = ping.engine && snap.engine;
+      notice.textContent = ""; repoInput.value = explicitRepo || snap.root || "";
       toolbar.replaceChildren(el("span", `Engine: ${running ? "running" : "stopped"}`));
-      if (!running) for (const mode of ["drain", "serve"]) toolbar.append(iconButton(`Start ${mode}`, "play", async () => { await callTool("clutch_engine_start", { mode }); await refresh(); }));
+      if (!running) for (const mode of ["drain", "serve"]) toolbar.append(iconButton(mode === "drain" ? "Drain" : "Serve", "play", async () => { await callTool("clutch_engine_start", { mode }); await refresh(); }));
       if (running) toolbar.append(iconButton("Stop", "stop", async () => { await callTool("clutch_engine_control", { action: "stop" }); await refresh(); }));
-      toolbar.append(iconButton("Refresh", "refresh", refresh), iconButton("Open config.yaml", "gear", () => openFile(snap?.configPath)), iconButton(snap.root || "Repository", "folder", () => { repoOpen = !repoOpen; repoSwitcher.hidden = !!snap?.root && !repoOpen; }));
+      for (const [label, icon, action] of [["Refresh", "refresh", refresh], ["Open config.yaml", "gear", () => openFile(snap?.configPath)], [`Switch repository: ${snap.root || "none"}`, "folder", () => { repoOpen = !repoOpen; repoSwitcher.hidden = !!snap?.root && !repoOpen; }]]) { const control = iconButton("", icon, action); control.title = label; control.setAttribute("aria-label", label); toolbar.append(control); }
       repoSwitcher.hidden = !!snap.root && !repoOpen;
       if (!boxInitialized) { sections.box.open = snap.boxCounts.pending > 0; boxInitialized = true; }
       ticketsView.render(snap); boxView.render(snap); detailView.render(snap, focus); renderActions();
@@ -150,7 +162,7 @@ export async function createDashboardApp(options = {}) {
       help.replaceChildren(...Object.entries(snap.help).map(([key, entry]) => { const section = el("div", `${key}: ${entry.text} `); const link = entry.link.path ? button(entry.link.label, () => openFile(entry.link.path)) : el("a", entry.link.label); if (entry.link.url) { link.href = entry.link.url; link.target = "_blank"; } section.append(link); return section; }));
       const svg = document.querySelector("body > div[hidden] svg"); if (svg) help.append(svg.cloneNode(true));
       await loadStats();
-    } catch (error) { showError(error); }
+    } catch (error) { if (error.code !== "invalid_repo" || explicitRepo || snap) showError(error); }
   }
   function renderPrompts() {
     promptBar.replaceChildren(); promptBar.hidden = !app.getHostCapabilities()?.message; if (promptBar.hidden) return;
@@ -159,8 +171,8 @@ export async function createDashboardApp(options = {}) {
     for (const [name, kind] of [["Supervise Drain Loop", "drain-loop"], ["Run Roadmap (Drain)", "plan-ticket-drain"], ["Run Roadmap (Serve)", "plan-ticket-serve"], ["Diagnose Stem", "diagnose"], ["Review Drafts", "drafts"]]) promptBar.append(button(name, () => { const stem = focus?.kind === "ticket" ? focus.id : ""; if (kind === "diagnose" && !stem) { showError("Select a ticket to diagnose."); return; } return sendPrompt(kind, stem && kind === "diagnose" ? [stem] : [], background.checked); }));
   }
   const applyContext = context => { if (context?.theme) applyDocumentTheme(context.theme); if (context?.styles?.variables) applyHostStyleVariables(context.styles.variables); };
-  app.ontoolinput = params => { if (params?.arguments?.repo) { repo = params.arguments.repo; repoInput.value = repo; if (connected) refresh(); } options.ontoolinput?.(params); };
-  app.ontoolresult = options.ontoolresult ?? (() => {});
+  app.ontoolinput = params => { if (typeof params?.arguments?.repo === "string") { explicitRepo = params.arguments.repo; repoInput.value = explicitRepo; if (connected) refresh(); } options.ontoolinput?.(params); };
+  app.ontoolresult = result => { if (result?.structuredContent?.repo) { repoInput.value = result.structuredContent.repo; notice.textContent = ""; if (connected) refresh(); } options.ontoolresult?.(result); };
   app.onhostcontextchanged = context => { applyContext(context); renderPrompts(); options.onhostcontextchanged?.(context); };
   await app.connect(); connected = true; applyContext(app.getHostContext()); renderPrompts(); await refresh();
   window.addEventListener("focus", () => refresh());
