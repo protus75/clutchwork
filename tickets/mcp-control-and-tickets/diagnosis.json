@@ -1,23 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "25ec6f3b0ca600e1c59738c718b0bdfbd75204b0",
+  "produced_at_sha": "c73ee052bb458592ee656c2aef50c74b239822b5",
   "stem": "mcp-control-and-tickets",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "retry",
+  "stage": "review",
+  "verdict": "reject",
   "lessons": [
-    "test_closed_set_literals_have_one_home fails because a clutch/*.py file other than tickets.py now spells out the kind or P0-P3 set, probably a Literal in clutch/mcp.py. Build those fields from tickets.KINDS / tickets.PRIORITIES (clutch/tickets.py:41-43) instead.",
-    "test_shared_fakes_guard fails because the new tests/unit/test_mcp_control_and_tickets.py defines a function named verdict, requisition_reply, review_verdict or implement_reply. Rename that fake, e.g. fake_verdict. Do not edit the guard's exemption list, which is outside the fence.",
-    "test_verdict_submitted_message: entry._verdict must still print 'confirm submitted: <id> -- `clutch view status` shows the outcome' with the id from the clutch.__main__.uuid4 seam. Pass that seam into runner.submit_engine, and don't let submit_verdict's redirect_stdout swallow CLI output.",
-    "test_stale_running::test_order_refuses_only_a_live_running_stem: entry._order must resolve entry.observe.lock_holder, entry.order and entry.validate_ticket at call time. Raise Refusal('... is running') from journal state, reach files only via checkout.repo / ..., is_file() and read_bytes(), and",
-    "Before committing, run the full unit and integration suites (`./dev.py test tests/unit tests/integration`), not only the ## Verification list. All four failures were in tests outside that list that read clutch/ source or call the delegated CLI seams."
+    "Fence gap: tests/integration/test_main_verb_groups.py::test_shared_call_has_one_owner uses ast to pin `_require_engine`, `control.read_active` and `control.publish_request` calls to `_submit_engine` in clutch/__main__.py. The ticket's runner boundary forces moving them, so the test must change too.",
+    "Re-author: add tests/integration/test_main_verb_groups.py to `## Scope fence` and `## Context`. Its owner table should pin the moved calls to `runner.submit_engine`, and the runner boundary's `tests:` list should name the test.",
+    "The same test pins `Lockfile` to `_locked` in clutch/__main__.py. Review rejected the copy `runner.locked`. Declare one lock-context owner, `_locked` moved into clutch/runner.py with __main__ aliasing it, and update that owner row in the same test.",
+    "Do not fake Call nodes in `_submit_engine`, such as wrapper lambdas, just to satisfy the ast test. That keeps two owners, which is the duplication the ticket's Goal rejects.",
+    "clutch/docs/host-running.md `mcp serve` row: keep `Yes` in 'Works while serve runs?'. In the description, say mutation tools submit to the running engine's inbox on LockHeld."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    3
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
