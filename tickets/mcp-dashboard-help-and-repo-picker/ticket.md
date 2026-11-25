@@ -12,6 +12,7 @@ kind: feature
 - clutch/mcp.py
 - clutch/help.py::help_pick
 - clutch/observe.py::help_payload
+- clutch/observe.py::snapshot
 - clutch/ui/app.js
 - clutch/ui/dashboard.css
 - tests/mcp_app_dashboard.js
@@ -54,7 +55,7 @@ Make the MCP App dashboard's Help & Lifecycle section readable, give operators a
 - `clutch/ui/app.js`:
   - Help & Lifecycle section:
     - Render the cloned Ticket Lifecycle SVG (`document.querySelector("body > div[hidden] svg")`) at the top of the `help` container inside `<div class="lifecycle-diagram">`.
-    - Replace the `Object.entries(snap.help)` dump with categorized rendering from `snap.helpPick || []`.
+    - Replace the `Object.entries(snap.help)` dump with categorized rendering from `snap.helpPick || []` (`snap.helpPick` is already emitted by merged code in `clutch/observe.py::snapshot`).
     - Group items by separator entries (`item.kind === "separator"`). Skip entries that have `item.command` (VS Code-only commands such as `clutch.openSettings`), entries whose `item.topic` starts with `"view."` or `"command."`, and entries whose `snap.help?.[item.topic]?.link?.label === "VS Code extension"`. Omit any separator heading whose group has zero remaining topic items.
     - Render each non-empty group's heading as `.help-group-heading` and each topic entry as `.help-row` containing `.help-label` (`item.label`), `.help-desc` (`snap.help?.[item.topic]?.what || item.detail || item.description || ""`), and the documentation link from `snap.help?.[item.topic]?.link` (button calling `openFile(link.path)` when `link?.path`, or `<a target="_blank" href=link.url>` when `link?.url`).
   - Top-bar 1-click repository picker:
@@ -73,7 +74,7 @@ Make the MCP App dashboard's Help & Lifecycle section readable, give operators a
 - Tests:
   - Create `tests/unit/test_mcp_recent_repos.py` verifying `recentRepos` MRU ordering, deduplication when revisiting an earlier repo, pruning of deleted or non-checkout directories, cap at 10 entries, preservation across `clutch_app_ui_state` `set` calls, `OSError` swallowing, and `ui_state_path` isolation under `tmp_path`.
   - Update `tests/unit/test_mcp_ui_state_and_config.py` only if an existing exact-dict assertion on `clutch_app_ui_state` `get` defaults needs `"recentRepos": []` added.
-  - Update `tests/mcp_app_dashboard.js` and `tests/integration/test_mcp_app_dashboard.py` to assert:
+  - Update `tests/mcp_app_dashboard.js` and `tests/integration/test_mcp_app_dashboard.py` (giving the mock `snap` fixture in `tests/mcp_app_dashboard.js` a `helpPick` list covering separators, topic entries, and VS Code-only command entries) to assert:
     - Lifecycle SVG renders as the first child of Help & Lifecycle inside `.lifecycle-diagram`, and `clutch/ui/dashboard.css` defines `.lifecycle-diagram svg` with `width: 100%`, `height: auto`, and `display: block`.
     - Raw dotted `snap.help` keys (such as `box.bug_report:` or `command.clutch.askDrainLoop:`) and `VS Code extension` buttons are not rendered in Help & Lifecycle.
     - Categorized `snap.helpPick` `.help-group-heading` headings and human-readable `.help-row` topic rows (label, description, and path/URL links) render, while VS Code-only `item.command` and `command.*`/`view.*` entries and their empty headings are omitted.
