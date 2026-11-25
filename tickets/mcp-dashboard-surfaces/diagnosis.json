@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "4010677b82195017cca7d36448e02daa6c63fb57",
+  "produced_at_sha": "0bbe775b9d2bbc5cc680d378af2ad6ec30164c0f",
   "stem": "mcp-dashboard-surfaces",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In clutch/ui/app.js Help & Lifecycle tab (~line 93): for a snap.help entry whose link has `path` and no `url` (clutch/help.py help_map lines 234, 240 build {label, path, line}), render a control whose click calls openFile(link.path). Keep href only when link.url exists.",
-    "In clutch/ui/app.js host.openHelp (~line 52), called by vscode-clutchwork/media/detail.js line 40: call openFile(link.path) when the link has path and no url. Use window.open(link.url) only for URL links.",
-    "In tests/mcp_app_dashboard.js add a path-only help entry ({label, path, line}) and a URL help entry to the fake snapshot. Assert that clicking the path link in Help & Lifecycle and calling host.openHelp both send a com.google.antigravity/toggle-aux-pane request.",
-    "Stay inside the scope fence: no edits to clutch/help.py or vscode-clutchwork/. Rerun the full ## Verification command with ./dev.py test before finishing."
+    "In clutch/ui/app.js `refresh`, add the `Start drain` / `Start serve` buttons (clutch_engine_start) only when the liveness `ping.engine && snap.engine` is false. This matches vscode-clutchwork/package.json:561/566, where play shows only when !clutch.engineRunning.",
+    "In clutch/ui/app.js `refresh`, add the `Stop` button (clutch_engine_control action \"stop\") only when the same liveness value is true. This matches vscode-clutchwork/package.json:571.",
+    "tests/mcp_app_dashboard.js:36 clicks `Start drain` while the fake ping returns engine:true. Change it to assert that Start drain/Start serve are absent and Stop is present while running, then click Stop and assert clutch_engine_control was called with action \"stop\".",
+    "In tests/mcp_app_dashboard.js, switch the fake ping/snapshot to engine:false and refresh. Assert Stop is absent, then click `Start drain` and assert clutch_engine_start is called. Then run the ## Verification command."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
