@@ -1,6 +1,6 @@
 # Review: approve
 
-The diff turns the tickets, detail and box views into host-adapter factories, adds CommonJS exports and VS Code-only auto-mounting, adds the CSS fallback chains and the three new view help topics, and adds the required tests, all inside the scope fence and with the same VS Code messages and context payloads as before.
+The diff turns view.js, detail.js and box.js into host-adapter factories that check all four adapter methods, mount with a VS Code adapter that sends the same messages and context payloads as before only when acquireVsCodeApi exists, exports renderGraph, adds the ten CSS fallback chains with --vscode-* first and --clutch-* unchanged, and registers the three new view help topics, all within the scope fence.
 
 ## Findings
 
@@ -12,10 +12,10 @@ none
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "46e3fcc9b6f7c390c61347e0a70504793379f8b5",
+  "produced_at_sha": "bcc38e035b75c81d7647cfb0a6c417431dc2f7fb",
   "stem": "ui-shared-renderers",
-  "reviewed_sha": "46e3fcc9b6f7c390c61347e0a70504793379f8b5",
-  "summary": "The diff turns the tickets, detail and box views into host-adapter factories, adds CommonJS exports and VS Code-only auto-mounting, adds the CSS fallback chains and the three new view help topics, and adds the required tests, all inside the scope fence and with the same VS Code messages and context payloads as before.",
+  "reviewed_sha": "bcc38e035b75c81d7647cfb0a6c417431dc2f7fb",
+  "summary": "The diff turns view.js, detail.js and box.js into host-adapter factories that check all four adapter methods, mount with a VS Code adapter that sends the same messages and context payloads as before only when acquireVsCodeApi exists, exports renderGraph, adds the ten CSS fallback chains with --vscode-* first and --clutch-* unchanged, and registers the three new view help topics, all within the scope fence.",
   "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
