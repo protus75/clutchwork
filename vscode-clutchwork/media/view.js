@@ -1,18 +1,19 @@
 'use strict';
 /* global acquireVsCodeApi, renderGraph */
 
-const vscode = acquireVsCodeApi();
-const list = document.getElementById('list');
-const header = document.getElementById('header');
 
 // Status colors for dots and for each section's own lanes.
-const COLOR = {
+const DEFAULT_COLORS = {
 	merged: 'var(--clutch-merged)',
 	running: 'var(--clutch-queued)',
 	queued: 'var(--clutch-queued)',
 	blocked: 'var(--clutch-blocked)',
 };
 
+function createTicketsView(options) {
+const { header, list, host, colors = DEFAULT_COLORS } = options;
+for (const method of ['callTool', 'openFile', 'sendPrompt', 'openHelp']) if (typeof host?.[method] !== 'function') throw new TypeError(`host.${method} must be a function`);
+const graphRenderer = options.renderGraph || (typeof renderGraph === 'function' ? renderGraph : require('./graph.js').renderGraph);
 // The Details view shows the pinned row, else the hovered row, else the running ticket (focus undefined).
 // Click pins a row so the mouse can leave the list without losing it.
 let pinned;
@@ -22,7 +23,7 @@ function focus() {
 	for (const node of list.children) {
 		node.classList.toggle('pinned', node.dataset.stem === pinned);
 	}
-	vscode.postMessage({ type: 'focus', stem: pinned ?? hovered });
+	host.onFocus?.(pinned ?? hovered);
 }
 
 list.addEventListener('mouseleave', () => {
@@ -58,8 +59,8 @@ function render(snap) {
 		row.dataset.stem = r.stem;
 		row.title = r.tooltip;
 		// Context keys for the right-click menu's `when` clauses in package.json; the command receives this object.
-		row.dataset.vscodeContext = JSON.stringify({ ...r.menu, clutchStem: r.stem, clutchSessionId: r.sessionId, preventDefaultContextMenuItems: true });
-		row.append(renderGraph(r.graph, COLOR[r.section], COLOR));
+		host.onRowContext?.(row, r);
+		row.append(graphRenderer(r.graph, colors[r.section], colors));
 		if (r.priorityTag) {
 			const priority = el('span', 'priority', r.priorityTag);
 			priority.title = snap.help[r.priorityHelp].text;
@@ -75,7 +76,7 @@ function render(snap) {
 			pinned = pinned === r.stem ? undefined : r.stem;
 			focus();
 		});
-		row.addEventListener('dblclick', () => vscode.postMessage({ type: 'open', path: r.path }));
+		row.addEventListener('dblclick', () => host.openFile(r.path));
 		return row;
 	});
 	const decisions = snap.verdictDecisions.map(d => {
@@ -93,15 +94,16 @@ function render(snap) {
 function showError(message) {
 	const link = el('a', 'link', 'Open setup help');
 	link.href = '#';
-	link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+	link.addEventListener('click', e => { e.preventDefault(); host.openHelp(); });
 	header.replaceChildren(`${message} `, link);
 }
-window.addEventListener('message', e => {
-	const msg = e.data;
-	if (msg.type === 'data') {
-		try { render(msg.snap); } catch (error) { showError(`cannot draw the clutch snapshot: ${error.message}`); }
-	} else if (msg.type === 'error') {
-		showError(`snapshot failed: ${msg.message}`);
-	}
-});
-vscode.postMessage({ type: 'ready' });
+return { render(snap) { try { render(snap); } catch (error) { showError(`cannot draw the clutch snapshot: ${error.message}`); } }, showError, getFocus: () => pinned ?? hovered, setPinned(stem) { pinned = stem; focus(); } };
+}
+if (typeof module === 'object' && module.exports) module.exports = { createTicketsView, DEFAULT_COLORS };
+if (typeof acquireVsCodeApi === 'function') {
+ const vscode = acquireVsCodeApi();
+ const host = { callTool: () => Promise.reject(new Error('unsupported')), sendPrompt: () => Promise.reject(new Error('unsupported')), openFile: path => vscode.postMessage({ type: 'open', path }), openHelp: () => vscode.postMessage({ type: 'readme' }), onFocus: stem => vscode.postMessage({ type: 'focus', stem }), onRowContext: (row, r) => { row.dataset.vscodeContext = JSON.stringify({ ...r.menu, clutchStem: r.stem, clutchSessionId: r.sessionId, preventDefaultContextMenuItems: true }); } };
+ const view = createTicketsView({ header: document.getElementById('header'), list: document.getElementById('list'), host });
+ window.addEventListener('message', e => { const msg = e.data; if (msg.type === 'data') view.render(msg.snap); else if (msg.type === 'error') view.showError(`snapshot failed: ${msg.message}`); });
+ vscode.postMessage({ type: 'ready' });
+}

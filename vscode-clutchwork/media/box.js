@@ -1,9 +1,8 @@
 'use strict';
 /* global acquireVsCodeApi */
-const vscode = acquireVsCodeApi();
-const list = document.getElementById('list');
-const header = document.getElementById('header');
-const COLOR = { pending: 'var(--clutch-queued)', resolved: 'var(--clutch-merged)' };
+const DEFAULT_COLORS = { pending: 'var(--clutch-queued)', resolved: 'var(--clutch-merged)' };
+function createBoxView({ header, list, host, colors = DEFAULT_COLORS, keyboardTarget = typeof window !== 'undefined' ? window : null }) {
+for (const method of ['callTool', 'openFile', 'sendPrompt', 'openHelp']) if (typeof host?.[method] !== 'function') throw new TypeError(`host.${method} must be a function`);
 let snap, selected = new Set(), anchor, pinned, hovered;
 function el(tag, cls, text) {
 	const node = document.createElement(tag);
@@ -24,10 +23,10 @@ function update() {
 	for (const node of list.children) {
 		const row = snap.box.find(r => r.id === node.dataset.id);
 		node.classList.toggle('pinned', selected.has(row.id));
-		node.dataset.vscodeContext = JSON.stringify({ ...row.menu, clutchIds: selected.has(row.id) ? ids : [row.id], clutchPath: row.path, clutchLink: row.link, preventDefaultContextMenuItems: true });
+		host.onRowContext?.(node, row, selected.has(row.id) ? ids : [row.id]);
 	}
 }
-function focus() { update(); vscode.postMessage({ type: 'focus', id: pinned ?? hovered }); }
+function focus() { update(); host.onFocus?.(pinned ?? hovered); }
 function render(data) {
 	snap = data;
 	const oldFocus = pinned ?? hovered;
@@ -40,7 +39,7 @@ function render(data) {
 		row.dataset.id = r.id;
 		row.title = [snap.help[r.help.class].text, snap.help[r.help.outcome].text].join('\n');
 		const summary = el('span', 'stem', r.summary);
-		summary.style.color = COLOR[r.state];
+		summary.style.color = colors[r.state];
 		row.append(summary, el('span', 'status', r.status));
 		row.addEventListener('mouseenter', () => { hovered = r.id; focus(); });
 		row.addEventListener('click', e => {
@@ -59,15 +58,15 @@ function render(data) {
 		row.addEventListener('contextmenu', () => {
 			if (!selected.has(r.id)) { selected = new Set([r.id]); pinned = anchor = r.id; focus(); }
 		});
-		row.addEventListener('dblclick', () => { if (r.path) vscode.postMessage({ type: 'open', path: r.path }); });
+		row.addEventListener('dblclick', () => { if (r.path) host.openFile(r.path); });
 		return row;
 	});
 	list.replaceChildren(...rows);
 	update();
-	if (oldFocus !== (pinned ?? hovered)) vscode.postMessage({ type: 'focus', id: pinned ?? hovered });
+	if (oldFocus !== (pinned ?? hovered)) host.onFocus?.(pinned ?? hovered);
 }
 list.addEventListener('mouseleave', () => { hovered = undefined; focus(); });
-window.addEventListener('keydown', e => {
+keyboardTarget?.addEventListener('keydown', e => {
 	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
 		e.preventDefault(); selected = new Set(snap.box.map(r => r.id)); focus();
 	} else if (e.key === 'Escape') { selected.clear(); pinned = undefined; focus(); }
@@ -75,15 +74,16 @@ window.addEventListener('keydown', e => {
 function showError(message) {
 	const link = el('a', 'link', 'Open setup help');
 	link.href = '#';
-	link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+	link.addEventListener('click', e => { e.preventDefault(); host.openHelp(); });
 	header.replaceChildren(`${message} `, link);
 }
-window.addEventListener('message', e => {
-	if (e.data.type === 'data') {
-		try { render(e.data.snap); } catch (error) { showError(`cannot draw the clutch snapshot: ${error.message}`); }
-	}
-	else if (e.data.type === 'error') {
-		showError(`snapshot failed: ${e.data.message}`);
-	}
-});
-vscode.postMessage({ type: 'ready' });
+return { render(data) { try { render(data); } catch (error) { showError(`cannot draw the clutch snapshot: ${error.message}`); } }, showError, getFocus: () => pinned ?? hovered, getSelected: () => [...selected] };
+}
+if (typeof module === 'object' && module.exports) module.exports = { createBoxView, DEFAULT_COLORS };
+if (typeof acquireVsCodeApi === 'function') {
+ const vscode = acquireVsCodeApi();
+ const host = { callTool: () => Promise.reject(new Error('unsupported')), sendPrompt: () => Promise.reject(new Error('unsupported')), openFile: path => vscode.postMessage({ type: 'open', path }), openHelp: () => vscode.postMessage({ type: 'readme' }), onFocus: id => vscode.postMessage({ type: 'focus', id }), onRowContext: (node, row, ids) => { node.dataset.vscodeContext = JSON.stringify({ ...row.menu, clutchIds: ids, clutchPath: row.path, clutchLink: row.link, preventDefaultContextMenuItems: true }); } };
+ const view = createBoxView({ header: document.getElementById('header'), list: document.getElementById('list'), host });
+ window.addEventListener('message', e => { if (e.data.type === 'data') view.render(e.data.snap); else if (e.data.type === 'error') view.showError(`snapshot failed: ${e.data.message}`); });
+ vscode.postMessage({ type: 'ready' });
+}

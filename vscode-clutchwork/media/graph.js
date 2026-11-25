@@ -100,3 +100,5 @@ function renderGraph(graph, dotColor, colors) {
 	svg.style.width = `${SWIMLANE_WIDTH * graph.width}px`;
 	return svg;
 }
+
+if (typeof module === 'object' && module.exports) module.exports = { renderGraph, SWIMLANE_HEIGHT, SWIMLANE_WIDTH };

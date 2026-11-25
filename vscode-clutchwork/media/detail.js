@@ -1,8 +1,8 @@
 'use strict';
 /* global acquireVsCodeApi */
 
-const vscode = acquireVsCodeApi();
-const detail = document.getElementById('detail');
+function createDetailView({ detail, host }) {
+for (const method of ['callTool', 'openFile', 'sendPrompt', 'openHelp']) if (typeof host?.[method] !== 'function') throw new TypeError(`host.${method} must be a function`);
 
 function el(tag, cls, text) {
 	const node = document.createElement(tag);
@@ -20,7 +20,7 @@ function openLink(path, label = 'Open ticket.md') {
 	a.href = '#';
 	a.addEventListener('click', e => {
 		e.preventDefault();
-		vscode.postMessage({ type: 'open', path });
+		host.openFile(path);
 	});
 	return a;
 }
@@ -37,7 +37,7 @@ function helpText(snap, topic, short = false) {
 	const wrap = el('div', 'help-text', short ? entry.what + ' ' : entry.text + ' ');
 	const link = el('a', 'link', 'Learn more');
 	link.href = '#';
-	link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'help', topic }); });
+	link.addEventListener('click', e => { e.preventDefault(); host.openHelp(topic); });
 	wrap.append(link);
 	return wrap;
 }
@@ -77,18 +77,28 @@ function boxContent(row, snap) {
 	return result;
 }
 
-window.addEventListener('message', e => {
+function render(snap, focus) {
 	try {
-		const { snap, focus } = e.data;
 		const box = focus?.kind === 'box' ? snap.box.find(r => r.id === focus.id) : undefined;
 		const stem = focus?.kind === 'ticket' ? focus.id : snap.runningStem;
 		const row = snap.rows.find(r => r.stem === stem);
 		detail.replaceChildren(box ? boxContent(box, snap) : row ? content(row, snap) : el('div', 'detail-meta', 'Nothing running. Hover a ticket or message to see it here; click to pin.'));
 	} catch (error) {
-		const link = el('a', 'link', 'Open setup help');
-		link.href = '#';
-		link.addEventListener('click', event => { event.preventDefault(); vscode.postMessage({ type: 'readme' }); });
-		detail.replaceChildren(`cannot draw the clutch snapshot: ${error.message} `, link);
+		showError(`cannot draw the clutch snapshot: ${error.message}`);
 	}
-});
-vscode.postMessage({ type: 'ready' });
+ }
+function showError(message) {
+ const link = el('a', 'link', 'Open setup help'); link.href = '#';
+ link.addEventListener('click', e => { e.preventDefault(); host.openHelp(); });
+ detail.replaceChildren(`${message} `, link);
+}
+return { render, showError };
+}
+if (typeof module === 'object' && module.exports) module.exports = { createDetailView };
+if (typeof acquireVsCodeApi === 'function') {
+ const vscode = acquireVsCodeApi();
+ const host = { callTool: () => Promise.reject(new Error('unsupported')), sendPrompt: () => Promise.reject(new Error('unsupported')), openFile: path => vscode.postMessage({ type: 'open', path }), openHelp: topic => vscode.postMessage(topic === undefined ? { type: 'readme' } : { type: 'help', topic }) };
+ const view = createDetailView({ detail: document.getElementById('detail'), host });
+ window.addEventListener('message', e => view.render(e.data.snap, e.data.focus));
+ vscode.postMessage({ type: 'ready' });
+}
