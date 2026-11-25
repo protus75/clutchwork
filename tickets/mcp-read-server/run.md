@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The Git fake adoption check passed (3 tests), and the final ticket verification passed (81 tests).
+The new corrupt-invoice regression test was mutation-checked, but the remaining assertions were not individually mutation-checked.
 
 ## Dead ends
 
-none
+The first mutation-test command selected no tests; the corrected command confirmed the regression test fails against the original broad error handler.
 
 ## Second problems filed
 
