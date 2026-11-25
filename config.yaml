@@ -18,7 +18,7 @@ providers:
   - name: gemini
     kind: cli
     package: "@google/gemini-cli"
-    models_by_tier: {low: gemini-3.1-flash-lite, medium: gemini-3-flash-preview, high: gemini-3.1-pro-preview, max: gemini-3.1-pro-preview}
+    models_by_tier: {low: gemini-4-hydrogen, medium: gemini-4-argon, high: gemini-4-neon, max: gemini-4-carbon}
     limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
 routing:
   - {tier: low, surface: implement, candidates: [{provider: codex}]}
