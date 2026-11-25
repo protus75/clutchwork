@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "230908cbbc28bfc4d4010d1328b60b9498903af7",
+  "produced_at_sha": "9024ec3f8ff42a43eb9d17b2919d3deff55304d2",
   "stem": "host-antigravity-plugin",
   "passed": true,
   "changed_files": [
@@ -16,7 +16,7 @@
     "tests/integration/test_antigravity_plugin.py",
     "tests/unit/test_antigravity_plugin.py"
   ],
-  "inserted_lines": 338,
+  "inserted_lines": 337,
   "bypassed": [],
   "reports": [
     {
@@ -85,17 +85,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 20.02702,
+        "seconds": 20.563854,
         "passed": 2403,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8925895519787446,
-          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.52939342596801,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.253484179964289,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.205995638971217,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0201954069780186,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0059658869868144
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8683494190336205,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.4324509839643724,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.247957365005277,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.241865946969483
         }
       },
       "coverage": {
@@ -142,9 +140,9 @@
         "tests/integration/test_host_onboarding_doc.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_antigravity_plugin.py tests/unit/test_main_help.py tests/unit/test_main_host_group.py tests/unit/test_host_running.py tests/unit/test_doctor_overdue.py tests/integration/test_antigravity_plugin.py tests/integration/test_help.py tests/integration/test_host_onboarding_doc.py\nbringing up nodes...\nbringing up nodes...\n\n.......................................                                  [100%]\n39 passed in 2.15s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_antigravity_plugin.py tests/unit/test_main_help.py tests/unit/test_main_host_group.py tests/unit/test_host_running.py tests/unit/test_doctor_overdue.py tests/integration/test_antigravity_plugin.py tests/integration/test_help.py tests/integration/test_host_onboarding_doc.py\nbringing up nodes...\nbringing up nodes...\n\n.......................................                                  [100%]\n39 passed in 1.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.363522
+      "seconds": 5.278471
     }
   ]
 }
