@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The generated dashboard is approximately 1.3 MB. Shared renderers and the MCP Apps SDK provide the minimum implementation while preserving the existing VS Code client.
+The existing implementation was preserved; the verification command passed 102 tests, and the engine text check passed. Removing the minify flag made its new test assertion fail as intended.
 
 ## Dead ends
 
-The first browser harness selected a text span instead of its interactive row; corrected the harness.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket estimate: 25 minutes; actual elapsed time was not measured.
+none
 
