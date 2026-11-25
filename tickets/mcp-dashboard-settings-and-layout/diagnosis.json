@@ -1,24 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f8a85a8516fa9448044d1f21fdea7a038a939a5b",
+  "produced_at_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
   "stem": "mcp-dashboard-settings-and-layout",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Review gap: tests/mcp_app_dashboard.js must assert the step-row class for each kind: engine_start→step-passed, *_ok→step-passed, engine_stop→step-failed, *_failed→step-failed, non-engine *_start→step-muted, engine_lost/unknown→step-warning. Also assert the engine_start/engine_stop outline paths and",
-    "Review gap: tests/mcp_app_dashboard.js must run regexes over clutch/ui/dashboard.css for `.step-row:disabled { opacity: 1`, the step-muted/passed/failed/warning color rules, no font-weight: bold on .step-stem, no margin-left: auto on .step-time, and .step-text using",
-    "Review gap: tests/mcp_app_dashboard.js must assert a clutch_app_ui_state set call after each of: a section toggle event, a resizer pointerup and a drag-and-drop. Only the ▲ click is checked now.",
-    "Polling gaps in tests/mcp_app_dashboard.js: changing refreshSeconds to a new nonzero value must clear the old interval and schedule one at the new ms. A second refresh() during an in-flight one must make no extra clutch_app_snapshot call.",
-    "In tests/unit/test_mcp_ui_state_and_config.py, after a successful set, yaml.safe_load config.yaml and assert VALID's unrelated keys are unchanged. In clutch/ui/app.js, round Refresh seconds to an integer (Math.round) and set step=1, so a fractional value can't drive polling without being saved."
+    "clutch/ui/app.js:203 sets boxInitialized = typeof state.open?.box === \"boolean\". The clutch_app_ui_state get reply merges over defaults that include open.box:false, so box auto-open in refresh() never runs. Scope in says box auto-opens only when open.box was not saved.",
+    "In clutch/mcp.py, make the clutch_app_ui_state get reply show whether open.box came from the file, e.g. a `saved` list of open keys read from ui_state_path. In clutch/ui/app.js, set boxInitialized only when box was actually saved.",
+    "In tests/mcp_app_dashboard.js, add a case with no saved state and boxCounts.pending > 0 that asserts the Suggestion Box opens. Add another with saved open.box:false and pending > 0 that asserts it stays closed. Drop the current assert that box is closed with pending=2.",
+    "In tests/unit/test_mcp_ui_state_and_config.py, cover the new saved-key signal: missing or corrupt file reports nothing saved, and set then get reports box as saved. Keep the defaults and round-trip assertions. Rerun the full ## Verification command."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    0,
-    1
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
