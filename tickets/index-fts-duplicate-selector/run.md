@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The existing incremental build skips unchanged files, and context suggestions are expected to resolve to unique Markdown headings.
+The final verification passed 29 tests; the regression reproducer reported pass on the branch and defect on the merge base. Mutation checks rejected the tested wrong implementations.
 
 ## Dead ends
 
-A per-heading counter cannot guarantee unique selectors while preserving the specified strings for every heading.
+A simpler extraction-only fix would leave existing duplicate rows unchanged, so the build also refreshes affected paths.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-10-minute estimate; stopped during contract inspection.
+none
 
