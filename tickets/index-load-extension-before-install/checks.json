@@ -1,0 +1,173 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ec1d0c368fdd51767fd0c354e45480d00b901a60",
+  "stem": "index-load-extension-before-install",
+  "passed": true,
+  "changed_files": [
+    "clutch/index.py",
+    "tests/regress_index_load_before_install.py",
+    "tests/unit/test_index_build.py",
+    "tests/unit/test_index_load_before_install.py"
+  ],
+  "inserted_lines": 97,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/regress_index_load_before_install.py"
+        ],
+        "head_sha": "ec1d0c368fdd51767fd0c354e45480d00b901a60",
+        "base_sha": "75e9a2fa6dd5e5a9cf13c6592fd9bdad8c667556",
+        "overlay_paths": [
+          "tests/regress_index_load_before_install.py"
+        ],
+        "evidence_paths": [
+          "tickets/index-load-extension-before-install/evidence/index-fts-load-before-install.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/index-load-extension-before-install\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/index-load-extension-before-install\nInstalled 31 packages in 18ms\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 20.182916,
+        "passed": 2390,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8982308630365878,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.3509086029371247,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.334513625013642,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2849028919590637,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.2218309639720246
+        }
+      },
+      "coverage": {
+        "percent": 78.47965296426358,
+        "files": {
+          "clutch/index.py": 98.42931937172774
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.682794,
+        "passed": 318,
+        "failed": 0,
+        "skipped": 3294,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.1438311120145954,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1637018879991956,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0923071949509904,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0034487289958633
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_index_load_before_install.py",
+        "tests/unit/test_index_build.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_index_load_before_install.py tests/unit/test_index_build.py\nbringing up nodes...\nbringing up nodes...\n\n..............                                                           [100%]\n14 passed in 1.54s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.095926
+    }
+  ]
+}
