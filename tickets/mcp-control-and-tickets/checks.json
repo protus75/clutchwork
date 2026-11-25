@@ -1,9 +1,9 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "25ec6f3b0ca600e1c59738c718b0bdfbd75204b0",
+  "produced_at_sha": "c73ee052bb458592ee656c2aef50c74b239822b5",
   "stem": "mcp-control-and-tickets",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/__main__.py",
     "clutch/box.py",
@@ -17,7 +17,7 @@
     "tests/unit/test_mcp_control_and_tickets.py",
     "tests/unit/test_mcp_tools.py"
   ],
-  "inserted_lines": 1110,
+  "inserted_lines": 1113,
   "bypassed": [],
   "reports": [
     {
@@ -82,44 +82,27 @@
     },
     {
       "code": "unit",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_stale_running.py::test_order_refuses_only_a_live_running_stem failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_verdict_submitted_message.py::test_verdict_submitted_names_the_clutch_verb failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.215344,
-        "passed": 2364,
-        "failed": 2,
+        "seconds": 19.958256,
+        "passed": 2366,
+        "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.605210448964499,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2760963900364004,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2307043860200793,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1288233159575611
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8013848130358383,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4657370599452406,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.3728433100041002,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.2309963160660118,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0821561240591109,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.027132597984746
         }
       },
       "coverage": {
-        "percent": 78.3503012674008,
+        "percent": 78.35445667982547,
         "files": {
-          "clutch/__main__.py": 80.87472201630838,
+          "clutch/__main__.py": 81.09710896960712,
           "clutch/box.py": 74.03598971722366,
           "clutch/mcp.py": 95.68345323741008,
           "clutch/observe.py": 67.22513089005236,
@@ -131,38 +114,19 @@
     },
     {
       "code": "integration",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "integration",
-          "path": null,
-          "line": null,
-          "message": "tests/integration/test_closed_sets_single_owner.py::test_closed_set_literals_have_one_home failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "integration",
-          "path": null,
-          "line": null,
-          "message": "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 12.192823,
-        "passed": 310,
-        "failed": 2,
+        "seconds": 12.055201,
+        "passed": 312,
+        "failed": 0,
         "skipped": 3290,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.1226967689581215,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.130226785026025,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.068441997980699,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.003802700957749
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.540639865968842,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2295657939976081,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1771628250717185,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0032198750413954
         }
       }
     },
@@ -211,9 +175,9 @@
         "tests/integration/test_mcp_read_server.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_docs_verb.py tests/unit/test_new_evidence.py tests/unit/test_graphics_new.py tests/unit/test_ticket_lint_rules.py tests/unit/test_route_kinds_judge.py tests/unit/test_main_ticket_group.py tests/unit/test_main_box_group.py tests/unit/test_lock_holder.py tests/unit/test_reject_reason_paths.py tests/unit/test_verdict_extension.py tests/unit/test_verdict_menu_parity.py tests/unit/test_main_serve_detach.py tests/unit/test_drain_detach_cli.py tests/unit/test_serve_detach.py tests/unit/test_manual_retro_calibration_verbs.py tests/integration/test_help.py tests/integration/test_mcp_read_server.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 39%]\n........................................................................ [ 79%]\n.....................................                                    [100%]\n181 passed in 3.14s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_docs_verb.py tests/unit/test_new_evidence.py tests/unit/test_graphics_new.py tests/unit/test_ticket_lint_rules.py tests/unit/test_route_kinds_judge.py tests/unit/test_main_ticket_group.py tests/unit/test_main_box_group.py tests/unit/test_lock_holder.py tests/unit/test_reject_reason_paths.py tests/unit/test_verdict_extension.py tests/unit/test_verdict_menu_parity.py tests/unit/test_main_serve_detach.py tests/unit/test_drain_detach_cli.py tests/unit/test_serve_detach.py tests/unit/test_manual_retro_calibration_verbs.py tests/integration/test_help.py tests/integration/test_mcp_read_server.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 39%]\n........................................................................ [ 79%]\n.....................................                                    [100%]\n181 passed in 2.87s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 6.062048
+      "seconds": 5.440364
     }
   ]
 }
