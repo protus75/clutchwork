@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Both clutch_snapshot and draft prompt resolution require observe.snapshot, which calls journal_facts and opens the writable journal cache; class prevention requires a read-only snapshot path owned by the observation code.
+Snapshot and drafts retain the ticket’s permitted derived journal-cache writes; changed Python files also passed Ruff, and targeted mutations exposed and strengthened two weak assertions.
 
 ## Dead ends
 
-The existing snapshot has no read-only injection point, and changing its global behavior from the MCP server would not provide a safe per-call seam.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 25 minutes; implementation and verification took approximately 8 minutes.
 
