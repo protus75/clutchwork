@@ -21,7 +21,7 @@ from uuid import uuid4
 import duckdb
 
 import clutch
-from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, tickets, triage
+from clutch import antigravity, ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, tickets, triage
 from clutch.box import BOX_DIR, Box, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
@@ -385,7 +385,7 @@ def _parser() -> argparse.ArgumentParser:
     host = sub.add_parser(
         "host",
         help="check and set up the host checkout",
-        description="Check host setup, refresh managed conduct and locate host guides.",
+        description="Check host setup, refresh managed conduct, install the Antigravity plugin and locate host guides.",
         epilog="Examples:\nclutch host doctor\n  Inspect host setup.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -416,13 +416,26 @@ def _parser() -> argparse.ArgumentParser:
         host_sub,
         "doctor",
         summary="inspect setup without changing state",
-        does="Check setup, managed conduct blocks, parallel provider concurrency, graphics judge independence and panel provider concurrency, printing PASS or FAIL rows and WARN rows for overdue retro and calibration; these run only when invoked.",
-        reads="Config, git, the writer lock, journal and routed conduct files at HEAD.",
+        does="Check setup, managed conduct blocks, parallel provider concurrency, graphics judge independence and panel provider concurrency, printing PASS or FAIL rows and WARN rows for overdue retro and calibration and Antigravity plugin drift; retro and calibration run only when invoked.",
+        reads="Config, git, the writer lock, journal, routed conduct files at HEAD and optional Antigravity MCP configuration.",
         writes="Nothing.",
         lock="None; probes the writer lock and fails while another process holds it.",
         exits="0 when every check passes; 2 when any fails.",
         examples=["clutch host doctor"],
     )
+    antigravity_parser = _command(
+        host_sub,
+        "antigravity",
+        summary="install Antigravity plugin or workspace skills",
+        does="Install or refresh the ClutchWork plugin, or install workspace skills.",
+        reads="Packaged logo and HOME unless a target is supplied; no config.",
+        writes="Plugin files or workspace skills.",
+        lock="None.",
+        exits="0 on installation; 2 for incompatible options or missing HOME.",
+        examples=["clutch host antigravity", "clutch host antigravity --workspace"],
+    )
+    antigravity_parser.add_argument("--plugin-dir", type=Path, default=None)
+    antigravity_parser.add_argument("--workspace", action="store_true")
     prompt = sub.add_parser(
         "prompt",
         help="render an operator prompt",
@@ -1391,6 +1404,22 @@ def main(
         except FileNotFoundError:
             return _fail(args.verb, f"{command[0]} not found -- install it or correct the command after --")
 
+    def handle_antigravity():
+        if args.workspace and args.plugin_dir is not None:
+            raise runner.Refusal("--workspace and --plugin-dir cannot be combined", "choose one installation target")
+        if args.workspace:
+            paths = antigravity.install_workspace_skills(repo=repo, fs=LocalFileSystem())
+        else:
+            target = args.plugin_dir or antigravity.default_plugin_dir(env)
+            if target is None:
+                raise runner.Refusal("HOME is missing or blank", "set HOME or use --plugin-dir PATH")
+            paths = antigravity.install_plugin(plugin_dir=target, fs=LocalFileSystem())
+        for path in paths:
+            print(path)
+        if not args.workspace:
+            print("Toggle [ClutchWork](customization://clutchwork) to refresh the MCP server.")
+        return 0
+
     def handle_doctor():
         from clutch import doctor
 
@@ -2009,7 +2038,7 @@ def main(
         "meta": handle_meta,
         "training": handle_training,
         "evidence": handle_evidence,
-        "host": lambda: {"core": handle_core, "docs": handle_docs, "doctor": handle_doctor}[args.host_verb](),
+        "host": lambda: {"core": handle_core, "docs": handle_docs, "doctor": handle_doctor, "antigravity": handle_antigravity}[args.host_verb](),
         "coverage": lambda: {"map": handle_covmap, "gate": handle_covgate}[args.coverage_verb](),
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
         "box": lambda: {"suggest": handle_suggest, "triage": handle_triage, "dismiss": handle_dismiss, "issue": handle_issue}[args.box_verb](),
@@ -2039,7 +2068,7 @@ def main(
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
         if (
             (args.verb == "coverage" and args.coverage_verb == "gate")
-            or (args.verb == "host" and args.host_verb in {"docs", "doctor"})
+            or (args.verb == "host" and args.host_verb in {"docs", "doctor", "antigravity"})
             or (args.verb == "provider" and args.provider_verb == "install")
             or (args.verb == "config" and args.config_verb in {"init", "migrate"})
             or (args.verb == "box" and args.box_verb == "issue")

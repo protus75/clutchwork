@@ -31,6 +31,7 @@ uv run clutch config update  # list current model names per provider
 uv run clutch host doctor   # inspect host setup
 uv run clutch provider probe   # probe declared providers and models
 uv run clutch host core     # refresh managed conduct files
+uv run clutch host antigravity  # optional Antigravity plugin
 ```
 
 ## Author and run tickets
@@ -92,6 +93,10 @@ uv run clutch view events --once --timeout 300  # wait once for changes as JSON
 uv run clutch ticket confirm  # confirm a draft or Reject item
 uv run clutch ticket reject   # reject a draft or Reject item
 ```
+
+## Antigravity plugin
+
+Run `uv run clutch host antigravity` to install the global ClutchWork plugin and its stdio MCP server and dashboard. Use `--plugin-dir PATH` to choose a location or `--workspace` to write workspace skills. After upgrading, toggle ClutchWork at `customization://clutchwork` to reload the server. `clutch host doctor` warns if the installed plugin configuration drifts or its executable cannot resolve.
 
 ## VS Code extension
 

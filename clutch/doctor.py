@@ -3,6 +3,7 @@
 import fcntl
 from dataclasses import dataclass
 
+from clutch import antigravity
 from clutch.config import load_config
 from clutch.evidence.store import EvidenceStore, size_warning
 from clutch.git import Git
@@ -100,6 +101,8 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
         row("judge", False, finding)
     if config is not None and (finding := panel_slots_finding(config)):
         row("panel", False, finding)
+    if finding := antigravity.doctor_finding(antigravity.default_plugin_dir(env)):
+        results.append(Check("antigravity", True, finding, warn=True))
     return results
 
 

@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 66bcb385
-hash: 5dc324713362b5c6f5f2a47788b1b53bb5aac47cd3fc477d4b8d1d274f96498d
+verified: 96e06d5f
+hash: d186efbb5650483aaa0d56ee53fb6c9d027ed0867e7866f0e66716f5cad4c19a
 -->
 # Running ClutchWork on a host
 
@@ -29,7 +29,8 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket lint` | Yes | Validate tickets and graphics judge independence without writing. |
 | `engine retro` | Yes | Run a retro report only when invoked, now or queued on the running engine; status and doctor report overdue thresholds. |
 | `engine calibrate` | Yes | Run only when invoked; status and doctor report overdue calibration. Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
-| `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure and excess evidence size as a warning. Also reports overdue retro and calibration reminders without running them. |
+| `host antigravity` | Yes | Install or refresh the global Antigravity plugin (or `--plugin-dir PATH`), or write workspace skills with `--workspace`. |
+| `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure and excess evidence size as a warning. Warns when the installed Antigravity plugin MCP configuration drifts or its executable cannot resolve. Also reports overdue retro and calibration reminders without running them. |
 | `prompt` | Yes | List prompts with `prompt list` and render host prompts with `prompt host <name> [stem]`; render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
 | `host core` | Yes | Refresh managed conduct files. |
 | `provider probe` | Yes | Probe declared providers and models. |

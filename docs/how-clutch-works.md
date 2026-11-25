@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 66bcb385
-hash: eccde1c48eeec682eb9df71fb33ee0e6e0e2bb3a6c61dcb63abad1af3e07752f
+verified: 1324cf62
+hash: f25850d7405459ee773085939ffcb60362baf6fe52fe03193914fb7be828cec4
 -->
 # How ClutchWork works
 
@@ -71,7 +71,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; exit 2 if no held-out review record was scored; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Warns when evidence exceeds its configured threshold or retro or calibration is overdue, without failing. Git is not probed if config fails to load. Exit 2 on any failure. |
+| `host antigravity [--plugin-dir PATH] [--workspace]` | no | Install the global Antigravity plugin or write workspace skills. |
+| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Warns about Antigravity plugin MCP configuration drift or an unresolvable executable, and when evidence exceeds its configured threshold or retro or calibration is overdue, without failing. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |

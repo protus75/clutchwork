@@ -4,8 +4,8 @@ kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 45e4e081
-hash: 777500675b21ba51a3b85a3372e0bea3d7615b29637468111a4d7733ce9bddc9
+verified: 1324cf62
+hash: 154b2cd6dc7fdb0b69b5ff6b669467879220077cac0370a1df0632be62a04556
 -->
 # Host contract
 
@@ -72,6 +72,10 @@ engine_plane_safety_inventory: [config.yaml, clutch/specs/, clutch/gates.py]
 
 The Help command lists help topics, and hover help explains extension surfaces.
 
+## Antigravity plugin
+
+Run `clutch host antigravity [--plugin-dir PATH] [--workspace]` to install the global plugin at `~/.gemini/config/plugins/clutchwork/`, choose another plugin directory, or write workspace skills under `.agents/skills/`. Antigravity automatically loads conduct files installed by `clutch host core`. After upgrades toggle [ClutchWork](customization://clutchwork) to reload the stdio MCP server. `clutch host doctor` warns about plugin MCP configuration drift or an unresolvable executable.
+
 ## Python host test setup
 
 Merge this block into the example configuration, replacing the package placeholder in the
@@ -134,6 +138,8 @@ inventory sends a ticket that would lower a threshold to a human.
 6. Run `clutch host core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
 7. Author the first ticket with `clutch ticket new`, then run `clutch ticket lint` and `clutch ticket review`; see the [run guide](host-running.md).
 8. Run the ticket with `clutch engine drain` or `clutch engine serve`; see the [run guide](host-running.md).
+Optionally run `clutch host antigravity` to install the plugin and its MCP dashboard, or use `--workspace` for workspace skills.
+
 9. Confirm the ticket merged on main with `clutch view status`; see the [run guide](host-running.md).
 
 ## Operating facts
