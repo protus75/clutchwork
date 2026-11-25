@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 45e4e081
-hash: f7d4f265e0da130cd2f7b240ed7c3b333c1c2ca6f99167cfe07dcf41a380c255
+verified: bdb23dbf
+hash: d373e2fce20e27e8b0f08e409fee43560849478b1192329cb268d0a9e1ed4df6
 -->
 # Running ClutchWork on a host
 
@@ -24,7 +24,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
 | `view status` | Yes | Show the journal projection and any evidence size warning. Also reports overdue retro and calibration reminders without running them. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |
-| `view events` | Yes | Stream actionable engine changes after a silent baseline. |
+| `view events` | Yes | Stream actionable engine changes after a silent baseline; `--once` returns JSON, `--cursor` resumes, and `--timeout` sets the wait in seconds. |
 | `ticket lint` | Yes | Validate tickets and graphics judge independence without writing. |
 | `engine retro` | Yes | Run a retro report only when invoked, now or queued on the running engine; status and doctor report overdue thresholds. |
 | `engine calibrate` | Yes | Run only when invoked; status and doctor report overdue calibration. Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |

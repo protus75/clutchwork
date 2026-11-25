@@ -84,6 +84,7 @@ uv run clutch view status   # show the journal projection
 uv run clutch view watch    # show the live text view
 uv run clutch view stats    # show health and efficiency figures
 uv run clutch view events   # print one line per actionable engine change
+uv run clutch view events --once --timeout 300  # wait once for changes as JSON
 # Decisions
 uv run clutch ticket confirm  # confirm a draft or Reject item
 uv run clutch ticket reject   # reject a draft or Reject item

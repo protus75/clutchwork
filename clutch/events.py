@@ -1,5 +1,11 @@
 """Actionable changes for a supervising operator."""
 
+import base64
+import binascii
+import json
+import math
+import time
+
 from clutch import observe, status
 from clutch.enginelog import engine_log_path
 
@@ -77,3 +83,48 @@ def stream(state, *, sleep, write, interval=POLL_SECONDS):
         for line in lines:
             write(line)
         sleep(interval)
+
+
+def encode_cursor(seen):
+    offset, reject, engine, gates = seen
+    data = {"v": 1, "offset": offset, "reject": sorted(reject), "engine": sorted(engine), "gates": gates}
+    return base64.urlsafe_b64encode(json.dumps(data).encode("utf-8")).decode("ascii")
+
+
+def decode_cursor(token: str):
+    try:
+        data = json.loads(base64.b64decode(token, altchars=b"-_", validate=True).decode("utf-8"))
+        if not isinstance(data, dict) or set(data) != {"v", "offset", "reject", "engine", "gates"}:
+            raise ValueError("invalid cursor envelope")
+        offset, reject, engine, gates = (data[k] for k in ("offset", "reject", "engine", "gates"))
+        if (
+            type(data["v"]) is not int
+            or data["v"] != 1
+            or type(offset) is not int
+            or offset < 0
+            or not isinstance(reject, list)
+            or any(not isinstance(x, str) for x in reject)
+            or not isinstance(engine, list)
+            or any(not isinstance(x, list) or len(x) != 2 or any(not isinstance(y, str) for y in x) for x in engine)
+            or not isinstance(gates, dict)
+            or any(not isinstance(k, str) or type(v) is not bool for k, v in gates.items())
+        ):
+            raise ValueError("invalid cursor fields")
+        return offset, set(reject), {tuple(pair) for pair in engine}, gates
+    except (ValueError, TypeError, UnicodeError, binascii.Error) as exc:
+        raise ValueError("invalid event cursor") from exc
+
+
+def wait_once(state, *, cursor=None, timeout=300.0, sleep=time.sleep, clock=time.monotonic, interval=POLL_SECONDS):
+    if not math.isfinite(timeout) or timeout < 0 or not math.isfinite(interval) or interval <= 0:
+        raise ValueError("timeout must be finite and nonnegative; interval must be finite and positive")
+    seen = None if cursor is None else decode_cursor(cursor)
+    deadline = clock() + timeout
+    seen, lines = poll(state, seen)
+    while not lines:
+        remaining = deadline - clock()
+        if remaining <= 0:
+            return encode_cursor(seen), [], True
+        sleep(min(interval, remaining))
+        seen, lines = poll(state, seen)
+    return encode_cursor(seen), lines, False

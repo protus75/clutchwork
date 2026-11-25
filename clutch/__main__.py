@@ -358,17 +358,20 @@ def _parser() -> argparse.ArgumentParser:
     stats.add_argument("--window", default="7d")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
-    _command(
+    event_parser = _command(
         view_sub,
         "events",
-        summary="stream actionable engine changes",
-        does="Print one line per actionable engine change until Ctrl-C, after a silent baseline.",
+        summary="stream or wait once for actionable engine changes",
+        does="Stream changes after a silent baseline; --once returns JSON, optionally resuming with --cursor and waiting up to --timeout seconds.",
         reads="Config, journal, engine log and clutch lockfile.",
         writes="Nothing.",
         lock="None; works while an engine holds the writer lock.",
-        exits="0 when stopped by Ctrl-C; 2 on refusal.",
-        examples=["clutch view events"],
+        exits="0 on completion or Ctrl-C; 2 on invalid options or cursor.",
+        examples=["clutch view events", "clutch view events --once --timeout 300"],
     )
+    event_parser.add_argument("--once", action="store_true")
+    event_parser.add_argument("--cursor", default=None)
+    event_parser.add_argument("--timeout", type=float, default=None)
     host = sub.add_parser(
         "host",
         help="check and set up the host checkout",
@@ -1504,8 +1507,17 @@ def main(
     def handle_events():
         from clutch import events
 
+        if not args.once and (args.cursor is not None or args.timeout is not None):
+            raise runner.Refusal("--cursor and --timeout require --once", "use clutch view events --once")
         try:
-            events.stream(config.state_dir, sleep=time.sleep, write=lambda line: print(line, flush=True))
+            if args.once:
+                try:
+                    cursor, lines, timed_out = events.wait_once(config.state_dir, cursor=args.cursor, timeout=300.0 if args.timeout is None else args.timeout, sleep=time.sleep, clock=time.monotonic)
+                except ValueError as exc:
+                    raise runner.Refusal(str(exc), "provide a valid cursor and nonnegative finite timeout") from exc
+                print(json.dumps({"cursor": cursor, "events": lines, "timed_out": timed_out}))
+            else:
+                events.stream(config.state_dir, sleep=time.sleep, write=lambda line: print(line, flush=True))
         except KeyboardInterrupt:
             pass
         return 0

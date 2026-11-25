@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: c3fcaf81
-hash: 60e2931a324d14dccae4146e126a49419be311909507ee7322f9bec49a8426a2
+verified: bdb23dbf
+hash: 1dcc42e1c1f783aa7ae99091d1a67c7a877448c1b1b2a355d8907a6eba4492a9
 -->
 # How ClutchWork works
 
@@ -57,7 +57,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |
 | `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
-| `view events` | no | Streams actionable engine changes after a silent baseline until Ctrl-C. |
+| `view events` | no | Streams actionable engine changes after a silent baseline until Ctrl-C; `--once` returns JSON, `--cursor` resumes, and `--timeout` sets the wait in seconds. |
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling and graphics judge independence without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
 | `evidence show` | no | Print call envelopes and stored normalized event lines. |
 | `evidence schema` | no | Print the JSON Schema for start, end or event records. |
