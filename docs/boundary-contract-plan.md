@@ -4,8 +4,8 @@ kind: plan
 purpose: Boundary contracts and interface reuse: plan
 relates: [clutch/daemon.py, clutch/effects.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, docs/roadmap.md]
 owner: engine
-verified: cf33b912
-hash: c2a94f84385f1ac32ae6db8bf7f9216f6a9a467dc8ebeed036c7a78130a27ce4
+verified: 5fee4e67
+hash: e68f36e7cbd2751a7c5c6bd9b44d9f93a76ee02863e2ef8a55f75f30a392f4da
 -->
 # Boundary contracts and interface reuse: plan
 
@@ -856,32 +856,18 @@ merged implementations failed.
 
 ### Outcome comparison
 
-Row 153 merged as `adf7d00b` at 2026-11-20T05:08:40Z. The qualitative trial baseline above
-has no counts; the before window is the intended quantitative reference. The commands
-`clutch view stats --window 33h --json` and `clutch view stats --window 201h --json` printed,
-respectively, start and end times of 2026-11-20T05:23:14.523369+00:00 to
-2026-11-21T14:23:14.523369+00:00 and 2026-11-13T05:23:14.828256+00:00 to
-2026-11-21T14:23:14.828256+00:00. The longer window minus the after window would provide the
-before reference, subject to the small difference between the commands' end times.
-
-The configured state directory is absent in this ticket worktree, so the commands cannot read the
-journal here; their empty projections do not measure either period. All quantities below are
-therefore not measurable for both periods, including raw counts and counts per merged ticket:
+Row 153 merged as `adf7d00b` at `2026-11-20T05:08:40+00:00`. The repository journal contained 25 files and 60,701 events from `2026-10-05T07:10:12+00:00` through `2026-11-25T16:09:59+00:00`. The comparison uses `clutch view stats --split 2026-11-20T05:08:40+00:00 --json`.
 
 | Quantity | Before | After |
 |---|---|---|
-| Merged tickets | Not measurable | Not measurable |
-| Implement and requisition premise failures | Not measurable | Not measurable |
-| Rework updates, splits and escalations | Not measurable | Not measurable |
-| Review snags mean | Not measurable | Not measurable |
-| First-pass yield | Not measurable | Not measurable |
-| Duplicate-owner findings | Not measurable | Not measurable |
+| Settled tickets | 807 (736 merged, 5 already satisfied, 66 rejected) | 279 (201 merged, 1 already satisfied, 77 rejected) |
+| Premise failures | 651 (568 implement, 83 requisition, 0 review); 0.885 per merged | 117 (90 implement, 26 requisition, 1 review); 0.582 per merged |
+| Rework orders | 24 (17 update, 4 split, 3 escalate); 0.033 per merged | 80 (53 update, 3 split, 24 escalate); 0.398 per merged |
+| Review snags mean | 0.165 | 0.204 |
+| First-pass yield | 0.662 (66.2%) | 0.493 (49.3%) |
+| Duplicate-owner findings | 0; 0.000 per merged | 1; 0.005 per merged |
 
-Even with journal data, before-period means and yields cannot be obtained by subtracting window
-aggregates. Duplicate-owner findings are not separable by an existing verb: review findings use
-only the existing `acceptance` and `scope` codes. These unavailable measurements cannot establish
-whether the outcomes listed in Measures of success improved, and the windows would not establish
-causation.
+The after finding was a `scope` snag on `training-export-ticket` at `2026-11-20T06:20:22Z`. Row 153 added no dedicated finding code, so `duplicate_owner_findings` counts `scope` and `acceptance` review snag findings whose text matches `DUPLICATE_OWNER_PATTERN`. These raw windows do not establish causation; rework and review-snag rates also reflect later pipeline changes.
 
 ## Measures of success
 

@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 628fcc0e
-hash: 0c88f8c416ca8135139e118a274f9751a9b8ca5bea0358ea3c2aaad473fc095f
+verified: 5fee4e67
+hash: f592a22419c5ab83f50fe9156ad6a42dcb6d7b4e7da90238751c9ecd3f369d6f
 -->
 # Running ClutchWork on a host
 
@@ -24,7 +24,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `mcp serve` | Yes | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. `--check` verifies the dashboard and tools without serving. |
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
 | `view status` | Yes | Show the journal projection and any evidence size warning. Also reports overdue retro and calibration reminders without running them. |
-| `view stats` | Yes | Show the read-only health and efficiency projection. |
+| `view stats` | Yes | Show the read-only health and efficiency projection; `--split` compares premise failures, rework and duplicate-owner findings before and after a timezone-aware timestamp. |
 | `view events` | Yes | Stream actionable engine changes after a silent baseline; `--once` returns JSON, `--cursor` resumes, and `--timeout` sets the wait in seconds. |
 | `ticket lint` | Yes | Validate tickets and graphics judge independence without writing. |
 | `engine retro` | Yes | Run a retro report only when invoked, now or queued on the running engine; status and doctor report overdue thresholds. |

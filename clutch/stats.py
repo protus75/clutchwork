@@ -6,12 +6,73 @@ import re
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
+from clutch.driver import unwrap_fence
 from clutch.help import TOPICS, topic_text
 from clutch.journal import EventType
 from clutch.status import CLOSED
 from clutch.tickets import KINDS
 
 SURFACES = {"resolve", "requisition_review", "implement", "review", "diagnose", "rework", "retro"}
+
+
+DUPLICATE_OWNER_PATTERN = re.compile(
+    r"\b(?:duplicate|second|parallel|competing)\s+(?:owner|parser|registry|codec|factory|implementation)\b|\bduplicate[- ]owner\b|\bundeclared\s+(?:boundar(?:y|ies)|public|exported|api|symbol)\b|\bcanonical\s+owner\b",
+    re.IGNORECASE,
+)
+
+
+def parse_split(value: str) -> datetime:
+    try:
+        result = datetime.fromisoformat(value)
+        if result.tzinfo is None or result.utcoffset() is None:
+            raise ValueError
+        return result
+    except ValueError:
+        raise ValueError(f"bad split {value} -- use an ISO-8601 timestamp with timezone") from None
+
+
+def project_split(events, *, now, split):
+    if isinstance(split, str):
+        split = parse_split(split)
+    elif split.tzinfo is None or split.utcoffset() is None:
+        raise ValueError(f"bad split {split} -- use an ISO-8601 timestamp with timezone")
+    valid = [e for e in events if datetime.fromisoformat(e.ts) <= now]
+    before = [e for e in valid if datetime.fromisoformat(e.ts) < split]
+    after = [e for e in valid if datetime.fromisoformat(e.ts) >= split]
+
+    def period(selected, all_events, end):
+        settled = _latest_settled(selected, end)
+        states = Counter(e.body["to"] for e in settled.values())
+        failures = Counter(e.body.get("stage") for e in selected if e.type == EventType.STATE_TRANSITION and e.body.get("to") == "premise_failed")
+        rework = Counter(e.body.get("action") for e in selected if e.type == EventType.SIGNAL and e.body.get("signal") == "rework_order")
+        snags = sum(e.type == EventType.STATE_TRANSITION and e.ticket in settled and e.body.get("to") == "gate_failed" and e.body.get("stage") == "review" for e in all_events)
+        attempts = Counter(e.ticket for e in all_events if e.type == EventType.STATE_TRANSITION and e.body.get("to") == "running")
+        merged = [attempts[stem] for stem, e in settled.items() if e.body["to"] == "merged"]
+        findings = 0
+        for e in selected:
+            parts = (e.key or "").split("/")
+            if e.type != EventType.EFFECT_COMPLETION or len(parts) != 6 or parts[0] != "llm" or parts[3] != "review":
+                continue
+            try:
+                reply = json.loads(unwrap_fence(e.body["result"]["text"]))
+                if not isinstance(reply, dict) or reply.get("verdict") != "snag" or not isinstance(reply.get("findings"), list):
+                    continue
+                findings += sum(
+                    isinstance(f, dict) and f.get("code") in {"scope", "acceptance"} and bool(DUPLICATE_OWNER_PATTERN.search(f"{f.get('message', '')} {f.get('paved_road', '')}"))
+                    for f in reply["findings"]
+                )
+            except KeyError, TypeError, ValueError, AttributeError:
+                continue
+        return {
+            "settled": {state: states[state] for state in ("merged", "already_satisfied", "rejected")},
+            "premise_failed": {**{stage: failures[stage] for stage in ("implement", "requisition", "review")}, "total": sum(failures.values())},
+            "rework": {action: rework[action] for action in ("update", "split", "escalate")},
+            "review_snags_mean": round(snags / len(settled), 3) if settled else 0.0,
+            "first_pass_yield": round(sum(n == 1 for n in merged) / len(merged), 3) if merged else None,
+            "duplicate_owner_findings": findings,
+        }
+
+    return {"split": split.isoformat(), "before": period(before, before, split), "after": period(after, valid, now)}
 
 
 def _latest_settled(events, now):

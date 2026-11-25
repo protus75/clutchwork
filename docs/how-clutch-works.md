@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 628fcc0e
-hash: 2299f79b0a37966fd354b6eda344cf23045822fe6649b83ce065c2e5fa581301
+verified: 5fee4e67
+hash: e1ddada8a33e131b1becccac90b1ed6e3ce33b6142745a79a5d5c9170f095f66
 -->
 # How ClutchWork works
 
@@ -58,7 +58,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `mcp serve` | no | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. `--check` verifies the dashboard and tools without serving. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |
-| `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
+| `view stats [--window W] [--split ISO] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); `--split` compares premise failures, rework and duplicate-owner findings before and after a timezone-aware timestamp. It is not an authority. |
 | `view events` | no | Streams actionable engine changes after a silent baseline until Ctrl-C; `--once` returns JSON, `--cursor` resumes, and `--timeout` sets the wait in seconds. |
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling and graphics judge independence without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
 | `evidence show` | no | Print call envelopes and stored normalized event lines. |

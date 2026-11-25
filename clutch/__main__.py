@@ -359,14 +359,15 @@ def _parser() -> argparse.ArgumentParser:
         view_sub,
         "stats",
         summary="project journal health over a window (read-only)",
-        does="Print a health and efficiency projection over a time or ticket window; --json prints JSON and --tree the extension's tree.",
+        does="Print a health and efficiency projection over a time or ticket window, or compare periods with --split; --json prints JSON and --tree the extension's tree.",
         reads="Config, journal, tickets and committed checks records.",
         writes="Nothing.",
         lock="None.",
-        exits="0 when printed; 2 on refusal (a bad window).",
-        examples=["clutch view stats", "clutch view stats --window 3d --json"],
+        exits="0 when printed; 2 on refusal (a bad window or split).",
+        examples=["clutch view stats", "clutch view stats --window 3d --json", "clutch view stats --split 2026-11-20T05:08:40+00:00 --json"],
     )
     stats.add_argument("--window", default="7d")
+    stats.add_argument("--split", default=None, help="Split journal metrics before and after an ISO-8601 timestamp with timezone.")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
     event_parser = _command(
@@ -1594,15 +1595,18 @@ def main(
         return 0
 
     def handle_stats():
-        from clutch.stats import render_stats, stats_tree, window_start
+        from clutch.stats import parse_split, project_split, render_stats, stats_tree, window_start
 
         events = checkout.journal.read()
         now = checkout.clock()
         try:
-            window_start(events, now, args.window)
+            if args.split is not None:
+                split = parse_split(args.split)
+            else:
+                window_start(events, now, args.window)
         except ValueError as exc:
             return _fail(args.verb, str(exc))
-        result = asyncio.run(_stats(checkout, events, now, args.window))
+        result = project_split(events, now=now, split=split) if args.split is not None else asyncio.run(_stats(checkout, events, now, args.window))
         print(json.dumps(stats_tree(result) if args.tree else result) if args.tree or args.json else render_stats(result), end="\n" if args.tree or args.json else "")
         return 0
 
