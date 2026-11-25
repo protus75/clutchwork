@@ -92,7 +92,8 @@ def call_timeout(config: Config) -> float:
 class Refusal(Exception):
     """An engine-plane refusal (exit 2): nothing was dispatched."""
 
-    def __init__(self, message: str, paved_road: str) -> None:
+    def __init__(self, message: str, paved_road: str, *, code: str = "refusal") -> None:
+        self.message, self.paved_road, self.code = message, paved_road, code
         super().__init__(f"{message} -- {paved_road}")
 
 

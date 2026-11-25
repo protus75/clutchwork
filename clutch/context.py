@@ -61,3 +61,38 @@ def hint_block(state_dir: Path, stem, fence, context, text, *, connect=duckdb.co
             conn.close()
     except Exception:
         return "unavailable: index_unreadable"
+
+
+def suggest_for_stem(state_dir, root, stem, *, fs, connect=duckdb.connect):
+    from clutch import runner, tickets
+    from clutch.tickets import ticket_path
+
+    if not tickets.STEM.fullmatch(stem) or stem in tickets.RESERVED_STEMS:
+        raise runner.Refusal("refused: invalid stem", "choose a valid ticket stem", code="invalid_stem")
+    path = root / ticket_path(stem)
+    try:
+        body = fs.read_bytes(path).decode("utf-8")
+    except OSError, UnicodeDecodeError:
+        raise runner.Refusal("refused: ticket is missing or unreadable UTF-8", "create a readable ticket", code="missing_ticket") from None
+    sections, _ = tickets._sections(body, str(path))
+    for name in ("Goal / Why", "Scope fence"):
+        if not sections.get(name, "").strip():
+            raise runner.Refusal(f"refused: missing or blank {name}", f"fill in ## {name}", code="missing_section")
+    fence, _ = tickets._bullets(sections["Scope fence"], "Scope fence", str(path))
+    entries, _ = tickets._bullets(sections.get("Context", ""), "Context", str(path))
+    database = state_dir / "index.duckdb"
+    try:
+        fs.size(database)
+    except FileNotFoundError:
+        raise runner.Refusal("no_index", "run clutch index build", code="no_index") from None
+    except OSError:
+        raise runner.Refusal("index_unreadable", "retry after the running refresh finishes, or run clutch index build if the index lacks a table", code="index_unreadable") from None
+    try:
+        conn = connect(str(database), read_only=True)
+        try:
+            files, chunks = suggest(conn, stem, fence, entries, sections["Goal / Why"])
+        finally:
+            conn.close()
+    except duckdb.Error:
+        raise runner.Refusal("index_unreadable", "retry after the running refresh finishes, or run clutch index build if the index lacks a table", code="index_unreadable") from None
+    return files, chunks

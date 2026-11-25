@@ -114,3 +114,61 @@ def render_host(name: str, stem: str, config: Config, repo: Path) -> str:
     if config.ask_notes is not None:
         result += f"\n{specs.data_open('host_notes')}\n{specs.quote_payload(config.ask_notes)}\n{specs.data_close('host_notes')}\n"
     return result
+
+
+def resolve_prompt(kind, stems=(), *, name=None, config, repo, running_stems, draft_stems):
+    from clutch.runner import Refusal
+
+    if kind == "list":
+        entries, problems = catalog(config, repo)
+        return "", {"entries": entries, "problems": [(str(p), msg) for p, msg in problems]}
+    if kind == "host":
+        if config.prompts_dir is None:
+            raise Refusal("prompts_dir is unset", "set prompts_dir in config.yaml", code="no_prompts_dir")
+        entries, problems = catalog(config, repo)
+        path = config.prompts_dir / f"{name}.md"
+        problem = next((message for p, message in problems if p == path), None)
+        if problem:
+            raise Refusal(f"{path}: {problem}", "repair the host prompt file", code="invalid_prompt")
+        entry = next((e for e in entries if e["source"] == "host" and e["name"] == name), None)
+        if entry is None:
+            raise Refusal(f"unknown host prompt {name!r}", "run clutch prompt list and choose a valid host prompt", code="unknown_prompt")
+        if len(stems) != (1 if entry["takes"] == "stem" else 0):
+            raise Refusal(f"host prompt {name} takes {entry['takes']}", "supply exactly one ticket stem" if entry["takes"] == "stem" else "omit the stem", code="invalid_arguments")
+        stem = stems[0] if stems else ""
+        if stem:
+            _validate_prompt_stem(stem, repo, True)
+        try:
+            return render_host(name, stem, config, repo), None
+        except ValueError as exc:
+            raise Refusal(str(exc), "repair the host prompt file", code="invalid_prompt") from None
+    if kind not in KINDS:
+        raise Refusal(f"unknown prompt kind: {kind}", "run clutch prompt list", code="unknown_prompt")
+    if TAKES[kind] == "none":
+        if stems:
+            raise Refusal(f"{kind} takes no stem" if kind != "drafts" else "drafts prompt takes no stems", f"run clutch prompt {kind} with no stems", code="invalid_arguments")
+        if kind == "drafts":
+            stems = draft_stems()
+            if not stems:
+                raise Refusal("no draft tickets await confirm or reject", "run clutch box triage, or author a ticket with clutch ticket new", code="no_drafts")
+            return render(kind, stems, config, repo), None
+        return render(kind, "", config, repo), None
+    if kind == "box":
+        if not stems:
+            raise Refusal("box prompt requires ids", "name at least one box id", code="invalid_arguments")
+        return render(kind, stems, config, repo), None
+    if len(stems) != 1:
+        raise Refusal("ticket prompt requires exactly one stem", "name one ticket stem", code="invalid_arguments")
+    stem = stems[0]
+    _validate_prompt_stem(stem, repo, kind != "author")
+    selected = "running" if kind == "diagnose" and stem in running_stems() else kind
+    return render(selected, stem, config, repo), None
+
+
+def _validate_prompt_stem(stem, repo, require_ticket):
+    from clutch.runner import Refusal
+
+    if findings := stem_findings(stem):
+        raise Refusal(findings[0].message, findings[0].paved_road, code="invalid_stem")
+    if require_ticket and not (repo / ticket_path(stem)).is_file():
+        raise Refusal(f"{ticket_path(stem)} does not exist", f"author it with clutch ticket new {stem}", code="missing_ticket")

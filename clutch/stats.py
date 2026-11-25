@@ -225,3 +225,24 @@ def stats_tree(stats):
             item["tooltip"] = topic_text(f"stat.{key}")
         rows.append(item)
     return rows
+
+
+async def collect_stats(checkout, events, now, window):
+    from clutch.stages import Invoice
+    from clutch.tickets import CHECKS_FILE, artifact_path, read_tolerant, ticket_path
+
+    start = window_start(events, now, window)
+    kinds = {}
+    for stem in {e.ticket for e in events if e.ticket}:
+        try:
+            kind = read_tolerant((checkout.repo / ticket_path(stem)).read_text()).frontmatter.get("kind")
+            if kind in KINDS:
+                kinds[stem] = kind
+        except OSError, UnicodeError:
+            pass
+    checks = {}
+    for e in events:
+        if e.type == EventType.EFFECT_COMPLETION and e.ticket and re.fullmatch(r"ticket-plane/[^/]+/\d+/checks", e.key or "") and start <= datetime.fromisoformat(e.ts) <= now:
+            text = await checkout.git._run(checkout.repo, "show", f"{e.body['result']['commit']}:{artifact_path(e.ticket, CHECKS_FILE)}")
+            checks[e.key] = Invoice.model_validate_json(text)
+    return project_stats(events, kinds, checks, now=now, window=window)

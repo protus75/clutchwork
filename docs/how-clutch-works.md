@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 62a64dee
-hash: 881c451e617d88410525eaa011ebf90d695b9d7eb70b7885f9c2283a4d079be8
+verified: d3def5f4
+hash: 3e0d146c65f2a819ea339a6e339ba50e897407ec38d7f921f38db2978b0d1657
 -->
 # How ClutchWork works
 
@@ -54,6 +54,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks; refuse a named path selecting no tracked file under a configured root. |
 | `meta fill [paths]` | yes | Fill metadata using a read-only model; refuse a named path selecting no tracked file under a configured root. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
+| `mcp serve` | no | Run the pure-Python stdio JSON-RPC 2.0 MCP server exposing read-only observation, event wakeup, evidence, context, and prompt tools and MCP Prompts. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |
 | `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |

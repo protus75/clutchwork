@@ -81,6 +81,8 @@ For example, ask your chat agent:
 
 ```sh
 # Observing
+
+uv run clutch mcp serve  # run the stdio MCP server
 uv run clutch view status   # show the journal projection
 uv run clutch view watch    # show the live text view
 uv run clutch view stats    # show health and efficiency figures

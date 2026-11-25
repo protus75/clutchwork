@@ -22,7 +22,7 @@ from uuid import uuid4
 import duckdb
 
 import clutch
-from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, tickets, triage
+from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, triage
 from clutch.box import BOX_DIR, Box, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
@@ -52,7 +52,6 @@ from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalF
 from clutch.status import admission_facts, latest_transitions, lint_admission, order_admission, overdue, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
-    CHECKS_FILE,
     KINDS,
     PRIORITIES,
     IntakeRefused,
@@ -62,12 +61,10 @@ from clutch.tickets import (
     _load_frontmatter,
     _pending,
     _porcelain,
-    artifact_path,
     evidence_findings,
     lint_findings,
     missing_evidence_findings,
     order,
-    read_tolerant,
     split_frontmatter,
     stem_findings,
     template,
@@ -301,6 +298,25 @@ def _parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="clutch", usage="%(prog)s [-h] [--config CONFIG] <command> ...", description="Host guides: clutch host docs")
     ap.add_argument("--config", type=Path, help="config path (default: config.yaml at the checkout root)")
     sub = ap.add_subparsers(dest="verb", required=True, metavar="<command>")
+    mcp_group = sub.add_parser(
+        "mcp",
+        help="run the MCP server",
+        description="Run the read-only MCP server.",
+        epilog="Examples:\nclutch mcp serve\n  Serve MCP over stdio.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    mcp_sub = mcp_group.add_subparsers(dest="mcp_verb", required=True)
+    _command(
+        mcp_sub,
+        "serve",
+        summary="serve read-only MCP over stdio",
+        does="Serve read-only MCP tools and prompts over stdio.",
+        reads="Repository config, tickets, journal, evidence and git state.",
+        writes="Updates the rebuildable journal cache.",
+        lock="None.",
+        exits="0 on EOF or interruption; 2 on refusal.",
+        examples=["clutch mcp serve"],
+    )
     view = sub.add_parser(
         "view",
         help="show read-only engine views",
@@ -1171,34 +1187,10 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _run_context_suggest(config, root, stem, *, fs, connect=duckdb.connect, require=False):
-    if not tickets.STEM.fullmatch(stem) or stem in tickets.RESERVED_STEMS:
-        return _fail("context suggest", "refused: invalid stem -- choose a valid ticket stem")
-    path = root / ticket_path(stem)
     try:
-        body = fs.read_bytes(path).decode("utf-8")
-    except OSError, UnicodeDecodeError:
-        return _fail("context suggest", "refused: ticket is missing or unreadable UTF-8 -- create a readable ticket")
-    sections, _ = tickets._sections(body, str(path))
-    for name in ("Goal / Why", "Scope fence"):
-        if not sections.get(name, "").strip():
-            return _fail("context suggest", f"refused: missing or blank {name} -- fill in ## {name}")
-    fence, _ = tickets._bullets(sections["Scope fence"], "Scope fence", str(path))
-    entries, _ = tickets._bullets(sections.get("Context", ""), "Context", str(path))
-    database = config.state_dir / "index.duckdb"
-    try:
-        fs.size(database)
-    except FileNotFoundError:
-        return _fail("context suggest", "no_index -- run clutch index build")
-    except OSError:
-        return _fail("context suggest", "index_unreadable -- retry after the running refresh finishes, or run clutch index build if the index lacks a table")
-    try:
-        conn = connect(str(database), read_only=True)
-        try:
-            files, chunks = context.suggest(conn, stem, fence, entries, sections["Goal / Why"])
-        finally:
-            conn.close()
-    except duckdb.Error:
-        return _fail("context suggest", "index_unreadable -- retry after the running refresh finishes, or run clutch index build if the index lacks a table")
+        files, chunks = context.suggest_for_stem(config.state_dir, root, stem, fs=fs, connect=connect)
+    except runner.Refusal as exc:
+        return _fail("context suggest", str(exc))
     lines = files + chunks
     print("context suggest: suggested" if lines else "context suggest: none")
     for selector, reason in lines:
@@ -1285,6 +1277,15 @@ def main(
         return 0
     repo = Path(cwd) if cwd is not None else Path.cwd()
     env = dict(os.environ) if env is None else env
+
+    if args.verb == "mcp":
+        from clutch import mcp
+
+        try:
+            mcp.serve_stdio(default_cwd=repo, config_path=args.config, env=env, clock=clock)
+        except KeyboardInterrupt:
+            pass
+        return 0
 
     # Utilities
     def handle_docs():
@@ -1559,73 +1560,24 @@ def main(
         return _new(repo, args.stem, args.kind, args.evidence or (), args.reference or (), args.input or ())
 
     def handle_prompt():
-        if args.kind == "list":
-            entries, problems = ask.catalog(config, repo)
-            for entry in entries:
-                print(f"{' '.join(entry['argv'])}\t{entry['takes']}\t{entry['description']}")
-            for path, message in problems:
-                print(f"{path}: {message}", file=sys.stderr)
-            return 2 if problems else 0
-        if args.kind == "host":
-            if config.prompts_dir is None:
-                raise runner.Refusal("prompts_dir is unset", "set prompts_dir in config.yaml")
-            entries, problems = ask.catalog(config, repo)
-            path = config.prompts_dir / f"{args.name}.md"
-            problem = next((message for p, message in problems if p == path), None)
-            if problem:
-                raise runner.Refusal(f"{path}: {problem}", "repair the host prompt file")
-            entry = next((e for e in entries if e["source"] == "host" and e["name"] == args.name), None)
-            if entry is None:
-                raise runner.Refusal(f"unknown host prompt {args.name!r}", "run clutch prompt list and choose a valid host prompt")
-            if len(args.stems) != (1 if entry["takes"] == "stem" else 0):
-                raise runner.Refusal(f"host prompt {args.name} takes {entry['takes']}", "supply exactly one ticket stem" if entry["takes"] == "stem" else "omit the stem")
-            stem = args.stems[0] if args.stems else ""
-            if stem:
-                if findings := stem_findings(stem):
-                    raise runner.Refusal(findings[0].message, findings[0].paved_road)
-                if not (repo / ticket_path(stem)).is_file():
-                    raise runner.Refusal(f"{ticket_path(stem)} does not exist", f"author it with clutch ticket new {stem}")
-            try:
-                result = ask.render_host(args.name, stem, config, repo)
-            except ValueError as exc:
-                raise runner.Refusal(str(exc), "repair the host prompt file") from None
-            print(result, end="")
-            return 0
-        if ask.TAKES[args.kind] == "none" and args.kind != "drafts":
-            if args.stems:
-                raise runner.Refusal(f"{args.kind} takes no stem", f"run clutch prompt {args.kind} with no stems")
-            print(ask.render(args.kind, "", config, repo), end="")
-            return 0
-        if args.kind == "drafts":
-            if args.stems:
-                raise runner.Refusal("drafts prompt takes no stems", "run clutch prompt drafts with no stems")
-            from clutch import observe
+        def running_stems():
+            last = observe.last_bodies(observe.as_events(observe.journal(config.state_dir)))
+            return observe.running_stems(config.state_dir, last)
 
+        def draft_stems():
             exec_ = SubprocessExec()
             git = Git(exec_, env={**child_env(env, config), "GIT_OPTIONAL_LOCKS": "0"}, timeout=GIT_TIMEOUT_S, commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep))
-            context = _observe_context(repo, config, args.config, exec_, git, env)
-            stems = [row["stem"] for row in observe.snapshot(context)["rows"] if row["draft"]]
-            if not stems:
-                raise runner.Refusal("no draft tickets await confirm or reject", "run clutch box triage, or author a ticket with clutch ticket new")
-            print(ask.render("drafts", stems, config, repo), end="")
-            return 0
-        if args.kind == "box":
-            if not args.stems:
-                raise runner.Refusal("box prompt requires ids", "name at least one box id")
-            print(ask.render("box", args.stems, config, repo), end="")
-            return 0
-        if len(args.stems) != 1:
-            raise runner.Refusal("ticket prompt requires exactly one stem", "name one ticket stem")
-        args.stem = args.stems[0]
-        if findings := stem_findings(args.stem):
-            raise runner.Refusal(findings[0].message, findings[0].paved_road)
-        if args.kind != "author" and not (repo / ticket_path(args.stem)).is_file():
-            raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch ticket new {args.stem}")
-        from clutch import observe
+            ctx = _observe_context(repo, config, args.config, exec_, git, env)
+            return [row["stem"] for row in observe.snapshot(ctx)["rows"] if row["draft"]]
 
-        last = observe.last_bodies(observe.as_events(observe.journal(config.state_dir)))
-        kind = "running" if args.kind == "diagnose" and args.stem in observe.running_stems(config.state_dir, last) else args.kind
-        print(ask.render(kind, args.stem, config, repo), end="")
+        result, catalog = ask.resolve_prompt(args.kind, getattr(args, "stems", ()), name=getattr(args, "name", None), config=config, repo=repo, running_stems=running_stems, draft_stems=draft_stems)
+        if catalog is not None:
+            for entry in catalog["entries"]:
+                print(f"{' '.join(entry['argv'])}\t{entry['takes']}\t{entry['description']}")
+            for path, message in catalog["problems"]:
+                print(f"{path}: {message}", file=sys.stderr)
+            return 2 if catalog["problems"] else 0
+        print(result, end="")
         return 0
 
     def handle_suggest():
@@ -2344,24 +2296,9 @@ async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
 
 
 async def _stats(checkout, events, now, window):
-    from clutch.stages import Invoice
-    from clutch.stats import project_stats, window_start
+    from clutch import stats
 
-    start = window_start(events, now, window)
-    kinds = {}
-    for stem in {e.ticket for e in events if e.ticket}:
-        try:
-            kind = read_tolerant((checkout.repo / ticket_path(stem)).read_text()).frontmatter.get("kind")
-            if kind in KINDS:
-                kinds[stem] = kind
-        except OSError, UnicodeError:
-            pass
-    checks = {}
-    for e in events:
-        if e.type == EventType.EFFECT_COMPLETION and e.ticket and re.fullmatch(r"ticket-plane/[^/]+/\d+/checks", e.key or "") and start <= datetime.fromisoformat(e.ts) <= now:
-            text = await checkout.git._run(checkout.repo, "show", f"{e.body['result']['commit']}:{artifact_path(e.ticket, CHECKS_FILE)}")
-            checks[e.key] = Invoice.model_validate_json(text)
-    return project_stats(events, kinds, checks, now=now, window=window)
+    return await stats.collect_stats(checkout, events, now, window)
 
 
 async def _status(checkout: runner.Checkout):

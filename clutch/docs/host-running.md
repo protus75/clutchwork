@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 135c51d4
-hash: 147852a3b7c67dabf57a96c1266709693125d4c2a6817cf8e632395ee0b9e0e7
+verified: d3def5f4
+hash: 3d823a1d4f32cb366e5907967626fc1ee9bd26eb7ae7a129eb59608ba733c0fa
 -->
 # Running ClutchWork on a host
 
@@ -21,6 +21,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
 | `view watch` | Yes | Show the live text view; `--once` prints one view. |
+| `mcp serve` | Yes | Run the read-only stdio JSON-RPC 2.0 MCP server (reads `repo` per call or CWD). |
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
 | `view status` | Yes | Show the journal projection and any evidence size warning. Also reports overdue retro and calibration reminders without running them. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |
