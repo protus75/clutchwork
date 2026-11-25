@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c5fdd91007ff4f775f7a8ba87466162c71df05b2",
+  "stem": "events-once-cursor",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "abandon-human",
+  "lessons": [
+    "An engine step wrote the failing line after Implement. Check's meta refresh, `generated()` in clutch/meta.py:140-142, defaulted the owner of tests/unit/test_main_view_events_once.py to `engine` because no relates path made up a majority. Clutch/meta.py is outside this ticket's fence.",
+    "clutch/specs/implement.md:47 forbids Implement from adding or editing a `clutch:meta` header. So a retry cannot set `owner: clutch/__main__.py` as the ticket's Scope in requires. Retrying gives the same review snag.",
+    "A human must choose: let a supervisor fix the owner line on the branch, remove the `owner:` requirement from the ticket's Scope in, or fix how clutch/meta.py derives the owner (or let tickets pin it). The rest of the diff passed Verification and review."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
