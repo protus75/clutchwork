@@ -1,0 +1,34 @@
+Command:
+./dev.py test tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/integration/test_mcp_app_dashboard.py
+(observed in tickets/mcp-dashboard-ux-parity/checks.json at produced_at_sha 20eff574fb2fec55482bc8b6f0035cf8e1245c11)
+
+Exit code: 1
+
+Failure output:
+tests/integration/test_mcp_app_dashboard.py:23:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity')
+out = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/.test-tmp/3452112/pytest/popen-gw17/test_dashboard_bundle0/dashboard.html')
+run_cmd = <function run at 0x77c6f7564720>
+
+    def build_ui_bundle(root=ROOT, out=None, run_cmd=subprocess.run) -> Path:
+        out = Path(out) if out is not None else root / "clutch/ui/dashboard.html"
+        paths = [root / "vscode-clutchwork/media/view.css", root / "clutch/ui/dashboard.css", root / "vscode-clutchwork/media/ticket-lifecycle.svg", root / "clutch/ui/app.js"]
+        try:
+            shared_css, dashboard_css, svg, _ = [path.read_text() for path in paths]
+            result = run_cmd(
+                [str(root / "node_modules/.bin/esbuild"), str(paths[3]), "--bundle", "--format=iife", "--platform=browser", "--global-name=ClutchDashboardApp", "--minify"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        except OSError as error:
+>           raise RuntimeError(f"ui-bundle: missing source or esbuild: {error}") from error
+E           RuntimeError: ui-bundle: missing source or esbuild: [Errno 2] No such file or directory: '/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/node_modules/.bin/esbuild'
+
+/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/dev.py:46: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle - RuntimeError: ui-bundle: missing source or esbuild: [Errno 2] No such file or directory: '/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/node_modules/.bin/esbuild'
+1 failed, 17 passed in 1.49s
