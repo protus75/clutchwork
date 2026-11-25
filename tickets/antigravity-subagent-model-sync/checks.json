@@ -1,0 +1,118 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "1246737a303a5e768235240b6145add8048526e6",
+  "stem": "antigravity-subagent-model-sync",
+  "passed": true,
+  "changed_files": [
+    "docs/antigravity-plan.md"
+  ],
+  "inserted_lines": 4,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 21.404912,
+        "passed": 2434,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8849369329982437,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.3738724090508185,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.3502033230033703,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2330914869671687,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.0601681909756735,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.000229642027989
+        }
+      },
+      "coverage": {
+        "percent": 78.79306829765545,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_readme.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_readme.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 1.34s\n",
+      "base_red": false,
+      "seconds": 6.197483
+    }
+  ]
+}
