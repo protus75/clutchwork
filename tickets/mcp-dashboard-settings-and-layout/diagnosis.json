@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
+  "produced_at_sha": "fda1aedddc96016667722bd172e72575ad3d548f",
   "stem": "mcp-dashboard-settings-and-layout",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "clutch/ui/app.js:203 sets boxInitialized = typeof state.open?.box === \"boolean\". The clutch_app_ui_state get reply merges over defaults that include open.box:false, so box auto-open in refresh() never runs. Scope in says box auto-opens only when open.box was not saved.",
-    "In clutch/mcp.py, make the clutch_app_ui_state get reply show whether open.box came from the file, e.g. a `saved` list of open keys read from ui_state_path. In clutch/ui/app.js, set boxInitialized only when box was actually saved.",
-    "In tests/mcp_app_dashboard.js, add a case with no saved state and boxCounts.pending > 0 that asserts the Suggestion Box opens. Add another with saved open.box:false and pending > 0 that asserts it stays closed. Drop the current assert that box is closed with pending=2.",
-    "In tests/unit/test_mcp_ui_state_and_config.py, cover the new saved-key signal: missing or corrupt file reports nothing saved, and set then get reports box as saved. Keep the defaults and round-trip assertions. Rerun the full ## Verification command."
+    "Review finding at clutch/ui/app.js:185: refresh() fills the config inputs from a fresh clutch_app_config get every refreshSeconds poll and on focus, which overwrites unsaved Settings edits. Leave inputs the operator has edited untouched during refresh().",
+    "In clutch/ui/app.js, mark each Settings config.yaml input dirty on its input/change event. refresh() skips dirty inputs, or skips filling while any input is dirty. Clear the dirty flags only after Save config.yaml (clutch_app_config set) succeeds.",
+    "In tests/mcp_app_dashboard.js and tests/integration/test_mcp_app_dashboard.py, add a case that edits a config input (such as Parallel max runs) and fires the setInterval callback. Assert the edited value survives and is the value Save config.yaml sends in updates.",
+    "Keep the savedOpen box auto-open fix and everything else from the failed branch. Review confirmed that fix. Change only the dirty-input handling and its test, then rerun the ticket's ## Verification command."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
