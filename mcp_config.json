@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "clutchwork": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "clutchwork",
+        "clutch",
+        "mcp",
+        "serve"
+      ]
+    }
+  }
+}

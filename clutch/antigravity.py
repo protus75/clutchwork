@@ -12,8 +12,13 @@ from clutch.seams import FileSystem, LocalFileSystem
 
 PLUGIN_NAME = "clutchwork"
 DISPLAY_NAME = "ClutchWork"
+AUTHOR = "ClutchWork"
+HOMEPAGE_URL = "https://github.com/protus75/clutchwork"
+REPOSITORY_URL = "https://github.com/protus75/clutchwork"
 MCP_SERVER_NAME = "clutchwork"
 MCP_ARGS = ("-m", "clutch", "mcp", "serve")
+PORTABLE_MCP_COMMAND = "uvx"
+PORTABLE_MCP_ARGS = ("--from", "clutchwork", "clutch", "mcp", "serve")
 DEFAULT_LOGO_PATH = Path(__file__).parent / "assets" / "logo.svg"
 SUGGESTED_PROMPTS = ["Open the ClutchWork dashboard", "Supervise the Clutch queue (drain-loop)", "Run docs/roadmap.md unattended with serve"]
 
@@ -47,6 +52,9 @@ def plugin_manifest(version_str: str | None = None) -> dict[str, object]:
         "displayName": DISPLAY_NAME,
         "description": "Supervise ClutchWork tickets and engines.",
         "version": version_str if version_str is not None else version("clutchwork"),
+        "author": AUTHOR,
+        "homepage": HOMEPAGE_URL,
+        "repository": REPOSITORY_URL,
         "logo": "assets/logo.svg",
         "suggestedPrompts": SUGGESTED_PROMPTS,
     }
@@ -54,6 +62,19 @@ def plugin_manifest(version_str: str | None = None) -> dict[str, object]:
 
 def mcp_config(executable: str | Path | None = None) -> dict[str, object]:
     return {"mcpServers": {MCP_SERVER_NAME: {"command": str(executable or sys.executable), "args": list(MCP_ARGS)}}}
+
+
+def portable_mcp_config() -> dict[str, object]:
+    return {"mcpServers": {MCP_SERVER_NAME: {"command": PORTABLE_MCP_COMMAND, "args": list(PORTABLE_MCP_ARGS)}}}
+
+
+def portable_bundle_files(*, version_str: str | None = None, logo_bytes: bytes) -> dict[str, bytes]:
+    return {
+        "plugin.json": (json.dumps(plugin_manifest(version_str=version_str), indent=2) + "\n").encode(),
+        "mcp_config.json": (json.dumps(portable_mcp_config(), indent=2) + "\n").encode(),
+        "assets/logo.svg": logo_bytes,
+        **{f"skills/{name}/SKILL.md": text.encode() for name, text in SKILLS.items()},
+    }
 
 
 def install_plugin(

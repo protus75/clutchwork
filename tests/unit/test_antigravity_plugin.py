@@ -5,8 +5,8 @@
 # purpose: Unit tests for the Antigravity plugin and workspace skill install, default paths, doctor drift findings, and the `clutch host antigravity` CLI dispatch.
 # relates: [clutch/__main__.py, clutch/antigravity.py, clutch/doctor.py, tests/fakes.py]
 # owner: engine
-# verified: 1324cf62
-# hash: bb4f239c95aded9547ebcc182f2a5cb7c0bfccecac8ca2de27bc99fd1d6eafb9
+# verified: 8342251d
+# hash: 97cc7222683bca45a92456299c3379136186b469ee2378c56c374cf629d79eb2
 
 import json
 from pathlib import Path
@@ -32,6 +32,9 @@ def test_bundle_and_skills(tmp_path):
         "displayName": "ClutchWork",
         "description": "Supervise ClutchWork tickets and engines.",
         "version": "1.2",
+        "author": "ClutchWork",
+        "homepage": "https://github.com/protus75/clutchwork",
+        "repository": "https://github.com/protus75/clutchwork",
         "logo": "assets/logo.svg",
         "suggestedPrompts": ["Open the ClutchWork dashboard", "Supervise the Clutch queue (drain-loop)", "Run docs/roadmap.md unattended with serve"],
     }

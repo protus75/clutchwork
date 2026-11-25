@@ -98,6 +98,8 @@ uv run clutch ticket reject   # reject a draft or Reject item
 
 Run `uv run clutch host antigravity` to install the global ClutchWork plugin and its stdio MCP server and dashboard. Use `--plugin-dir PATH` to choose a location or `--workspace` to write workspace skills. After upgrading, toggle ClutchWork at `customization://clutchwork` to reload the server. `clutch host doctor` warns if the installed plugin configuration drifts or its executable cannot resolve.
 
+Alternatively, install the portable bundle directly with `agy plugin install https://github.com/protus75/clutchwork`. It runs the server using `uvx --from clutchwork clutch mcp serve`. After publishing the release to PyPI, run `agy plugin validate --strict .` from the repository root before submitting it to the Antigravity Marketplace.
+
 ## VS Code extension
 
 The [clutch tickets extension](https://marketplace.visualstudio.com/items?itemName=chunkydragon.vscode-clutchwork) (`chunkydragon.vscode-clutchwork`) shows the ticket graph, details, recent steps, Suggestion Box, and stats. Set `clutch.command` when the engine command differs from the default host `.venv/bin/clutch`.

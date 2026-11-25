@@ -1,0 +1,15 @@
+{
+  "name": "clutchwork",
+  "displayName": "ClutchWork",
+  "description": "Supervise ClutchWork tickets and engines.",
+  "version": "0.6.1",
+  "author": "ClutchWork",
+  "homepage": "https://github.com/protus75/clutchwork",
+  "repository": "https://github.com/protus75/clutchwork",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Open the ClutchWork dashboard",
+    "Supervise the Clutch queue (drain-loop)",
+    "Run docs/roadmap.md unattended with serve"
+  ]
+}
