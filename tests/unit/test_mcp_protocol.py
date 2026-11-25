@@ -4,8 +4,8 @@
 # purpose: Unit test of the MCP stdio JSON-RPC loop: parse and invalid-request errors, initialize server info and capabilities, ping, notifications, and unknown-method and invalid-params error codes.
 # relates: [clutch/mcp.py]
 # owner: clutch/mcp.py
-# verified: d3def5f4
-# hash: 9b0c3b88d28709a4b05f6b1e9dd0a4a88235a2ecf8965280fe5c4f7df84ff5dd
+# verified: 66bcb385
+# hash: 58e4888f2dcff364d0b6edb99f72eecc76092d59f7abb3238b179c9be7ca87d9
 import io
 import json
 from importlib.metadata import version
@@ -32,6 +32,6 @@ def test_protocol_loop(tmp_path):
     replies = [json.loads(line) for line in output.getvalue().splitlines()]
     assert [r.get("error", {}).get("code") for r in replies[:3]] == [-32700, -32600, -32600]
     assert replies[3]["result"]["serverInfo"]["version"] == version("clutchwork")
-    assert set(replies[3]["result"]["capabilities"]) == {"tools", "prompts"}
+    assert set(replies[3]["result"]["capabilities"]) == {"tools", "prompts", "resources"}
     assert replies[4]["result"] == {}
     assert [r["error"]["code"] for r in replies[5:]] == [-32601, -32602, -32602, -32602]

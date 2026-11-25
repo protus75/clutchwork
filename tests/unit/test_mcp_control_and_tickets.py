@@ -5,8 +5,8 @@
 # purpose: Unit tests for the MCP server's mutation tools: ticket authoring, lint, ordering, verdicts, the suggestion box, triage, engine start and control, retro, and domain-error projection. They use fake process, lock, and provider seams.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/control.py, clutch/hostfiles.py, clutch/journal.py, clutch/lockfile.py]
 # owner: engine
-# verified: 13ffeebe
-# hash: 375d74802dd64ea0258ae513f67fe0e24d34623cd7a5b46970c61a0cd6459ce3
+# verified: 66bcb385
+# hash: 108bf3891135d89df3a3c0a1251b8667a5af5379565e13da24ecd6df66b83445
 
 import asyncio
 import io
@@ -65,7 +65,14 @@ def test_catalog_and_actor_schema(rig):
     server, _ = rig
     catalog = server.dispatch("tools/list", {})["tools"]
     # Wrong: expose UI verdicts to the model or hide ordinary tools.
-    assert {t["name"]: t.get("_meta") for t in catalog} == {name: {"ui": {"visibility": ["app"]}} if name.startswith("clutch_app_") else None for name in mcp.TOOLS}
+    assert {t["name"]: t.get("_meta") for t in catalog} == {
+        name: {"ui": {"visibility": ["app"]}}
+        if name.startswith("clutch_app_")
+        else {"ui": {"resourceUri": mcp.DASHBOARD_URI}, "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]}}
+        if name == "clutch_open_dashboard"
+        else None
+        for name in mcp.TOOLS
+    }
     for name in ("ticket_confirm", "ticket_reject"):
         with pytest.raises(mcp.InvalidParams):
             call(server, name, stem="sample", extension=True)

@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 8b0df903
-hash: c04e16fbb41c8f7e571619a569904a526f8a331a90461b47f2cec0e4b4bc2871
+verified: 66bcb385
+hash: 5dc324713362b5c6f5f2a47788b1b53bb5aac47cd3fc477d4b8d1d274f96498d
 -->
 # Running ClutchWork on a host
 
@@ -21,7 +21,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
 | `view watch` | Yes | Show the live text view; `--once` prints one view. |
-| `mcp serve` | Yes | Run the stdio MCP server with read, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. Supported mutations submit to the running engine's inbox when its lock is held. |
+| `mcp serve` | Yes | Run the stdio MCP server with read, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. |
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
 | `view status` | Yes | Show the journal projection and any evidence size warning. Also reports overdue retro and calibration reminders without running them. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |

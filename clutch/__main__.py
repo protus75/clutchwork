@@ -294,7 +294,7 @@ def _parser() -> argparse.ArgumentParser:
     mcp_group = sub.add_parser(
         "mcp",
         help="run the MCP server",
-        description="Run MCP read, ticket, Suggestion Box, and detached engine-control tools.",
+        description="Run MCP read, ticket, Suggestion Box, and detached engine-control tools; serve the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats.",
         epilog="Examples:\nclutch mcp serve\n  Serve MCP over stdio.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -303,7 +303,7 @@ def _parser() -> argparse.ArgumentParser:
         mcp_sub,
         "serve",
         summary="serve MCP tools over stdio",
-        does="Serve read, ticket, Suggestion Box, and detached engine-control MCP tools and prompts over stdio.",
+        does="Serve read, ticket, Suggestion Box, and detached engine-control MCP tools and prompts over stdio, including the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats.",
         reads="Repository config, tickets, journal, evidence and git state.",
         writes="Tickets, Suggestion Box, control inbox, detached engine output, and rebuildable journal cache.",
         lock="Per-tool domain locks; no lock held by the stdio server.",

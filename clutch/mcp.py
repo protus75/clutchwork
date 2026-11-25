@@ -27,10 +27,18 @@ from clutch.lockfile import CommitLock, CommitLockTimeout, LockHeld
 from clutch.providers import ProviderSetupError, child_env
 from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
 
+DASHBOARD_URI = "ui://clutch/dashboard.html"
+MCP_APP_MIME = "text/html;profile=mcp-app"
+DEFAULT_DASHBOARD_HTML = Path(__file__).parent / "ui" / "dashboard.html"
+
 
 class Repo(BaseModel):
     model_config = ConfigDict(extra="forbid")
     repo: str | None = None
+
+
+class Dashboard(Repo):
+    tab: Literal["tickets", "steps", "box", "stats", "help"] = "tickets"
 
 
 class Snapshot(Repo):
@@ -113,6 +121,9 @@ class EngineControl(Repo):
 
 
 TOOLS = {
+    "clutch_open_dashboard": Dashboard,
+    "clutch_app_snapshot": Snapshot,
+    "clutch_app_stats": Stats,
     "clutch_snapshot": Snapshot,
     "clutch_status": Status,
     "clutch_stats": Stats,
@@ -167,6 +178,7 @@ class ClutchMCPServer:
         self,
         *,
         default_cwd=None,
+        ui_html_path: Path | None = None,
         config_path=None,
         env=None,
         clock=None,
@@ -177,6 +189,7 @@ class ClutchMCPServer:
         connect=duckdb.connect,
         spawn=seams.spawn_detached,
     ):
+        self.ui_html_path = ui_html_path if ui_html_path is not None else DEFAULT_DASHBOARD_HTML
         self.spawn = spawn
         self.cwd = Path(default_cwd or Path.cwd()).resolve()
         self.config_path = config_path
@@ -211,10 +224,24 @@ class ClutchMCPServer:
         return ask.resolve_prompt(kind, stems, name=name, config=checkout.config, repo=checkout.repo, running_stems=running, draft_stems=drafts)
 
     def call_tool(self, name, args):
+        if name == "clutch_open_dashboard" and args.repo is None and not (self.cwd / "tickets").is_dir():
+            value = {"repo": None, "tab": args.tab, "ready": False, "version": version("clutchwork"), "message": "Supply a ClutchWork checkout path to load the dashboard."}
+            return value, value["message"]
         checkout, ctx = self.checkout(args.repo)
         cfg, fs = checkout.config, checkout.fs
         store = EvidenceStore(cfg.state_dir, fs, fs.read_bytes, fs.size, lambda text: text)
-        if name == "clutch_snapshot":
+        if name == "clutch_open_dashboard":
+            snapshot = observe.snapshot(ctx, merged_limit=cfg.snapshot_merged_limit)
+            value = {
+                "repo": str(checkout.repo),
+                "tab": args.tab,
+                "ready": True,
+                **{key: snapshot[key] for key in ("counts", "engine", "runningStem", "blockedCount")},
+                "pendingBox": snapshot["boxCounts"]["pending"],
+                "version": version("clutchwork"),
+            }
+            return value, f"ClutchWork dashboard ready for {checkout.repo}."
+        if name in {"clutch_snapshot", "clutch_app_snapshot"}:
             value = observe.snapshot(ctx, merged_limit=None if args.all_merged else cfg.snapshot_merged_limit)
         elif name == "clutch_status":
             from clutch.__main__ import _status
@@ -226,7 +253,7 @@ class ClutchMCPServer:
                 value.pop("scorecard", None)
             value.update(version=version("clutchwork"), evidence_warning=size_warning(store, cfg.evidence.warn_gb))
             return value, render(projection, short=args.short)
-        elif name == "clutch_stats":
+        elif name in {"clutch_stats", "clutch_app_stats"}:
             history, now = checkout.journal.read(), self.clock()
             try:
                 stats.window_start(history, now, args.window)
@@ -318,9 +345,27 @@ class ClutchMCPServer:
             requested = params.get("protocolVersion")
             return {
                 "protocolVersion": requested if requested in {"2025-03-26", "2024-11-05"} else "2025-03-26",
-                "capabilities": {"tools": {"listChanged": False}, "prompts": {"listChanged": False}},
+                "capabilities": {"tools": {"listChanged": False}, "prompts": {"listChanged": False}, "resources": {"listChanged": False}},
                 "serverInfo": {"name": "clutchwork", "version": version("clutchwork")},
             }
+        if method == "resources/list":
+            return {"resources": [{"uri": DASHBOARD_URI, "name": "ClutchWork dashboard", "mimeType": MCP_APP_MIME, "_meta": {"ui": {"prefersBorder": False}}}]}
+        if method == "resources/read":
+            if params.get("uri") != DASHBOARD_URI:
+                raise InvalidParams("unknown resource")
+            try:
+                html = self.ui_html_path.read_text(encoding="utf-8")
+                if not html:
+                    raise ValueError("empty dashboard")
+            except OSError, UnicodeError, ValueError:
+                raise DomainError(
+                    {
+                        "code": "dashboard_unavailable",
+                        "message": "Dashboard UI bundle is unavailable.",
+                        "paved_road": "build the dashboard UI bundle before opening the dashboard (see docs/how-clutch-works.md)",
+                    }
+                ) from None
+            return {"contents": [{"uri": DASHBOARD_URI, "mimeType": MCP_APP_MIME, "text": html}]}
         if method == "ping":
             return {}
         if method == "tools/list":
@@ -330,7 +375,18 @@ class ClutchMCPServer:
                         "name": name,
                         "description": name.replace("_", " "),
                         "inputSchema": model.model_json_schema(),
-                        **({"_meta": {"ui": {"visibility": ["app"]}}} if name.startswith("clutch_app_") else {}),
+                        **(
+                            {
+                                "_meta": {
+                                    "ui": {"resourceUri": DASHBOARD_URI},
+                                    "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]},
+                                }
+                            }
+                            if name == "clutch_open_dashboard"
+                            else {"_meta": {"ui": {"visibility": ["app"]}}}
+                            if name.startswith("clutch_app_")
+                            else {}
+                        ),
                     }
                     for name, model in TOOLS.items()
                 ]

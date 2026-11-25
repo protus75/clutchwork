@@ -4,8 +4,8 @@
 # purpose: Unit tests of the MCP server's tool and prompt catalog, tool routing to shared clutch functions (snapshot, status, stats, roadmap, wait_event, evidence, context_suggest, prompt), repo routing, error mapping, and shared prompt resolution.
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/context.py, clutch/journal.py, clutch/mcp.py, clutch/observe.py, clutch/runner.py]
 # owner: engine
-# verified: fbabb2aa
-# hash: b3e0141f7f96ad76377c69d938596f7d49e55e39728e9d6e09886e0dcd73ce3a
+# verified: 66bcb385
+# hash: f2d3ba7c28fc322e2f9155515f43b941890d0724c39e268538c879d91bb97fe9
 from types import SimpleNamespace
 
 import pytest
@@ -17,6 +17,9 @@ from tests.git_fake import GitFake
 def test_schemas_and_prompts(tmp_path, monkeypatch):
     server = mcp.ClutchMCPServer(default_cwd=tmp_path)
     assert set(item["name"] for item in server.dispatch("tools/list", {})["tools"]) == {
+        "clutch_open_dashboard",
+        "clutch_app_snapshot",
+        "clutch_app_stats",
         "clutch_snapshot",
         "clutch_status",
         "clutch_stats",
