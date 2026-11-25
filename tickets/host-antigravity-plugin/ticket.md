@@ -6,7 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-- mcp-app-dashboard
+- mcp-dashboard-surfaces
 - ask-specs-mcp-supervision
 
 ## Context
