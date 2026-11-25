@@ -4,8 +4,8 @@
 # purpose: Tests compact rendering of clutch view status --short.
 # relates: [clutch/status.py, clutch/__main__.py]
 # owner: clutch/status.py
-# verified: 0d8da9bc
-# hash: 0000000000000000000000000000000000000000000000000000000000000000
+# verified: 38cb9c7b
+# hash: c5bbb1ea1a1e03ed21a9ef474c7b3f0407571c85234f60ac9235ef79c329bf43
 from types import MappingProxyType
 
 from clutch.__main__ import _parser
