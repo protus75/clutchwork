@@ -30,9 +30,18 @@ button, select, input { color: inherit; background: var(--color-background-secon
 button { cursor: pointer; } button:disabled { opacity: .5; cursor: default; }
 .top-bar button { display: inline-flex; align-items: center; gap: 4px; }
 .sidebar-section > summary { display: flex; justify-content: space-between; cursor: pointer; padding: 7px 4px; border-bottom: 1px solid var(--color-border-primary, #aaa); font-size: .85em; font-weight: bold; text-transform: uppercase; }
-.section-count, .step-time, .stats-desc { color: var(--vscode-descriptionForeground); }
+.section-count, .stats-desc { color: var(--vscode-descriptionForeground); }
 .step-row { display: flex; width: 100%; align-items: center; gap: 5px; white-space: nowrap; text-align: left; border: 0; background: transparent; }
-.step-icon { flex: none; } .step-stem { font-weight: bold; } .step-text { overflow: hidden; text-overflow: ellipsis; } .step-time { margin-left: auto; }
+.step-row { height: 22px; }
+.step-row:disabled { opacity: 1; cursor: default; }
+.step-row.step-muted { color: var(--vscode-foreground); }
+.step-row.step-passed { color: var(--clutch-icon-passed); }
+.step-row.step-failed { color: var(--clutch-icon-failed); }
+.step-row.step-warning { color: var(--clutch-icon-warning); }
+.step-icon { flex: none; } .step-text { overflow: hidden; text-overflow: ellipsis; color: var(--vscode-descriptionForeground); }
+.settings-group { display: flex; flex-direction: column; gap: 6px; padding: 6px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.settings-row input[type=number] { width: 6em; }
 .context-menu { position: fixed; z-index: 10; display: flex; flex-direction: column; min-width: 160px; padding: 4px; background: var(--color-background-primary, #fff); border: 1px solid var(--color-border-primary, #aaa); box-shadow: 0 3px 12px #0005; }
 .context-menu button { text-align: left; border: 0; background: transparent; } .context-menu button:hover { background: var(--vscode-list-hoverBackground); }
 .submenu { display: flex; flex-direction: column; padding-left: 10px; }

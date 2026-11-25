@@ -15,11 +15,12 @@ from typing import Literal
 from urllib.parse import unquote, urlparse
 
 import duckdb
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from clutch import ask, box, context, events, hostfiles, index, observe, roadmap, runner, seams, serve, stats, tickets
 from clutch.box import UnknownBoxId
-from clutch.config import ConfigError, load_config
+from clutch.config import ConfigError, load_config, load_config_text
 from clutch.evidence import views
 from clutch.evidence.store import SKIP, CaptureNotFound, CaptureUnreadable, EvidenceStore, size_warning
 from clutch.git import Git, GitError
@@ -40,6 +41,16 @@ class Repo(BaseModel):
 
 class Dashboard(Repo):
     tab: Literal["tickets", "steps", "box", "stats", "help"] = "tickets"
+
+
+class UiState(Repo):
+    action: Literal["get", "set"]
+    state: dict[str, object] | None = None
+
+
+class AppConfig(Repo):
+    action: Literal["get", "set"]
+    updates: dict[str, object] | None = None
 
 
 class Snapshot(Repo):
@@ -128,6 +139,8 @@ class EngineControl(Repo):
 
 TOOLS = {
     "clutch_open_dashboard": Dashboard,
+    "clutch_app_ui_state": UiState,
+    "clutch_app_config": AppConfig,
     "clutch_app_snapshot": Snapshot,
     "clutch_app_stats": Stats,
     "clutch_snapshot": Snapshot,
@@ -187,6 +200,7 @@ class ClutchMCPServer:
         default_cwd=None,
         ui_html_path: Path | None = None,
         last_repo_path: Path | None = None,
+        ui_state_path: Path | None = None,
         config_path=None,
         env=None,
         clock=None,
@@ -206,6 +220,9 @@ class ClutchMCPServer:
         self.env = dict(os.environ if env is None else env)
         self.last_repo_path = (
             last_repo_path if last_repo_path is not None else (Path(self.env["XDG_CONFIG_HOME"]) if self.env.get("XDG_CONFIG_HOME") else Path.home() / ".config") / "clutch" / "last-repo"
+        )
+        self.ui_state_path = (
+            ui_state_path if ui_state_path is not None else (Path(self.env["XDG_CONFIG_HOME"]) if self.env.get("XDG_CONFIG_HOME") else Path.home() / ".config") / "clutch" / "dashboard-state.json"
         )
         self.client_supports_roots = False
         self.roots: list[Path] = []
@@ -258,13 +275,94 @@ class ClutchMCPServer:
         return ask.resolve_prompt(kind, stems, name=name, config=checkout.config, repo=checkout.repo, running_stems=running, draft_stems=drafts)
 
     def call_tool(self, name, args):
+        if name == "clutch_app_ui_state":
+            keys = ["details", "steps", "tickets", "box", "stats", "settings", "help"]
+            state = {"order": keys[:], "open": {k: k in keys[:3] for k in keys}, "heights": {}, "refreshSeconds": 15, "statsWindow": "7d", "playAction": "drain"}
+
+            def merge(incoming):
+                if not isinstance(incoming, dict):
+                    return
+                order = incoming.get("order")
+                if isinstance(order, list) and len(order) == len(keys) and all(isinstance(x, str) for x in order) and set(order) == set(keys):
+                    state["order"] = order
+                for field in ("open", "heights"):
+                    values = incoming.get(field)
+                    if isinstance(values, dict):
+                        for key, value in values.items():
+                            if key in keys and (isinstance(value, bool) if field == "open" else isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0):
+                                state[field][key] = value
+                value = incoming.get("refreshSeconds")
+                if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                    state["refreshSeconds"] = value
+                for field, allowed in (("statsWindow", ("24h", "7d", "30d", "20t")), ("playAction", ("drain", "serve"))):
+                    if incoming.get(field) in allowed:
+                        state[field] = incoming[field]
+
+            saved = []
+            try:
+                incoming = json.loads(self.ui_state_path.read_text(encoding="utf-8"))
+                merge(incoming)
+                if isinstance(incoming, dict) and isinstance(incoming.get("open"), dict):
+                    saved = [key for key, value in incoming["open"].items() if key in keys and isinstance(value, bool)]
+            except OSError, ValueError, UnicodeError, TypeError:
+                pass
+            if args.action == "set":
+                merge(args.state)
+                try:
+                    self.ui_state_path.parent.mkdir(parents=True, exist_ok=True)
+                    self.ui_state_path.write_text(json.dumps(state), encoding="utf-8")
+                except OSError:
+                    pass
+            result = {**state, "saved": saved}
+            return result, json.dumps(result)
         if name == "clutch_open_dashboard" and args.repo is None and self.default_repo() is None:
             value = {"repo": None, "tab": args.tab, "ready": False, "version": version("clutchwork"), "message": "Supply a ClutchWork checkout path to load the dashboard."}
             return value, value["message"]
         checkout, ctx = self.checkout(args.repo)
         cfg, fs = checkout.config, checkout.fs
         store = EvidenceStore(cfg.state_dir, fs, fs.read_bytes, fs.size, lambda text: text)
-        if name == "clutch_open_dashboard":
+        if name == "clutch_app_config":
+
+            def selected(config):
+                retro = config.retro
+                return {
+                    "retro": {
+                        "enabled": retro.enabled,
+                        "merges": retro.merges.model_dump(include={"enabled", "every"}),
+                        "settled": retro.settled.model_dump(include={"enabled", "every"}),
+                        "spikes": retro.spikes.model_dump(include={"enabled", "count"}),
+                    },
+                    "scheduler": {"parallel": config.scheduler.parallel.model_dump(include={"enabled", "max_runs"})},
+                }
+
+            if args.action == "set":
+                allowed = {
+                    "retro": {"enabled": None, "merges": {"enabled": None, "every": None}, "settled": {"enabled": None, "every": None}, "spikes": {"enabled": None, "count": None}},
+                    "scheduler": {"parallel": {"enabled": None, "max_runs": None}},
+                }
+
+                def apply(target, updates, schema):
+                    if not isinstance(updates, dict) or not isinstance(target, dict):
+                        raise ValueError("updates must be mappings")
+                    for key, value in updates.items():
+                        if key not in schema:
+                            raise ValueError(f"disallowed config key: {key}")
+                        if schema[key] is None:
+                            target[key] = value
+                        else:
+                            apply(target.setdefault(key, {}), value, schema[key])
+
+                try:
+                    raw = yaml.safe_load(ctx.config.read_text())
+                    apply(raw, args.updates, allowed)
+                    text = yaml.safe_dump(raw, sort_keys=False)
+                    cfg = load_config_text(text, path=ctx.config, cwd=checkout.repo)
+                except (ValueError, TypeError, yaml.YAMLError, ConfigError) as exc:
+                    raise runner.Refusal(str(exc), "supply valid retro or scheduler.parallel settings", code="invalid_config") from None
+                fs.write(ctx.config, text.encode())
+            value = selected(cfg)
+            return value, json.dumps(value)
+        elif name == "clutch_open_dashboard":
             snapshot = observe.snapshot(ctx, merged_limit=cfg.snapshot_merged_limit)
             value = {
                 "repo": str(checkout.repo),
@@ -453,6 +551,9 @@ class ClutchMCPServer:
             try:
                 args = TOOLS[name].model_validate(params.get("arguments", {}))
             except ValidationError as exc:
+                if name == "clutch_app_config" and isinstance(params.get("arguments"), dict) and "updates" in params["arguments"]:
+                    value = _error(runner.Refusal(str(exc), "supply valid retro or scheduler.parallel settings", code="invalid_config"))
+                    return {"isError": True, "content": [{"type": "text", "text": value["message"]}], "structuredContent": value}
                 raise InvalidParams(str(exc)) from None
             try:
                 value, text = self.call_tool(name, args)

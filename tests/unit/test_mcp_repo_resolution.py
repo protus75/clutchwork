@@ -4,8 +4,8 @@
 # purpose: Unit tests for how the MCP server resolves its repo: client roots protocol, then cwd, then saved last repo, plus checkout refusal
 # relates: [clutch/mcp.py, clutch/runner.py, tests/config_helpers.py]
 # owner: clutch/mcp.py
-# verified: 4256d272
-# hash: c195e157ec897fcd77992b1eb55474fbc836a727fde9b2fae69e85889791aa6a
+# verified: 7baeb8ce
+# hash: 1460b4d4182bcd7746b825c8fafe5234fdd32f90541c8c46e728353bce9ba2a7
 import io
 import json
 
@@ -34,12 +34,23 @@ def test_roots_protocol(tmp_path, monkeypatch):
         {"method": "notifications/roots/list_changed"},
     ]
     out = io.StringIO()
-    mcp.serve_stdio(stdin=io.StringIO("\n".join(json.dumps({"jsonrpc": "2.0", **r}) for r in requests)), stdout=out, default_cwd=tmp_path, last_repo_path=tmp_path / "last")
+    mcp.serve_stdio(
+        stdin=io.StringIO("\n".join(json.dumps({"jsonrpc": "2.0", **r}) for r in requests)),
+        stdout=out,
+        ui_state_path=tmp_path / "ui-state.json",
+        default_cwd=tmp_path,
+        last_repo_path=tmp_path / "last",
+    )
     replies = [json.loads(line) for line in out.getvalue().splitlines()]
     assert [r.get("id") for r in replies] == [1, "roots-1", 2, "roots-2"]
     assert seen == [[root]]
     out = io.StringIO()
-    mcp.serve_stdio(stdin=io.StringIO('{"jsonrpc":"2.0","id":1,"method":"initialize"}\n{"jsonrpc":"2.0","method":"notifications/initialized"}'), stdout=out, default_cwd=tmp_path)
+    mcp.serve_stdio(
+        stdin=io.StringIO('{"jsonrpc":"2.0","id":1,"method":"initialize"}\n{"jsonrpc":"2.0","method":"notifications/initialized"}'),
+        stdout=out,
+        ui_state_path=tmp_path / "ui-state.json",
+        default_cwd=tmp_path,
+    )
     assert len(out.getvalue().splitlines()) == 1
 
 
@@ -49,7 +60,7 @@ def test_resolution_and_persistence(tmp_path):
         (root / "tickets").mkdir(parents=True)
         (root / "config.yaml").write_text(VALID)
     path = tmp_path / "last-repo"
-    server = mcp.ClutchMCPServer(default_cwd=roots[1], last_repo_path=path, env={})
+    server = mcp.ClutchMCPServer(ui_state_path=tmp_path / "ui-state.json", default_cwd=roots[1], last_repo_path=path, env={})
     server.checkout(str(roots[2]))
     assert path.read_text() == str(roots[2])
     server.roots = [roots[0]]

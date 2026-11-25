@@ -4,8 +4,8 @@
 # purpose: Unit tests for the MCP dashboard: the ui://clutch/dashboard.html resource protocol (list, read, wrong URI, missing or empty bundle) and the clutch_open_dashboard, clutch_app_snapshot and clutch_app_stats tools
 # relates: [clutch/mcp.py]
 # owner: clutch/mcp.py
-# verified: 4256d272
-# hash: 14793618a5c655de1b251e3df67895570b262dd8714d607fdddf65f7eb996eb7
+# verified: 7baeb8ce
+# hash: e1433f5808dc2c35f3d617717b791035440d7d5471a68fae480dc60bfb98cc4b
 import io
 import json
 from datetime import UTC, datetime
@@ -27,7 +27,13 @@ def test_resource_protocol(tmp_path):
 
     def run(requests):
         out = io.StringIO()
-        mcp.serve_stdio(stdin=io.StringIO("\n".join(json.dumps({"jsonrpc": "2.0", "id": i, **r}) for i, r in enumerate(requests))), stdout=out, default_cwd=tmp_path, ui_html_path=html)
+        mcp.serve_stdio(
+            stdin=io.StringIO("\n".join(json.dumps({"jsonrpc": "2.0", "id": i, **r}) for i, r in enumerate(requests))),
+            stdout=out,
+            ui_state_path=tmp_path / "ui-state.json",
+            default_cwd=tmp_path,
+            ui_html_path=html,
+        )
         return [json.loads(line) for line in out.getvalue().splitlines()]
 
     replies = run(requests)
@@ -53,15 +59,15 @@ def test_resource_protocol(tmp_path):
 
 
 def test_dashboard_tools(tmp_path, monkeypatch):
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path, clock=lambda: datetime(2026, 1, 2, tzinfo=UTC))
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path, clock=lambda: datetime(2026, 1, 2, tzinfo=UTC))
     catalog = {t["name"]: t for t in server.dispatch("tools/list", {})["tools"]}
     # Wrong: expose app data to the model or omit host entrypoints.
-    assert len(catalog) == 26
+    assert len(catalog) == 28
     assert catalog["clutch_open_dashboard"]["_meta"] == {
         "ui": {"resourceUri": "ui://clutch/dashboard.html"},
         "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]},
     }
-    for name in ("clutch_app_snapshot", "clutch_app_stats"):
+    for name in ("clutch_app_snapshot", "clutch_app_stats", "clutch_app_ui_state", "clutch_app_config"):
         assert catalog[name]["_meta"] == {"ui": {"visibility": ["app"]}}
 
     def call(name, **args):

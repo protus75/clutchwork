@@ -4,8 +4,8 @@
 # purpose: Unit tests of the MCP server's tool and prompt catalog, tool routing to shared clutch functions (snapshot, status, stats, roadmap, wait_event, evidence, context_suggest, prompt), repo routing, error mapping, and shared prompt resolution.
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/context.py, clutch/journal.py, clutch/mcp.py, clutch/observe.py, clutch/runner.py]
 # owner: engine
-# verified: 4256d272
-# hash: afff491cf908384fae2edfb446218e87058fa5a8d4d83af6f3fd4e0e02c668e7
+# verified: 7baeb8ce
+# hash: 167f40da5fbf024ef7fd5f80f269eeb04edbbf7647ebf888bbea7212daf7c502
 from types import SimpleNamespace
 
 import pytest
@@ -15,9 +15,11 @@ from tests.git_fake import GitFake
 
 
 def test_schemas_and_prompts(tmp_path, monkeypatch):
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path)
     assert set(item["name"] for item in server.dispatch("tools/list", {})["tools"]) == {
         "clutch_open_dashboard",
+        "clutch_app_ui_state",
+        "clutch_app_config",
         "clutch_app_snapshot",
         "clutch_app_stats",
         "clutch_snapshot",
@@ -59,7 +61,7 @@ def test_schemas_and_prompts(tmp_path, monkeypatch):
 
 
 def test_tools_use_shared_functions(tmp_path, monkeypatch):
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path, sleep=lambda _: None, monotonic=lambda: 13)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path, sleep=lambda _: None, monotonic=lambda: 13)
     cfg = SimpleNamespace(state_dir=tmp_path, snapshot_merged_limit=17, evidence=SimpleNamespace(warn_gb=1))
     fs = SimpleNamespace(read_bytes=lambda p: b"", size=lambda p: 0)
     checkout = SimpleNamespace(config=cfg, fs=fs, repo=tmp_path)
@@ -79,7 +81,7 @@ def test_tools_use_shared_functions(tmp_path, monkeypatch):
 
 
 def test_invalid_repo(tmp_path):
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path)
     for repo in ("", str(tmp_path), str(tmp_path / "missing")):
         result = server.dispatch("tools/call", {"name": "clutch_snapshot", "arguments": {"repo": repo}})
         assert result["isError"] and result["structuredContent"]["code"] == "invalid_repo"
@@ -89,7 +91,7 @@ def test_tool_routes(tmp_path, monkeypatch):
     from dataclasses import dataclass
     from datetime import UTC, datetime
 
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path, clock=lambda: datetime(2026, 1, 2, tzinfo=UTC))
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path, clock=lambda: datetime(2026, 1, 2, tzinfo=UTC))
     cfg = SimpleNamespace(state_dir=tmp_path, snapshot_merged_limit=3, evidence=SimpleNamespace(warn_gb=1))
     fs = SimpleNamespace(read_bytes=lambda p: b"", size=lambda p: 0)
     checkout = SimpleNamespace(config=cfg, fs=fs, repo=tmp_path, journal=SimpleNamespace(read=lambda: ["event"]))
@@ -171,7 +173,7 @@ def test_tool_routes(tmp_path, monkeypatch):
 
 
 def test_prompt_domain_and_validation(tmp_path, monkeypatch):
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path)
     with pytest.raises(mcp.InvalidParams):
         server.dispatch("prompts/get", {"name": "missing"})
     with pytest.raises(mcp.DomainError) as exc:
@@ -191,7 +193,7 @@ def test_routing_and_config(tmp_path, monkeypatch):
         (root / "config.yaml").write_text(VALID)
     seen = []
     monkeypatch.setattr(mcp, "Git", lambda *a, **kw: seen.append(kw["env"]) or object())
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=first, git_factory=mcp.Git, env={})
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=first, git_factory=mcp.Git, env={})
     assert server.checkout(None)[0].repo == first
     assert server.checkout(str(second))[0].repo == second
     assert all(env["GIT_OPTIONAL_LOCKS"] == "0" for env in seen)
@@ -276,7 +278,7 @@ def test_context_suggest_shared(tmp_path):
 def test_invalid_wait_and_snapshot_limit(tmp_path, monkeypatch):
     cfg = SimpleNamespace(state_dir=tmp_path, snapshot_merged_limit=9)
     checkout = SimpleNamespace(config=cfg, fs=SimpleNamespace(read_bytes=None, size=None))
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path)
     monkeypatch.setattr(server, "checkout", lambda repo: (checkout, "ctx"))
     limits = []
     monkeypatch.setattr(observe, "snapshot", lambda ctx, *, merged_limit: limits.append(merged_limit) or {"rows": []})
@@ -355,7 +357,7 @@ def test_prompt_tool_renders_templates(tmp_path, monkeypatch):
             return self.root / f"{message.id}.json"
 
     monkeypatch.setattr(box, "Box", Box)
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path)
     checkout = SimpleNamespace(repo=tmp_path, config=cfg, fs=LocalFileSystem())
     monkeypatch.setattr(server, "checkout", lambda repo: (checkout, "ctx"))
 
@@ -369,7 +371,7 @@ def test_prompt_tool_renders_templates(tmp_path, monkeypatch):
 
 
 def test_prompt_argument_catalog(tmp_path):
-    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", default_cwd=tmp_path)
+    server = mcp.ClutchMCPServer(last_repo_path=tmp_path / "last-repo", ui_state_path=tmp_path / "ui-state.json", default_cwd=tmp_path)
     entries = {entry["name"]: entry["arguments"] for entry in server.dispatch("prompts/list", {})["prompts"]}
     assert entries == {
         kind: [{"name": "repo", "required": False}]
