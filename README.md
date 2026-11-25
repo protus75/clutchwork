@@ -2,13 +2,19 @@
 
 *CLI Lifecycle for Unattended Ticket-Chewing Hatchlings*
 
-ClutchWork is an engine that runs CLI coding agents through the ticket lifecycle against a git repository. Each ticket lives in `tickets/<stem>/`; its markdown and JSON files, including `ticket.md`, `run.md`, `review.md`, `diagnosis.json`, and others, pass work between stages. Reviewed work merges to local `main`. See the [ticket lifecycle diagram](https://github.com/protus75/clutchwork/blob/main/vscode-clutchwork/media/ticket-lifecycle.svg).
+ClutchWork orchestrates CLI coding agents (`claude`, `codex`, `gemini`, and `qwen`) through author → requisition → implement → check → review → merge to local `main`. It runs tickets in isolated worktrees with scope fences, mechanical gates, and cross-model review. Each ticket lives in `tickets/<stem>/`; its markdown and JSON files, including `ticket.md`, `run.md`, `review.md`, `diagnosis.json`, and others, pass work between stages. Reviewed work merges to local `main`. See the [ticket lifecycle diagram](https://github.com/protus75/clutchwork/blob/main/vscode-clutchwork/media/ticket-lifecycle.svg).
+
+The engine plane owns the ClutchWork process and gates; the host plane supplies the target repository’s code, tests, `config.yaml`, and roadmap. Run `clutch engine drain` unattended until the queue is quiet, or `clutch engine serve` continuously as new work arrives. The Suggestion Box captures second problems and follow-ups without derailing a ticket. For Antigravity, an MCP server exposes tools and a live interactive dashboard, while thin supervising skills retrieve the engine’s procedures.
 
 [GitHub repository](https://github.com/protus75/clutchwork)
 
 ## Install
 
-Add clutch to your host project and sync its environment:
+The Antigravity plugin needs no `clutchwork` dependency in each host repository. Install it with `agy plugin install https://github.com/protus75/clutchwork`; its MCP server runs automatically in an isolated tool environment using `uvx --from clutchwork clutch mcp serve`.
+
+For CLI use across repositories, install once with `uv tool install clutchwork` and run `clutch <verb>`, or use `uvx --from clutchwork clutch <verb>` in any host checkout.
+
+Optionally, teams can pin ClutchWork as a dev dependency in a host project’s `pyproject.toml` and sync its environment:
 
 ```sh
 uv add --dev clutchwork
@@ -94,9 +100,34 @@ uv run clutch ticket confirm  # confirm a draft or Reject item
 uv run clutch ticket reject   # reject a draft or Reject item
 ```
 
+## Examples
+
+Bootstrap a new host without adding ClutchWork to its dependencies. From the host checkout, install the tool once, install the provider CLIs you need, and create and check the host configuration:
+
+```sh
+uv tool install clutchwork
+clutch provider install claude codex
+clutch config init --write
+clutch host doctor
+clutch provider probe
+clutch host core
+```
+
+Review `config.yaml` and the generated conduct files, then commit them. Provider installation adds provider CLI dev dependencies to the host; an existing CLI on `PATH` can be used instead. To avoid a global tool installation, substitute `uvx --from clutchwork clutch` for `clutch` in these commands.
+
+In any configured workspace with the Antigravity plugin installed, ask the agent:
+
+- “Open the ClutchWork dashboard” to inspect the live queue.
+- “Supervise the Clutch queue (drain-loop)” to watch and handle a drain.
+- “Run docs/roadmap.md unattended with serve” to run the roadmap continuously.
+
+For a feature, ask the chat agent to plan it and turn the plan into tickets, then run `clutch engine drain` unattended. After the drain, ask for summaries of drafts and Reject-queue items; use `clutch ticket confirm` or `clutch ticket reject` for your decisions. Run `clutch box triage` to process Suggestion Box follow-ups and review any resulting drafts.
+
 ## Antigravity plugin
 
-Run `uv run clutch host antigravity` to install the global ClutchWork plugin and its stdio MCP server and dashboard. Use `--plugin-dir PATH` to choose a location or `--workspace` to write workspace skills. After upgrading, toggle ClutchWork at `customization://clutchwork` to reload the server. `clutch host doctor` warns if the installed plugin configuration drifts or its executable cannot resolve.
+The portable plugin is a thin wrapper: `plugin.json`, `mcp_config.json`, `assets/logo.png`, and `skills/clutch-*/SKILL.md` point to engine logic, MCP tools, and the bundled dashboard in the `clutchwork` Python package. No per-host `clutchwork` dependency is required.
+
+For a local machine installation, run `uv run clutch host antigravity` to install the global ClutchWork plugin and configure its stdio MCP server and dashboard. Use `--plugin-dir PATH` to choose a location or `--workspace` to write workspace skills. After upgrading, toggle ClutchWork at `customization://clutchwork` to reload the server. `clutch host doctor` warns if the installed plugin configuration drifts or its executable cannot resolve.
 
 Alternatively, install the portable bundle directly with `agy plugin install https://github.com/protus75/clutchwork`. It runs the server using `uvx --from clutchwork clutch mcp serve`. After publishing the release to PyPI, run `agy plugin validate --strict .` from the repository root before submitting it to the Antigravity Marketplace.
 
