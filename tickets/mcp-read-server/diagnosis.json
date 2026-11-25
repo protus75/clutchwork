@@ -1,20 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "452c66fbca427c0cf8854ff0cba4a92dde1601d7",
+  "produced_at_sha": "b10a805e106e76c60dd56172950fdef25b5921c6",
   "stem": "mcp-read-server",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
   "lessons": [
-    "Premise holds: clutch/journalcache.py:141 open_journal_cache mkdirs <state_dir>/cache, creates journal.duckdb.lock and loads journal.duckdb. observe.snapshot reaches it via journal_facts (clutch/observe.py:779), which conflicts with Definition of rejected 'no tool mutates lockfiles'.",
-    "clutch_snapshot (tool 1) and drafts resolution in ask.resolve_prompt (draft_stems built from observe.snapshot rows, as in clutch/__main__.py:1607) both need snapshot. So the ticket requires a call that its own rejection rule forbids, and no in-fence code can fix this.",
-    "Re-author with one fix: either state that the derived journal cache and its lock under <state_dir>/cache are allowed writes for read tools, or fence clutch/observe.py and clutch/journalcache.py plus their tests and specify a read-only snapshot path.",
-    "Class prevention: a ticket that declares a tool or verb 'read-only' should name which derived caches it may write, such as state_dir/cache/journal.duckdb. Author review should check every required call path against that list."
+    "Gate failure is caused by the implementer's own new file. tests/integration/test_git_fake_adoption.py flags tests/unit/test_mcp_tools.py because it builds its own Git stand-in. Its PATTERN matches `git = SimpleNamespace(`, NS, Mock, MagicMock or AsyncMock, a `class FakeGit`/`Git`, `spec=Git`, and",
+    "In tests/unit/test_mcp_tools.py, replace every hand-built Git stand-in with `from tests.git_fake import GitFake`. Pass per-method overrides, such as `GitFake(_run=...)` for the stats checks.json `git show`, or a callable or exception for other methods. Also rename any `fake_git` identifier.",
+    "Before committing, run `./dev.py test tests/integration/test_git_fake_adoption.py` and the ticket's `## Verification` command. Both must exit 0. Keep test_mcp_tools.py coverage of the mcp.py, stats.py and context.py lines unchanged."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0
+  ],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
