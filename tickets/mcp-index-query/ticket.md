@@ -43,11 +43,11 @@ Rejected simpler approach: shelling out to `clutch index query` as a subprocess 
 ### MCP index query tool
 - disposition: extend
 - owner: clutch/mcp.py
-- consumers: MCP clients (Antigravity agent sessions), `tests/unit/test_mcp_tools.py`, `tests/unit/test_mcp_app_dashboard.py`, `tests/unit/test_mcp_control_and_tickets.py`, `tests/unit/test_mcp_index_query.py`
+- consumers: MCP clients (Antigravity agent sessions), `tests/unit/test_mcp_tools.py`, `tests/unit/test_mcp_app_dashboard.py`, `tests/unit/test_mcp_index_query.py`
 - observable change: adds `IndexQuery(Repo)` (`text: str`, `limit: int = 10`, `extra="forbid"`) and registers `clutch_index_query` in `TOOLS` (bringing `tools/list` from 25 to 26 tools after `mcp-app-dashboard`, model-visible with no `visibility: ["app"]` restriction); adds optional `creator=index.default_creator` parameter on `ClutchMCPServer.__init__`; `call_tool` invokes `clutch.index.query(cfg, checkout.repo, args.text, fs=fs, exec_=checkout.exec_, env=child_env(self.env, cfg, serving=None), creator=self.creator, limit=args.limit, connect=self.connect)` without taking any writer or commit lock; on `outcome in ("found", "no_match")` returns `structuredContent` with `outcome`, `mode`, `hits` (each item containing `path`, `kind`, `selector`, `purpose`, `relates`, `owner`, `score`), and `findings`; on `invalid_input`, `no_index`, `index_unreadable`, or `fulltext_unavailable` raises `runner.Refusal(message, paved_road, code=result.outcome)` projected by `dispatch` into `isError: True` with `structuredContent: {"code", "message", "paved_road"}`.
 - compatibility: all 25 tools from `mcp-app-dashboard`, `ui://clutch/dashboard.html`, and all 10 MCP Prompts preserve their exact schemas and behavior; `tests/unit/test_mcp_tools.py` (and `tests/unit/test_mcp_app_dashboard.py` if it asserts exact tool count or names) update their expected `tools/list` set to 26 tools.
 - acceptance: criteria 1, 2, 3, and 4
-- tests: tests/unit/test_mcp_index_query.py, tests/unit/test_mcp_tools.py, tests/unit/test_mcp_control_and_tickets.py, tests/unit/test_mcp_app_dashboard.py
+- tests: tests/unit/test_mcp_index_query.py, tests/unit/test_mcp_tools.py, tests/unit/test_mcp_app_dashboard.py
 - post-merge source of truth: clutch/mcp.py
 
 ### CLI help and command documentation
@@ -84,6 +84,7 @@ In:
 
 Out:
 - Modifying `clutch/index.py` (its `query`, `QueryHit`, and `QueryResult` contract is reused unchanged).
+- Modifying `tests/unit/test_mcp_control_and_tickets.py` (it derives its expected tool list from `mcp.TOOLS` rather than pinning a hardcoded tool set, and runs unmodified in `## Verification`).
 - Parquet / VSS sidecar storage changes (deferred to roadmap row 228, `index-parquet-vss-sidecar`).
 - Adding tests to any of the seven hot test files (`tests/integration/test_daemon_composition.py`, `tests/integration/test_drain.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_stages.py`, `tests/integration/test_cli.py`, `tests/integration/test_watch.py`, `tests/integration/serve_rig.py`).
 
@@ -97,7 +98,7 @@ Out:
 - tests/unit/test_mcp_index_query.py
 
 ## Acceptance criteria
-1. `tests/unit/test_mcp_tools.py`, `tests/unit/test_mcp_control_and_tickets.py`, `tests/unit/test_mcp_app_dashboard.py`, and `tests/unit/test_mcp_index_query.py` check `tools/list` exposes all 26 tools including `clutch_index_query` with schema requiring `text`, defaulting `limit` to `10`, forbidding extra properties, and omitting app-only `_meta` visibility (ruling out hiding `clutch_index_query` from models or dropping any existing tool). Verified by `./dev.py test tests/unit/test_mcp_tools.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_index_query.py`.
+1. `tests/unit/test_mcp_tools.py`, `tests/unit/test_mcp_app_dashboard.py`, and `tests/unit/test_mcp_index_query.py` check `tools/list` exposes all 26 tools including `clutch_index_query` with schema requiring `text`, defaulting `limit` to `10`, forbidding extra properties, and omitting app-only `_meta` visibility (ruling out hiding `clutch_index_query` from models or dropping any existing tool). Verified by `./dev.py test tests/unit/test_mcp_tools.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_index_query.py`.
 2. `tests/unit/test_mcp_index_query.py` checks `tools/call` for `clutch_index_query` invokes `clutch.index.query` with `connect(..., read_only=True)` and `self.creator`, returns `isError` absent/false and `structuredContent` with `outcome == "found"`, `mode`, `findings`, and `hits` entries carrying all seven fields (`selector`, `path`, `kind`, `purpose`, `relates` as a JSON list of strings, `owner`, `score` as a float), and handles `outcome == "no_match"` with `hits == []` (ruling out empty/dropped hit fields, non-read-only connections, or returning `isError: True` on `no_match`). Verified by `./dev.py test tests/unit/test_mcp_index_query.py`.
 3. `tests/unit/test_mcp_index_query.py` checks `clutch_index_query` maps `invalid_input` (blank text or out-of-range limit), `no_index`, `index_unreadable`, and `fulltext_unavailable` to `isError: True` with `structuredContent` carrying `code == outcome`, non-empty `message`, and the matching `paved_road` (ruling out returning `isError` false or losing the paved road), strips provider secrets via `child_env(..., serving=None)` (ruling out passing raw `self.env` to embed commands), and rejects missing `text` or extra arguments with `InvalidParams` and invalid `repo` with `code: "invalid_repo"`. Verified by `./dev.py test tests/unit/test_mcp_index_query.py`.
 4. `tests/unit/test_mcp_index_query.py` checks `clutch_index_query` acquires no writer or commit lock (succeeding even while a live writer lock file exists in `state_dir`, ruling out lock contention) and `clutch/mcp.py` meets its 90% `test-gate.toml` unit coverage floor. Verified by `./dev.py test tests/unit/test_mcp_index_query.py tests/unit/test_mcp_protocol.py`.
