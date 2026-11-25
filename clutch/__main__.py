@@ -337,7 +337,7 @@ def _parser() -> argparse.ArgumentParser:
         view_sub,
         "status",
         summary="project current state from the journal (read-only)",
-        does="Print the journal projection of section 10.3, including overdue retro and calibration reminders; --short omits resolved Suggestion Box history, tombstones and the scorecard.",
+        does="Print the journal projection of section 10.3, including overdue retro and calibration reminders; these run only when invoked; --short omits resolved Suggestion Box history, tombstones and the scorecard.",
         reads="Config, journal, box, retro spec, HEAD and committed checks records.",
         writes="Nothing.",
         lock="None.",
@@ -1545,7 +1545,8 @@ def main(
     def handle_status():
         from clutch.evidence.store import EvidenceStore, size_warning
 
-        print(render(asyncio.run(_status(checkout)), short=bool(args.short)), end="")
+        projection = asyncio.run(_status(checkout))
+        print(render(projection, short=True) if args.short else render(projection), end="")
         fs = checkout.fs
         store = EvidenceStore(config.state_dir, fs, fs.read_bytes, fs.size, lambda text: text)
         if message := size_warning(store, config.evidence.warn_gb):
