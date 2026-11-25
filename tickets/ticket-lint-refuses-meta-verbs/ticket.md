@@ -1,5 +1,5 @@
 ---
-state: draft
+state: confirmed
 source: box:suggestion
 priority: P2
 kind: feature
