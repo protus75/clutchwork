@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The worktree needed its declared pnpm dependencies installed before the bundle test could run; targeted mutations of layout, stats, menus, icons, and repository visibility were detected by the harness.
+The worktree lacked esbuild, so verification used the existing repository node_modules through a temporary symlink, which was removed afterward.
 
 ## Dead ends
 
-npm ci could not run because the repository uses a pnpm lockfile; pnpm install --frozen-lockfile succeeded.
+The first mutation check could not run because esbuild was unavailable; the checks passed after supplying the existing dependency.
 
 ## Second problems filed
 
-- box-001176-e08d284f: docs/antigravity-plan.md still describes dashboard tabs and the former Details artifact row, and is outside the scope fence.
+- box-001177-84c656b1: docs/antigravity-plan.md describes dashboard tabs and Details artifact links that no longer match the implemented layout.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ npm ci could not run because the repository uses a pnpm lockfile; pnpm install -
 
 ## Predicted vs actual
 
-The ticket estimated 15 minutes; elapsed time was not measured.
+The ticket budget was 15 minutes; this targeted retry took less than 15 minutes.
 
