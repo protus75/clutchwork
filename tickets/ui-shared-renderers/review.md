@@ -1,6 +1,6 @@
 # Review: approve
 
-The diff meets every acceptance criterion: the shared renderer factories check that the host provides the four required functions, VS Code auto-mounting sends the same messages and context payloads as before, every view.css `--vscode-*` variable keeps precedence ahead of its new `--color-*`/`--font-*` fallback, the three help topics are added under the view surface, and every changed file is inside the scope fence.
+The diff turns the tickets, detail and box views into host-adapter factories, adds CommonJS exports and VS Code-only auto-mounting, adds the CSS fallback chains and the three new view help topics, and adds the required tests, all inside the scope fence and with the same VS Code messages and context payloads as before.
 
 ## Findings
 
@@ -12,10 +12,10 @@ none
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "19c668a8bf37b9bd3d60eb8947f9303ac7b45e43",
+  "produced_at_sha": "46e3fcc9b6f7c390c61347e0a70504793379f8b5",
   "stem": "ui-shared-renderers",
-  "reviewed_sha": "19c668a8bf37b9bd3d60eb8947f9303ac7b45e43",
-  "summary": "The diff meets every acceptance criterion: the shared renderer factories check that the host provides the four required functions, VS Code auto-mounting sends the same messages and context payloads as before, every view.css `--vscode-*` variable keeps precedence ahead of its new `--color-*`/`--font-*` fallback, the three help topics are added under the view surface, and every changed file is inside the scope fence.",
+  "reviewed_sha": "46e3fcc9b6f7c390c61347e0a70504793379f8b5",
+  "summary": "The diff turns the tickets, detail and box views into host-adapter factories, adds CommonJS exports and VS Code-only auto-mounting, adds the CSS fallback chains and the three new view help topics, and adds the required tests, all inside the scope fence and with the same VS Code messages and context payloads as before.",
   "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
