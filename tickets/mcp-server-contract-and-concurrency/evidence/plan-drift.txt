@@ -1,0 +1,22 @@
+Observed contract and concurrency drift against docs/antigravity-plan.md (verified at HEAD):
+
+1. Missing declarative tool visibility metadata (clutch/mcp.py:129-156, 418-440 vs docs/antigravity-plan.md:66-69):
+   - clutch/mcp.py:129-156 defines TOOLS as a flat dict[str, type[BaseModel]] with no visibility or blocking metadata.
+   - clutch/mcp.py:418-440 only emits _meta.ui.visibility for names starting with "clutch_app_" and emits no visibility on clutch_wait_event (spec requires visibility: ["model"]), clutch_open_dashboard (spec requires visibility: ["model", "app"] alongside resourceUri and entrypoints), or any other model+app tool (spec requires visibility: ["model", "app"]).
+
+2. Single-threaded serve_stdio blocks concurrent MCP requests (clutch/mcp.py:539-599 vs docs/antigravity-plan.md:67, 70):
+   - clutch/mcp.py:545-598 runs server.dispatch() synchronously inside `for line in stdin:`.
+   - When a supervising agent calls clutch_wait_event (default timeout_seconds=300.0, clutch/mcp.py:60, 300-305), the stdio loop cannot read or answer concurrent ping, clutch_app_snapshot, clutch_app_stats, or control requests until wait_once returns.
+
+3. Synchronous multi-minute LLM passes executed inline in MCP server when engine is stopped (clutch/mcp.py:358-381; clutch/runner.py:950-989, 1053-1073 vs docs/antigravity-plan.md:70, 72):
+   - clutch/mcp.py:358-361 routes clutch_box_triage to runner.triage_or_submit, which falls through to an inline synchronous LLM triage_pass when no engine holds the lock (clutch/runner.py:1065-1071).
+   - clutch/mcp.py:367-381 routes clutch_engine_retro to runner.run_or_submit_retro, which falls through to an inline synchronous LLM Retro pass when no engine holds the lock (clutch/runner.py:961-985).
+   - docs/antigravity-plan.md:70,72 requires MCP engine-lifecycle/mutation tools to be non-blocking requests only, keeping synchronous multi-minute foreground runs on the CLI.
+
+4. Missing "host" prompt in MCP prompts/list and prompts/get (clutch/mcp.py:441-448, 476-505 vs docs/antigravity-plan.md:68; clutch/ask.py:125-144):
+   - clutch/mcp.py:441-448 lists only ask.KINDS, omitting "host".
+   - clutch/mcp.py:478 rejects kind == "host" with InvalidParams("unknown prompt"), even though clutch/ask.py:125-144 implements resolve_prompt("host", ...).
+
+5. False-positive drift warning on portable plugin mcp_config.json (clutch/antigravity.py:19-21, 67-68, 107-119 vs docs/antigravity-plan.md:116-120):
+   - clutch/antigravity.py:67-68 generates portable_mcp_config() with PORTABLE_MCP_ARGS = ("--from", "clutchwork", "clutch", "mcp", "serve").
+   - clutch/antigravity.py:115 checks only `server["args"] == list(MCP_ARGS)`, rejecting portable installs (e.g. `agy plugin install https://github.com/protus75/clutchwork`) with a false-positive drift finding.
