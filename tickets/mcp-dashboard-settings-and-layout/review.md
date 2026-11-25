@@ -1,10 +1,10 @@
 # Review: snag
 
-The earlier review findings are fixed, but box auto-open is now dead because the client treats the server's default open.box as a saved preference.
+The earlier box auto-open finding is fixed (`savedOpen` is now honoured and both the fresh and the saved-closed cases are tested), but the new 15-second polling overwrites unsaved edits in the Settings config inputs, so Save config.yaml can send stale values.
 
 ## Findings
 
-- [logic] clutch/ui/app.js:203 The client sets `boxInitialized = typeof state.open?.box === "boolean"`. But clutch_app_ui_state get always merges the saved file over full defaults, and those defaults include `open.box: false`. So `open.box` is always a boolean and `boxInitialized` is always true. The existing auto-open in refresh (`sections.box.open = snap.boxCounts.pending > 0`) can then never run, even on a fresh install with no saved state. Scope in says to auto-open `box` whenever `open.box` was not saved. The harness hides this: its snapshot has pending=2, and it now asserts the box section is closed. (do instead: Let the client tell a saved open.box from the default. One way: the get reply also reports which `open` keys came from the file, such as a `saved` list or a flag for whether the file was read. Set `boxInitialized` only when `box` was actually saved. Add a harness case with no saved state and pending > 0 that asserts the Suggestion Box opens, plus one with saved `box: false` that asserts it stays closed.)
+- [logic] clutch/ui/app.js:185 Every `refresh()` reloads `clutch_app_config` get and writes the result into every config input. This diff also makes `refresh()` run every `refreshSeconds` (default 15) and on window focus. So if an operator changes a value such as `Parallel max runs` and does not click Save within one poll, the input is reset to the on-disk value. Save config.yaml then sends the old value and the edit is silently lost. (do instead: Only fill the config inputs when the operator has nothing unsaved. For example, mark an input dirty on its `input`/`change` event, skip dirty inputs (or skip filling entirely) during `refresh()`, and clear the dirty flags after Save config.yaml succeeds. Add a harness case: edit an input, fire the interval callback, then assert the edited value survives and is what Save sends.)
 
 ## Record
 
@@ -12,17 +12,17 @@ The earlier review findings are fixed, but box auto-open is now dead because the
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
+  "produced_at_sha": "fda1aedddc96016667722bd172e72575ad3d548f",
   "stem": "mcp-dashboard-settings-and-layout",
-  "reviewed_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
-  "summary": "The earlier review findings are fixed, but box auto-open is now dead because the client treats the server's default open.box as a saved preference.",
+  "reviewed_sha": "fda1aedddc96016667722bd172e72575ad3d548f",
+  "summary": "The earlier box auto-open finding is fixed (`savedOpen` is now honoured and both the fresh and the saved-closed cases are tested), but the new 15-second polling overwrites unsaved edits in the Settings config inputs, so Save config.yaml can send stale values.",
   "findings": [
     {
       "code": "logic",
       "path": "clutch/ui/app.js",
-      "line": 203,
-      "message": "The client sets `boxInitialized = typeof state.open?.box === \"boolean\"`. But clutch_app_ui_state get always merges the saved file over full defaults, and those defaults include `open.box: false`. So `open.box` is always a boolean and `boxInitialized` is always true. The existing auto-open in refresh (`sections.box.open = snap.boxCounts.pending > 0`) can then never run, even on a fresh install with no saved state. Scope in says to auto-open `box` whenever `open.box` was not saved. The harness hides this: its snapshot has pending=2, and it now asserts the box section is closed.",
-      "paved_road": "Let the client tell a saved open.box from the default. One way: the get reply also reports which `open` keys came from the file, such as a `saved` list or a flag for whether the file was read. Set `boxInitialized` only when `box` was actually saved. Add a harness case with no saved state and pending > 0 that asserts the Suggestion Box opens, plus one with saved `box: false` that asserts it stays closed.",
+      "line": 185,
+      "message": "Every `refresh()` reloads `clutch_app_config` get and writes the result into every config input. This diff also makes `refresh()` run every `refreshSeconds` (default 15) and on window focus. So if an operator changes a value such as `Parallel max runs` and does not click Save within one poll, the input is reset to the on-disk value. Save config.yaml then sends the old value and the edit is silently lost.",
+      "paved_road": "Only fill the config inputs when the operator has nothing unsaved. For example, mark an input dirty on its `input`/`change` event, skip dirty inputs (or skip filling entirely) during `refresh()`, and clear the dirty flags after Save config.yaml succeeds. Add a harness case: edit an input, fire the interval callback, then assert the edited value survives and is what Save sends.",
       "kind": null,
       "unit": null
     }
