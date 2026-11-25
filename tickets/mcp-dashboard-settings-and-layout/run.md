@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Targeted mutation checks were performed, but not every new assertion was individually mutation-checked.
+The final verification command passed all 55 tests; targeted mutation checks detected the tested regressions.
 
 ## Dead ends
 
-none
+The first edit command used unavailable python; reran it with python3.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket budget was 20 minutes expected and 40 minutes stuck; elapsed time was not measured.
 
