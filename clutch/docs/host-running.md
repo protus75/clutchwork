@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: f065d98a
-hash: ea2bea62abaf4306d629dc112dd2c10e944f1fb9ca63e70a0cd708eeb095604f
+verified: 0626363d
+hash: 6096e098c13c63963b6e55ecf70721f1524702e2f81bb5c3ed3b56070c4c7524
 -->
 # Running ClutchWork on a host
 
@@ -57,7 +57,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `box triage` | Yes | Make one pass over named pending box IDs, or all pending messages. |
 | `release ship` | No | Gate the current release, bump and tag it, optionally publish, then run packages; takes the writer lock. |
 | `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
-| `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
+| `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, check, regenerate and commit the Antigravity plugin bundle when present together with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `box dismiss` | No | Dismiss named box IDs without a model call. |
 | `evidence show` | Yes | Print call envelopes and stored normalized event lines. |
 | `evidence schema` | Yes | Print the JSON Schema for start, end or event records. |

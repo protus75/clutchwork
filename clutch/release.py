@@ -1,9 +1,11 @@
 """Local version bumps and annotated release tags; publishing is separate."""
 
+import json
 from collections.abc import Mapping
 from fnmatch import fnmatchcase
 from pathlib import Path
 
+from clutch.antigravity import PLUGIN_NAME, portable_bundle_files
 from clutch.changelog import insert_section
 from clutch.config import Config
 from clutch.git import Git, GitError
@@ -18,9 +20,22 @@ PUBLISH_TIMEOUT_S = 600.0
 
 
 async def release(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], part: str, today: str) -> tuple[str, str]:
-    dirty = await git.status_porcelain(repo, "--", "pyproject.toml", "uv.lock", "CHANGELOG.md")
+    logo = None
+    try:
+        manifest = json.loads(fs.read_bytes(repo / "plugin.json"))
+        if isinstance(manifest, dict) and manifest.get("name") == PLUGIN_NAME:
+            logo = fs.read_bytes(repo / "clutch/assets/logo.png")
+    except OSError, ValueError, UnicodeDecodeError:
+        pass
+    paths = ["pyproject.toml", "uv.lock", "CHANGELOG.md"]
+    if logo is not None:
+        paths.extend(sorted(portable_bundle_files(version_str="", logo_bytes=logo)))
+    dirty = await git.status_porcelain(repo, "--", *paths)
     if dirty:
-        raise Refusal(f"uncommitted version files: {dirty.strip()}", "commit or restore pyproject.toml, uv.lock and CHANGELOG.md before release bump")
+        remedy = "commit or restore pyproject.toml, uv.lock and CHANGELOG.md"
+        if logo is not None:
+            remedy += " and the Antigravity plugin bundle"
+        raise Refusal(f"uncommitted version files: {dirty.strip()}", remedy + " before release bump")
     rc, out, err = await exec_.run(["uv", "version", "--bump", part, "--dry-run", "--short"], cwd=repo, env=env, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
@@ -45,8 +60,11 @@ async def release(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
     except FileNotFoundError:
         existing = None
     fs.write(path, insert_section(existing, version, today, subjects).encode("utf-8"))
+    if logo is not None:
+        for rel, data in portable_bundle_files(version_str=version, logo_bytes=logo).items():
+            fs.write(repo / rel, data)
     message = f"release: {version}"
-    sha = await git.commit(repo, message, only=["pyproject.toml", "uv.lock", "CHANGELOG.md"])
+    sha = await git.commit(repo, message, only=paths)
     await git.tag(repo, tag, message, sha)
     return version, sha
 

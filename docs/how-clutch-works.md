@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: f065d98a
-hash: 1fb4e7fa5df309e1267119a60c378656d85ef0b77cae2837b086332dcb629f59
+verified: 0626363d
+hash: 6b9c06dab6d4a0a4233e419e8aaee98253592341ca9bcf2e8e9fa7fbb6409eaa
 -->
 # How ClutchWork works
 
@@ -98,7 +98,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `roadmap accept <release>` | commit only | Reviews the release’s merged rows together against its theme, ship gate, and owning plans through a read-only model call. Refuses a missing or dirty roadmap, unknown release, missing section 1 row, or a judge that implemented most of the release when another provider is declared. Appends new P1 gap rows to this release or deferred rows to the next in one `clutch(roadmap): accept <release>` commit. Exits 0 with no partial or unmet promises, 1 for those gaps, and 2 on refusal; takes no writer lock and works while serve runs. |
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order: the current release (the next minor above the `pyproject.toml` version, `<major>.<minor+1>.0`) first, then rows that earlier releases left unfinished, then later releases, until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
 | `box triage [id ...]` | try | One sequential pass over named pending messages, or all pending messages; submits to a running engine for its next idle point (section 9.2). |
-| `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
+| `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, checks any committed Antigravity plugin bundle for edits, regenerates it using `clutch/antigravity.py::portable_bundle_files` when present, commits it with the three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
 | `release ship` | yes | Gates the current release, bumps and tags it, journals the release, optionally publishes, and runs configured packages. |
 | `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
