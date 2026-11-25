@@ -25,8 +25,13 @@ kind: bug
 - tests/unit/test_mcp_tools.py
 - tests/unit/test_mcp_control_and_tickets.py
 - tests/unit/test_mcp_app_dashboard.py
+- tests/unit/test_mcp_index_query.py
+- tests/unit/test_mcp_repo_resolution.py
 - tests/unit/test_antigravity_plugin.py
+- tests/unit/test_antigravity_bundle.py
 - tests/integration/test_mcp_read_server.py
+- tests/git_fake.py
+- tests/integration/test_git_fake_adoption.py
 
 ## Goal / Why
 Restore `clutch/mcp.py` and `clutch/antigravity.py` to the `docs/antigravity-plan.md` (§3, §6) contract and eliminate five coupled defects observed in `tickets/mcp-server-contract-and-concurrency/evidence/plan-drift.txt`:
@@ -42,10 +47,10 @@ Restore `clutch/mcp.py` and `clutch/antigravity.py` to the `docs/antigravity-pla
 - disposition: extend
 - owner: clutch/mcp.py
 - consumers: Antigravity MCP host, MCP App iframe (`clutch/ui/app.js`), `clutch mcp serve` (`serve_stdio`), and MCP unit/integration tests
-- observable change: Replace the flat `TOOLS: dict[str, type[BaseModel]]` values with a frozen `ToolSpec(model, visibility, blocking="fast")` dataclass (keeping the `TOOLS` dict name) where `visibility: tuple[Literal["model", "app"], ...]` and `blocking: Literal["fast", "wait", "submit_only"] = "fast"`. `clutch_wait_event` declares `visibility=("model",), blocking="wait"`; all `clutch_app_*` tools (`clutch_app_snapshot`, `clutch_app_stats`, `clutch_app_ticket_confirm`, `clutch_app_ticket_reject`, `clutch_app_ui_state`, `clutch_app_config`) declare `visibility=("app",)`; `clutch_open_dashboard` declares `visibility=("model", "app")` alongside `resourceUri` and `com.google.antigravity/ui` entrypoints; all other tools declare `visibility=("model", "app")` (with `clutch_box_triage` and `clutch_engine_retro` declaring `blocking="submit_only"`). `tools/list` emits `_meta.ui.visibility` for every tool directly from `ToolSpec`. In `serve_stdio`, `tools/call` requests reuse the `dispatch` param-validation rule synchronously on the reader loop (`name` is a `str` in `TOOLS` and `spec.model.model_validate(params.get("arguments", {}))` succeeds, answering `-32602` immediately in order on invalid params, while preserving the `clutch_app_config` exemption when `arguments` is a `dict` containing `"updates"` so invalid `updates` still return `isError: True` with `code="invalid_config"` rather than `-32602`) and submit only valid `tools/call` executions to worker threads via `concurrent.futures.ThreadPoolExecutor` with a `threading.Lock` serializing `stdout.write` + `stdout.flush`, waiting for all in-flight workers on EOF before returning, and redirecting process `sys.stdout` to `sys.stderr` once around the loop/shutdown so domain `print()` calls remain thread-safe; `initialize`, `notifications/*`, `roots/list` responses, `ping`, `tools/list`, `resources/*`, and `prompts/*` remain ordered and thread-safe on the reader loop.
-- compatibility: Keeps `TOOLS` dict keys identical (`set(mcp.TOOLS)` and `delitem` work unchanged), keeps all JSON-RPC method names and tool argument schemas unchanged, and restores `_meta.ui.visibility` compliance with `docs/antigravity-plan.md` §3 while preventing `clutch_wait_event` from blocking concurrent requests.
+- observable change: Replace the flat `TOOLS: dict[str, type[BaseModel]]` values with a frozen `ToolSpec(model, visibility, blocking="fast")` dataclass (keeping the `TOOLS` dict name) where `visibility: tuple[Literal["model", "app"], ...]` and `blocking: Literal["fast", "wait", "submit_only"] = "fast"`. `clutch_wait_event` declares `visibility=("model",), blocking="wait"`; all `clutch_app_*` tools (`clutch_app_snapshot`, `clutch_app_stats`, `clutch_app_ticket_confirm`, `clutch_app_ticket_reject`, `clutch_app_ui_state`, `clutch_app_config`) declare `visibility=("app",)`; `clutch_open_dashboard` declares `visibility=("model", "app")` alongside `resourceUri` and `com.google.antigravity/ui` entrypoints; all other tools (including `clutch_index_query`) declare `visibility=("model", "app")` (with `clutch_box_triage` and `clutch_engine_retro` declaring `blocking="submit_only"`). `tools/list` emits `_meta.ui.visibility` for every tool directly from `ToolSpec`. In `serve_stdio`, `tools/call` requests reuse the `dispatch` param-validation rule synchronously on the reader loop (`name` is a `str` in `TOOLS` and `spec.model.model_validate(params.get("arguments", {}))` succeeds, answering `-32602` immediately in order on invalid params, while preserving the `clutch_app_config` exemption when `arguments` is a `dict` containing `"updates"` so invalid `updates` still return `isError: True` with `code="invalid_config"` rather than `-32602`) and submit only valid `tools/call` executions to worker threads via `concurrent.futures.ThreadPoolExecutor` with a `threading.Lock` serializing `stdout.write` + `stdout.flush`, waiting for all in-flight workers on EOF before returning, and redirecting process `sys.stdout` to `sys.stderr` once around the loop/shutdown so domain `print()` calls remain thread-safe; `initialize`, `notifications/*`, `roots/list` responses, `ping`, `tools/list`, `resources/*`, and `prompts/*` remain ordered and thread-safe on the reader loop.
+- compatibility: Keeps `TOOLS` dict keys identical (`set(mcp.TOOLS)` and `delitem` work unchanged), keeps all JSON-RPC method names and tool argument schemas unchanged, and restores `_meta.ui.visibility` compliance with `docs/antigravity-plan.md` §3 while preventing `clutch_wait_event` from blocking concurrent requests. Tests asserting a tool has no `_meta` (`tests/unit/test_mcp_index_query.py`) are updated in this ticket.
 - acceptance: Every tool in `tools/list` emits `_meta.ui.visibility` matching its `ToolSpec`, and a blocking `clutch_wait_event` in flight on `serve_stdio` does not block a concurrent `ping` (or `clutch_app_snapshot`) request from returning immediately.
-- tests: `tests/unit/test_mcp_surface_contract.py`, `tests/unit/test_mcp_control_and_tickets.py`, `tests/unit/test_mcp_app_dashboard.py`, `tests/unit/test_mcp_protocol.py`
+- tests: `tests/unit/test_mcp_surface_contract.py`, `tests/unit/test_mcp_control_and_tickets.py`, `tests/unit/test_mcp_app_dashboard.py`, `tests/unit/test_mcp_index_query.py`, `tests/unit/test_mcp_protocol.py`
 - post-merge source of truth: clutch/mcp.py
 
 ### MCP non-blocking triage and retro submission
@@ -100,7 +105,7 @@ Restore `clutch/mcp.py` and `clutch/antigravity.py` to the `docs/antigravity-pla
 - `clutch/antigravity.py`:
   - Derive `VALID_MCP_ARGS = frozenset({MCP_ARGS, PORTABLE_MCP_ARGS})` and update `doctor_finding` to accept any list `server["args"]` whose `tuple(args)` is in `VALID_MCP_ARGS`.
 - Tests:
-  - Create `tests/unit/test_mcp_surface_contract.py` verifying:
+  - Create `tests/unit/test_mcp_surface_contract.py` verifying the items below. Any git stand-in it needs uses `GitFake` from `tests/git_fake.py` (never a `SimpleNamespace`/`Mock` git, a `FakeGit` class, `spec=Git`, or a `fake_git` name), so `tests/integration/test_git_fake_adoption.py` stays green; drop the git stub entirely if no test needs it:
     - Every tool in `tools/list` emits `_meta.ui.visibility`, `clutch_wait_event` has `["model"]`, every `clutch_app_*` tool has `["app"]`, `clutch_open_dashboard` has `["model", "app"]` + `resourceUri` + entrypoints, and all other tools have `["model", "app"]`.
     - Concurrent `serve_stdio`: using a blocking fake `events.wait_once` gated on a `threading.Event` and a queue-backed or pipe-backed `stdin` stream, send a `clutch_wait_event` request followed immediately by a `ping` request and verify `ping` replies before `clutch_wait_event` is released, then release `clutch_wait_event` and verify its reply arrives cleanly without interleaved JSON lines; also verify a `clutch_app_config` call with invalid `updates` over `serve_stdio` returns a JSON-RPC result with `isError: True` and `structuredContent["code"] == "invalid_config"` (not `-32602`).
     - `clutch_box_triage` and `clutch_engine_retro` refuse with `isError: True` and `code == "engine_not_running"` when no engine holds the lock (never invoking `triage_or_submit` / `run_or_submit_retro`), submit to the engine inbox when `serve` or `drain` holds the lock, and return `code == "lock_held"` when a non-engine writer holds the lock.
@@ -112,6 +117,8 @@ Restore `clutch/mcp.py` and `clutch/antigravity.py` to the `docs/antigravity-pla
     - Update `test_stdio_domain_noise_and_extension_rejection` to index `replies` by JSON-RPC `id` rather than assuming serial arrival order across concurrent `tools/call` workers.
   - Update `tests/unit/test_mcp_app_dashboard.py`:
     - Update `catalog["clutch_open_dashboard"]["_meta"]` expectation to include `"visibility": ["model", "app"]` inside `"ui"`.
+  - Update `tests/unit/test_mcp_index_query.py`:
+    - In `test_schema_and_validation`, replace the line 36 assertion `"_meta" not in tool` with `tool["_meta"]["ui"]["visibility"] == ["model", "app"]` for `clutch_index_query`, keeping the `schema["additionalProperties"] is False` check.
   - Update `tests/unit/test_mcp_tools.py`:
     - Update `prompts/list` assertions in `test_schemas_and_prompts` and `test_prompt_argument_catalog` to include `"host"` with `[{"name": "repo", "required": False}, {"name": "name", "required": False}]`.
   - Update `tests/integration/test_mcp_read_server.py`:
@@ -129,12 +136,13 @@ Restore `clutch/mcp.py` and `clutch/antigravity.py` to the `docs/antigravity-pla
 - tests/unit/test_mcp_surface_contract.py
 - tests/unit/test_mcp_control_and_tickets.py
 - tests/unit/test_mcp_app_dashboard.py
+- tests/unit/test_mcp_index_query.py
 - tests/unit/test_mcp_tools.py
 - tests/integration/test_mcp_read_server.py
 - tests/regression/mcp_server_contract_and_concurrency.py
 
 ## Acceptance criteria
-1. Every tool returned by `ClutchMCPServer.dispatch("tools/list", {})` includes `_meta.ui.visibility` derived from `ToolSpec` (not `None` or omitted): `clutch_wait_event` has `["model"]`, every `clutch_app_*` tool has `["app"]`, `clutch_open_dashboard` has `["model", "app"]` alongside `resourceUri` and `com.google.antigravity/ui` entrypoints, and all other tools have `["model", "app"]`; verified by `./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_app_dashboard.py`.
+1. Every tool returned by `ClutchMCPServer.dispatch("tools/list", {})` includes `_meta.ui.visibility` derived from `ToolSpec` (not `None` or omitted): `clutch_wait_event` has `["model"]`, every `clutch_app_*` tool has `["app"]`, `clutch_open_dashboard` has `["model", "app"]` alongside `resourceUri` and `com.google.antigravity/ui` entrypoints, and all other tools (including `clutch_index_query`) have `["model", "app"]`; verified by `./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_index_query.py`.
 2. In `serve_stdio`, an in-flight blocking `clutch_wait_event` request does not block a concurrent `ping` request from returning immediately before `clutch_wait_event` completes (not waiting for `clutch_wait_event` to finish), and all JSON-RPC stdout lines remain valid uncorrupted JSON with domain `print()` output sent to stderr; verified by `./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_protocol.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_repo_resolution.py`.
 3. `clutch_box_triage` and `clutch_engine_retro` refuse with `isError: True` and `structuredContent["code"] == "engine_not_running"` when no engine holds the writer lock (never running synchronous inline LLM passes), submit to the engine inbox returning `{"submitted": True, "request_id": ...}` when `serve` or `drain` holds the lock, and return `code == "lock_held"` when a non-engine writer holds the lock; verified by `./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_control_and_tickets.py`.
 4. `prompts/list` includes `"host"` with optional `repo` and `name` arguments (not omitting `"host"`), and `prompts/get` with `name="host"` resolves via `self.prompt(..., "host", [], name=...)` while rejecting unknown argument keys with `InvalidParams`; verified by `./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_tools.py tests/integration/test_mcp_read_server.py`.
@@ -143,7 +151,7 @@ Restore `clutch/mcp.py` and `clutch/antigravity.py` to the `docs/antigravity-pla
 
 ## Verification
 ```
-./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_protocol.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_repo_resolution.py tests/unit/test_antigravity_plugin.py tests/unit/test_antigravity_bundle.py tests/integration/test_mcp_read_server.py
+./dev.py test tests/unit/test_mcp_surface_contract.py tests/unit/test_mcp_protocol.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_index_query.py tests/unit/test_mcp_repo_resolution.py tests/unit/test_antigravity_plugin.py tests/unit/test_antigravity_bundle.py tests/integration/test_mcp_read_server.py tests/integration/test_git_fake_adoption.py
 ```
 
 ## Definition of rejected
