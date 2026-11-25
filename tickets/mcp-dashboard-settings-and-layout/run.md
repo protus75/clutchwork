@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Kept the prior implementation and changed only the test named by review.
+Preserved prior implementation and limited changes to the review finding; both new assertions caught their intended wrong implementations.
 
 ## Dead ends
 
-Both temporary timer mutations failed the intended assertions and were restored before verification.
+Rejected leaving synchronization to reboot because Settings must reflect changes immediately; a direct handler assignment was sufficient.
 
 ## Second problems filed
 
@@ -17,7 +17,7 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6-astra
 - spec: implement 2.29
 
 ## Predicted vs actual
