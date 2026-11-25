@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "46e3fcc9b6f7c390c61347e0a70504793379f8b5",
+  "produced_at_sha": "bcc38e035b75c81d7647cfb0a6c417431dc2f7fb",
   "stem": "ui-shared-renderers",
   "passed": true,
   "changed_files": [
@@ -16,7 +16,7 @@
     "vscode-clutchwork/media/view.css",
     "vscode-clutchwork/media/view.js"
   ],
-  "inserted_lines": 256,
+  "inserted_lines": 217,
   "bypassed": [],
   "reports": [
     {
@@ -91,15 +91,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 12.08397,
+        "seconds": 11.767902,
         "passed": 311,
         "failed": 0,
         "skipped": 3290,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9247250449843705,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1703103079344146,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1133240069029853,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0036020170664415
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0105657030362636,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1232756149838679,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.088177371013444,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039172770339064
         }
       }
     },
@@ -133,9 +133,9 @@
         "tests/integration/test_disk_io_skip_list.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_help.py tests/unit/test_help_snapshot.py tests/unit/test_help_shared_ui.py tests/integration/test_ui_shared_renderers.py tests/integration/test_help.py tests/integration/test_extension_argv.py tests/integration/test_step_icons.py tests/integration/test_step_view_unknown_kind.py tests/integration/test_disk_io_skip_list.py\nbringing up nodes...\nbringing up nodes...\n\n.............................                                            [100%]\n29 passed in 1.41s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_help.py tests/unit/test_help_snapshot.py tests/unit/test_help_shared_ui.py tests/integration/test_ui_shared_renderers.py tests/integration/test_help.py tests/integration/test_extension_argv.py tests/integration/test_step_icons.py tests/integration/test_step_view_unknown_kind.py tests/integration/test_disk_io_skip_list.py\nbringing up nodes...\nbringing up nodes...\n\n.............................                                            [100%]\n29 passed in 1.39s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.90685
+      "seconds": 4.622434
     }
   ]
 }
