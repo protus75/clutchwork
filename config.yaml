@@ -1,5 +1,5 @@
 # Instance config (host plane; schema in clutch/docs/host-contract.md). Operator-owned: edit between runs.
-# Claude and codex use ambient CLI login; gemini uses GEMINI_API_KEY. IMPLEMENT/AUTHOR inherit models_by_tier[tier]; REVIEW pins
+# Claude, codex, and gemini use ambient CLI login. IMPLEMENT/AUTHOR inherit models_by_tier[tier]; REVIEW pins
 # claude's strongest model at every tier (diversity from codex IMPLEMENT is a preference, not a gate).
 schema_version: 1
 state_dir: .clutch/state
@@ -18,7 +18,6 @@ providers:
   - name: gemini
     kind: cli
     package: "@google/gemini-cli"
-    auth: GEMINI_API_KEY
     models_by_tier: {low: gemini-3.1-flash-lite, medium: gemini-3-flash-preview, high: gemini-3.1-pro-preview, max: gemini-3.1-pro-preview}
     limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
 routing:
