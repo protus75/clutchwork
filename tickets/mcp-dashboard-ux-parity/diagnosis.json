@@ -1,22 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "20eff574fb2fec55482bc8b6f0035cf8e1245c11",
+  "produced_at_sha": "05a123fc8602589ae4106ac91d246c92591f830c",
   "stem": "mcp-dashboard-ux-parity",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "check",
   "verdict": "abandon-human",
   "lessons": [
-    "Root cause is the environment, not the diff. The Check worktree .clutch/state/worktrees/mcp-dashboard-ux-parity has no node_modules, so dev.build_ui_bundle in dev.py:46 cannot find node_modules/.bin/esbuild and tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle fails. The other 17",
-    "The engine's worktree setup never makes the host's JS dev dependencies (esbuild) available in ticket worktrees. A human should fix that provisioning, or let the gate resolve esbuild from the main checkout, in clutch's workspace or git setup code. That code is outside this ticket's fence.",
-    "Implement passed only because it temporarily symlinked the main checkout's node_modules and then ran unlink before committing. Do not commit node_modules or edit dev.py: both are outside the fence and would not fix the cause.",
-    "test_dashboard_bundle and dev.build_ui_bundle exist on the base, so any ticket that runs this test in a fresh worktree will fail the same way. After the environment is fixed, rerun Check on the existing branch (commit 20eff574f) without changing the code."
+    "Root cause is the environment, not the diff. tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle calls dev.build_ui_bundle, which needs <worktree>/node_modules/.bin/esbuild, and ticket worktree provisioning does not supply it. The other 17 tests passed.",
+    "A human should let ticket ui-bundle-worktree-node-modules (confirmed on main) land first, or otherwise provision node_modules or esbuild in ticket worktrees. Then rerun Check on this branch unchanged. The fix belongs to the engine's worktree setup, outside this fence.",
+    "Do not retry the implementer with a workaround such as a node_modules symlink or skipping test_dashboard_bundle. dev.py and worktree provisioning are outside the fence, and box-001181-c4d3edba already records the provisioning gap.",
+    "The implementer said test_dashboard_bundle also fails on base for missing esbuild, but did not run the plain ## Verification command on base, since the new test file does not exist there. After provisioning is fixed, rerun the full Verification command on the branch to confirm."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    0
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
