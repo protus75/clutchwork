@@ -1,16 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b4123eaac27b48d0d54a3adf9c091e9f6f05262a",
+  "produced_at_sha": "605b52af4cb5d3d9a99fafac3e686360b16f4f25",
   "stem": "index-fts-duplicate-selector",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/context.py",
     "clutch/index.py",
     "tests/regress_index_fts_duplicate_selector.py",
     "tests/unit/test_index_fts_duplicate_selector.py"
   ],
-  "inserted_lines": 177,
+  "inserted_lines": 171,
   "bypassed": [],
   "reports": [
     {
@@ -67,8 +67,8 @@
           "python",
           "tests/regress_index_fts_duplicate_selector.py"
         ],
-        "head_sha": "b4123eaac27b48d0d54a3adf9c091e9f6f05262a",
-        "base_sha": "3ebb85675758d3193c88daf67db87c0985815907",
+        "head_sha": "605b52af4cb5d3d9a99fafac3e686360b16f4f25",
+        "base_sha": "a2e623f3595b60bbd48da3891ea0e4f677518652",
         "overlay_paths": [
           "tests/regress_index_fts_duplicate_selector.py"
         ],
@@ -83,7 +83,7 @@
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/index-fts-duplicate-selector\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/index-fts-duplicate-selector\nInstalled 31 packages in 26ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/index-fts-duplicate-selector\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/index-fts-duplicate-selector\nInstalled 31 packages in 20ms\n"
         }
       }
     },
@@ -105,17 +105,16 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 20.375324,
+        "seconds": 20.375845,
         "passed": 2386,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7216861139750108,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.4704352209810168,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.3971439010929316,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3213130880030803,
-          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.1958160680369474,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0080388719798066
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.6939542940235697,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.3647642130381428,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.2968785110278986,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2602594789350405,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.1566981810028665
         }
       },
       "coverage": {
@@ -128,29 +127,19 @@
     },
     {
       "code": "integration",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "integration",
-          "path": null,
-          "line": null,
-          "message": "tests/integration/test_git_fake_adoption.py::test_git_fake_adoption failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 12.724987,
-        "passed": 317,
-        "failed": 1,
+        "seconds": 12.570083,
+        "passed": 318,
+        "failed": 0,
         "skipped": 3294,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.1354043220053427,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1353706329246052,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1280282259685919,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0040959870093502
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0920485399547033,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1807231600396335,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1234432750497945,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.004487732076086
         }
       }
     },
@@ -182,7 +171,7 @@
       "rc": 0,
       "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_index_fts_duplicate_selector.py tests/unit/test_index_build.py tests/unit/test_index_query.py tests/unit/test_index_neighbors.py tests/unit/test_context_suggest.py\nbringing up nodes...\nbringing up nodes...\n\n.............................                                            [100%]\n29 passed in 2.10s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 6.973775
+      "seconds": 5.614781
     }
   ]
 }
