@@ -15,6 +15,8 @@ kind: feature
 - clutch/runner.py::Refusal
 - clutch/events.py::wait_once
 - clutch/observe.py::snapshot
+- clutch/observe.py::journal_facts
+- clutch/journalcache.py::open_journal_cache
 - clutch/status.py::project
 - clutch/stats.py
 - clutch/roadmap.py::status
@@ -98,7 +100,7 @@ Rejected simpler approach: shelling out to `clutch` CLI subcommands inside an MC
 - consumers: `clutch/__main__.py::handle_mcp_serve`, Antigravity and MCP clients, future `mcp-control-and-tickets` and `mcp-app-dashboard`
 - closest existing: `clutch/observe.py` and `clutch/__main__.py` only expose CLI text/JSON handlers rather than a JSON-RPC 2.0 protocol loop, tool schemas, or MCP prompt endpoints.
 - earning reason: Antigravity MCP integration introduces an external stdio JSON-RPC 2.0 protocol boundary reused across `mcp-read-server`, `mcp-control-and-tickets`, and `mcp-app-dashboard`.
-- observable change: provides line-delimited JSON-RPC 2.0 stdio transport (`serve_stdio`, `ClutchMCPServer`) handling `initialize`, `notifications/*` (no response emitted), `ping`, `tools/list`, `tools/call`, `prompts/list`, and `prompts/get`; validates tool arguments with Pydantic `BaseModel` schemas (`extra="forbid"`), validates `repo` (default CWD, must exist and contain `tickets/`), exposes the 9 read-only tools returning concise text `content` plus typed `structuredContent`, exposes `prompts/list` / `prompts/get` for the 10 `ask.KINDS` (`clutch/specs/ask/*.md`) mapping `arguments["stem"]` -> `[stem]` and `arguments["ids"]` -> token list, includes `importlib.metadata.version("clutchwork")` in `clutch_status`, maps `Refusal`, `ConfigError`, `JournalCorruption`, `GitError`, and domain `ValueError` failures in `tools/call` to `isError: true` with `structuredContent: {"code": ..., "message": ..., "paved_road": ...}`, and maps domain refusals in `prompts/get` to JSON-RPC error `-32000` with `data: {"code": ..., "message": ..., "paved_road": ...}`.
+- observable change: provides line-delimited JSON-RPC 2.0 stdio transport (`serve_stdio`, `ClutchMCPServer`) handling `initialize`, `notifications/*` (no response emitted), `ping`, `tools/list`, `tools/call`, `prompts/list`, and `prompts/get`; validates tool arguments with Pydantic `BaseModel` schemas (`extra="forbid"`), validates `repo` (default CWD, must exist and contain `tickets/`), exposes the 9 read-only tools returning concise text `content` plus typed `structuredContent`, exposes `prompts/list` / `prompts/get` for the 10 `ask.KINDS` (`clutch/specs/ask/*.md`) mapping `arguments["stem"]` -> `[stem]` and `arguments["ids"]` -> token list, includes `importlib.metadata.version("clutchwork")` in `clutch_status`, maps `Refusal`, `ConfigError`, `JournalCorruption`, `GitError`, and domain `ValueError` failures in `tools/call` to `isError: true` with `structuredContent: {"code": ..., "message": ..., "paved_road": ...}`, and maps domain refusals in `prompts/get` to JSON-RPC error `-32000` with `data: {"code": ..., "message": ..., "paved_road": ...}`. "Read-only" means no tool writes tickets, the journal, the index, config, git refs, or the engine lockfile; the one permitted write is the derived, rebuildable journal cache that `observe.snapshot` already maintains through `observe.journal_facts` -> `journalcache.open_journal_cache` (`<state_dir>/cache/` directory, `<state_dir>/cache/journal.duckdb`, and its `<state_dir>/cache/journal.duckdb.lock` flock file), exactly as `clutch view snapshot` does today.
 - compatibility: additive; zero new core dependencies in `pyproject.toml`.
 - acceptance: criteria 1, 2, 3, and 4
 - tests: tests/unit/test_mcp_protocol.py, tests/unit/test_mcp_tools.py, tests/integration/test_mcp_read_server.py
@@ -125,7 +127,7 @@ Scope in:
   - `initialize` returns `protocolVersion` (negotiated from supported versions or `"2025-03-26"`), `capabilities: {"tools": {"listChanged": False}, "prompts": {"listChanged": False}}`, and `serverInfo: {"name": "clutchwork", "version": <package_version>}`. `ping` returns `{}`.
   - `repo` routing: optional `repo: str | None = None` on every tool and prompt argument; defaults to `default_cwd`, rejects blank strings or directories missing `tickets/` with `Refusal(..., code="invalid_repo")`, and loads `config.yaml` (using `config_path` when `repo` is omitted or resolves to `default_cwd`).
   - Tools (`tools/list`, `tools/call`):
-    1. `clutch_snapshot(repo=None, all_merged=False)` -> `observe.snapshot(ctx, merged_limit=None if all_merged else config.snapshot_merged_limit)` (with `GIT_OPTIONAL_LOCKS=0`).
+    1. `clutch_snapshot(repo=None, all_merged=False)` -> `observe.snapshot(ctx, merged_limit=None if all_merged else config.snapshot_merged_limit)` (with `GIT_OPTIONAL_LOCKS=0`). `observe.snapshot` is called unchanged; its existing derived journal-cache refresh under `<state_dir>/cache/` (via `observe.journal_facts` -> `journalcache.open_journal_cache`) is the permitted cache write named in the boundary contract.
     2. `clutch_status(repo=None, short=False)` -> `status.project(...)` + `size_warning(...)` + `version: importlib.metadata.version("clutchwork")` (JSON-normalized `structuredContent` omitting `scorecard` when `short=True`, plus `status.render(..., short=short)` text).
     3. `clutch_stats(repo=None, window="7d", tree=False)` -> `stats.window_start` + `stats.collect_stats` (wrapping `stats_tree` in `{"window": window, "tree": ...}` when `tree=True`, mapping bad window `ValueError` to structured refusal `code="invalid_window"`).
     4. `clutch_roadmap_status(repo=None)` -> `roadmap.status(checkout)` returning `{"lines": lines}`.
@@ -133,7 +135,7 @@ Scope in:
     6. `clutch_evidence_captures(repo=None, stem, attempt=None, name=None)` -> `EvidenceStore.captures` or `EvidenceStore.get_capture` (refusing `name` without `attempt` and mapping `ValueError`, `CaptureNotFound`, `CaptureUnreadable`, `OSError` to structured `Refusal` errors).
     7. `clutch_evidence_show(repo=None, call_key)` -> `EvidenceStore.read_record` (`start`, optional `end`), `read_normalized`, `views.show_lines`, handling `None` and `SKIP` records and mapping missing/unreadable/corrupt evidence to structured `Refusal` errors.
     8. `clutch_context_suggest(repo=None, stem)` -> `context.suggest_for_stem(...)` returning `{"stem": stem, "files": [...], "chunks": [...]}`.
-    9. `clutch_prompt(repo=None, kind, stems=[], name=None)` -> `ask.resolve_prompt(...)` returning rendered prompt text (or `catalog` items when `kind == "list"`).
+    9. `clutch_prompt(repo=None, kind, stems=[], name=None)` -> `ask.resolve_prompt(...)` returning rendered prompt text (or `catalog` items when `kind == "list"`). Drafts resolution builds `draft_stems` from `observe.snapshot` rows, as `clutch/__main__.py::handle_prompt` does today, so it shares tool 1's permitted journal-cache write.
   - Tool error mapping: `Refusal`, `ConfigError`, `JournalCorruption`, `GitError`, `UnknownBoxId` inside `tools/call` return JSON-RPC result with `isError: True`, concise text `content`, and `structuredContent: {"code": ..., "message": ..., "paved_road": ...}`.
   - Prompts (`prompts/list`, `prompts/get`): list all 10 `ask.KINDS` (`clutch/specs/ask/*.md`) with descriptions from `ask.DESCRIPTIONS` and declared `arguments` (`repo` optional on all; `stem` required for `diagnose`, `running`, `review`, `author`; `ids` required for `box`; only `repo` on `none`-taking `drafts`, `drain-loop`, `plan-ticket-drain`, `plan-ticket-serve`, `roadmap`). In `prompts/get`, map `arguments["stem"]` to `stems=[stem]` for `stem`-taking kinds and `arguments["ids"]` (`list[str]` or comma/whitespace-separated `str`) to `stems` for `box`, call `ask.resolve_prompt(...)`, and map domain refusals (`Refusal`, `ConfigError`, `JournalCorruption`, `GitError`, `UnknownBoxId`) to JSON-RPC error `-32000` with `data: {"code": ..., "message": ..., "paved_road": ...}` and missing/invalid prompt arguments or unknown prompt name to `-32602`.
 - `clutch/__main__.py`:
@@ -149,6 +151,7 @@ Scope in:
 - Engine-written `# clutch:meta` header lines on newly created files under `tests/` updated by Check's meta step.
 
 Scope out:
+- Making `observe.snapshot` or `journalcache.open_journal_cache` cache-free or lock-free; `clutch/observe.py` and `clutch/journalcache.py` are unchanged.
 - Mutating MCP tools (`ticket_*`, `box_*`, `engine_*`) — deferred to `mcp-control-and-tickets`.
 - MCP App UI resource (`ui://clutch/dashboard.html`), `clutch_open_dashboard`, `com.google.antigravity/ui` entrypoints, and `visibility: ["app"]`-only tools — deferred to `mcp-app-dashboard`.
 - Updating `clutch/specs/ask/*.md` (`ask-specs-mcp-supervision`), `clutch/help.py` (`ui-shared-renderers`), `vscode-clutchwork/`, or adding dependencies to `pyproject.toml`.
@@ -185,7 +188,7 @@ Scope out:
 
 ## Definition of rejected
 - `clutch mcp serve` refuses to start when CWD has no `config.yaml` or `tickets/` directory, or spawns `clutch` CLI subprocesses inside `clutch/mcp.py`.
-- Any tool mutates repository files, journal, lockfiles, or index, or accepts a `repo` path missing `tickets/`.
+- Any tool writes tickets, the journal, the index (`index.duckdb`), config, git refs, or the engine lockfile, or accepts a `repo` path missing `tickets/`. The derived journal cache that `observe.snapshot` refreshes through `journalcache.open_journal_cache` (`<state_dir>/cache/`, `<state_dir>/cache/journal.duckdb`, `<state_dir>/cache/journal.duckdb.lock`) is the only permitted write and does not count as a mutation.
 - `Refusal` exceptions in `tools/call` omit `code`, `message`, or `paved_road`, or `clutch_status` omits the running `clutchwork` package version.
 - Any new core dependency is added to `pyproject.toml`, any file outside `## Scope fence` is modified, or `clutch/mcp.py`, `clutch/context.py`, `clutch/stats.py`, `clutch/ask.py`, `clutch/runner.py`, or `clutch/__main__.py` fails its `test-gate.toml` unit coverage threshold.
 
