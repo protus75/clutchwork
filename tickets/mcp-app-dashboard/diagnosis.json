@@ -1,24 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "27ab196c541d5734556400d7ce0f9bb14142113b",
+  "produced_at_sha": "73e1083bfc8b6eb9f96921e2d6e81b7e463e4fc3",
   "stem": "mcp-app-dashboard",
-  "attempt": 1,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "retry",
   "lessons": [
-    "Clear tests/unit/test_mcp_control_and_tickets.py:68 by changing only the expected dict in test_catalog_and_actor_schema. Map clutch_open_dashboard to its ticket-specified _meta (ui.resourceUri plus com.google.antigravity/ui aux_pane/global entrypoints). Criterion 2 requires this file to check that",
-    "In that same expected dict, keep visibility ['app'] for the clutch_app_* tools (including clutch_app_snapshot and clutch_app_stats) and None for every other tool. Change no other assertion in the file. Don't report premise_failed again for this: criterion 2 overrides the narrower Scope-in wording.",
-    "The last attempt left its work uncommitted, so redo the whole ticket from main. Covers clutch/mcp.py resources/list and resources/read, the 3 new tools, Dashboard schema and ui_html_path; dev.py build_ui_bundle and ui-bundle; clutch/ui/app.js, dashboard.css and the generated dashboard.html;",
-    "Also restate the tests and docs. Update tests/unit/test_mcp_protocol.py line 35 and tests/unit/test_mcp_tools.py (25 tools); add the new unit and integration tests, tests/mcp_app_dashboard.js and the conftest REAL_IO_TESTS entry; update the docs, help, CLAUDE.md and AGENTS.md as the ticket lists.",
-    "Before finishing, run the full ## Verification command exactly as written. Keep clutch/mcp.py at or above its 90% unit coverage floor with tests/unit/test_mcp_app_dashboard.py, which uses tmp_path and fakes only."
+    "Check failed in tests/integration/test_engine_text_verbs.py::test_no_engine_text_names_dev_py because the diff added the text `dev.py` at clutch/mcp.py:367. Remove every `dev.py` mention from clutch/mcp.py, including error messages, docstrings and comments.",
+    "The test scans engine code and clutch/docs/ for the literal `dev.py`. Make the dashboard_unavailable DomainError message say the dashboard bundle is missing or empty, without naming the repo build command. `./dev.py` exists only in this repo.",
+    "Keep `ui-bundle` mentions only in dev.py itself, docs/how-clutch-works.md section 2.2, CLAUDE.md, and tests. Do not add it to clutch/__main__.py help or clutch/docs/host-running.md, because the same test scans those.",
+    "Before committing, run `./dev.py test tests/integration/test_engine_text_verbs.py` together with the ticket's Verification command. The Verification list passed but does not include this test, so it missed the failure. Leave everything else in the diff unchanged."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    0,
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
