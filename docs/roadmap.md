@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: d825fe34
-hash: 23d782399b0e4c29688213d62fc41e0d6313b40e0b77eff474cf39f60a22cb9e
+verified: 8ac65cbb
+hash: ecf46d1b219504ab1d1b81fe6ddbf8b757b06317f047403853deb044df4e027d
 -->
 # clutch roadmap
 
@@ -519,6 +519,7 @@ uv run clutch roadmap merged --release 0.6.0 --since v0.6.0 --at-least 1
 | 231 | `release-audit-070` | roadmap | chore | P1 | | | docs/roadmap.md section 1 0.7.0 ship clause (mcp serve serves the dashboard resource and tools; host antigravity installs the plugin) has no gate command and the 0.7.0 table has no audit row: re-run the sections 2-4 passes and add gate commands that check clutch/mcp.py resources/read and clutch/antigravity.py::install_plugin output. |
 | 232 | `antigravity-plan-status-070` | antigravity | chore | P1 | | | docs/antigravity-plan.md#Status says nothing is in effect and no ticket is authored, but rows 218-231 merged (clutch/mcp.py::ClutchMCPServer, clutch/antigravity.py::install_plugin, clutch/events.py::wait_once); Status names what merged and what remains (row 228 in 0.9.0). |
 | 233 | `boundary-outcome-measured` | boundary | chore | P1 | | | Replaces merged row 208, whose docs/boundary-contract-plan.md#Outcome comparison marks every quantity Not measurable because its worktree had no state directory; measure premise failures, rework and duplicate-owner findings before and after row 153 (adf7d00b) from this repo's journal through a clutch view stats verb that separates them, and record the counts. |
+| 234 | `antigravity-subagent-model-sync` | antigravity | chore | P1 | | | docs/antigravity-plan.md#Target design section 5 sends row authors to Antigravity Model "flash", but clutch/specs/ask/plan-ticket-drain.md and plan-ticket-serve.md send row authors to "inherit"/"pro" and never "flash", using flash only for roadmap gate runners; make the plan and the shipped specs state the same mapping. |
 
 ```gate
 uv run clutch roadmap merged --release 0.7.0
