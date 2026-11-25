@@ -4,8 +4,8 @@
 # purpose: Tests that `clutch roadmap gate` runs real gate commands and journals the results, and that the repository roadmap gate blocks have the expected shape
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: ae1a5a3b
-# hash: eafeb6f2d8070bace438b7aa8b66ad89d87b56b2d5c5ebab03099f1910053c54
+# verified: 628fcc0e
+# hash: dd0d7a7385a23fbf0dd734f29f6f391d6e33be0bbd08f5e5f27c0ecc4daee8c0
 import shlex
 import sys
 from datetime import UTC, datetime
@@ -66,7 +66,7 @@ def test_real_roadmap_gate_blocks():
         assert commands[0] == ("uv", "run", "clutch", "roadmap", "merged", "--release", release)
         assert commands[-2:] == (("./dev.py", "test"), ("uv", "run", "clutch", "roadmap", "accept", release))
         assert all(command[:3] == ("uv", "run", "clutch") for command in commands[1:-2])
-        if release not in ("0.4.0", "0.5.0"):
+        if release not in ("0.4.0", "0.5.0", "0.6.0", "0.7.0"):
             assert len(commands) == 3
     for release, commands in blocks.items():
         assert commands[-1] == ("uv", "run", "clutch", "roadmap", "accept", release)

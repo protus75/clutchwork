@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 403faee1
-hash: f7248ffd4333207b6cd5515b331e0ba47808b2d41b97dde2877b811c4c64a3bf
+verified: 628fcc0e
+hash: 0c88f8c416ca8135139e118a274f9751a9b8ca5bea0358ea3c2aaad473fc095f
 -->
 # Running ClutchWork on a host
 
@@ -21,7 +21,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
 | `view watch` | Yes | Show the live text view; `--once` prints one view. |
-| `mcp serve` | Yes | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. |
+| `mcp serve` | Yes | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. `--check` verifies the dashboard and tools without serving. |
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
 | `view status` | Yes | Show the journal projection and any evidence size warning. Also reports overdue retro and calibration reminders without running them. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |
@@ -29,7 +29,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket lint` | Yes | Validate tickets and graphics judge independence without writing. |
 | `engine retro` | Yes | Run a retro report only when invoked, now or queued on the running engine; status and doctor report overdue thresholds. |
 | `engine calibrate` | Yes | Run only when invoked; status and doctor report overdue calibration. Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
-| `host antigravity` | Yes | Install or refresh the global Antigravity plugin (or `--plugin-dir PATH`), or write workspace skills with `--workspace`. |
+| `host antigravity` | Yes | Install or refresh the global Antigravity plugin (or `--plugin-dir PATH`), or write workspace skills with `--workspace`. `--verify` checks the installed plugin. |
 | `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure and excess evidence size as a warning. Warns when the installed Antigravity plugin MCP configuration drifts or its executable cannot resolve. Also reports overdue retro and calibration reminders without running them. |
 | `prompt` | Yes | List prompts with `prompt list` and render host prompts with `prompt host <name> [stem]`; render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
 | `host core` | Yes | Refresh managed conduct files. |

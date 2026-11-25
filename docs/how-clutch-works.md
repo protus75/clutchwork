@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 403faee1
-hash: 69040f3bfac34917037cc9c1d037be4d1d45b049428344f527f7af58e61fc2db
+verified: 628fcc0e
+hash: 2299f79b0a37966fd354b6eda344cf23045822fe6649b83ce065c2e5fa581301
 -->
 # How ClutchWork works
 
@@ -55,7 +55,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks; refuse a named path selecting no tracked file under a configured root. |
 | `meta fill [paths]` | yes | Fill metadata using a read-only model; refuse a named path selecting no tracked file under a configured root. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
-| `mcp serve` | no | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. |
+| `mcp serve` | no | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. `--check` verifies the dashboard and tools without serving. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |
 | `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
@@ -71,7 +71,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; exit 2 if no held-out review record was scored; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `host antigravity [--plugin-dir PATH] [--workspace]` | no | Install the global Antigravity plugin or write workspace skills. |
+| `host antigravity [--plugin-dir PATH] [--workspace]` | no | Install the global Antigravity plugin or write workspace skills. `--verify` checks the installed plugin. |
 | `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Warns about Antigravity plugin MCP configuration drift or an unresolvable executable, and when evidence exceeds its configured threshold or retro or calibration is overdue, without failing. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |

@@ -491,6 +491,24 @@ class DomainError(Exception):
     pass
 
 
+def check_server(server: ClutchMCPServer) -> dict[str, object]:
+    try:
+        listing = server.dispatch("tools/list", {})
+        tools = listing.get("tools", []) if isinstance(listing, dict) else []
+        if not isinstance(tools, list) or not any(isinstance(tool, dict) and tool.get("name") == "clutch_open_dashboard" for tool in tools):
+            raise runner.Refusal("dashboard tool unavailable", "install a server with clutch_open_dashboard")
+        result = server.dispatch("resources/read", {"uri": DASHBOARD_URI})
+        contents = result.get("contents", []) if isinstance(result, dict) else []
+        if not isinstance(contents, list) or not any(
+            isinstance(item, dict) and item.get("uri") == DASHBOARD_URI and item.get("mimeType") == MCP_APP_MIME and isinstance(item.get("text"), str) and item["text"] for item in contents
+        ):
+            raise runner.Refusal("dashboard resource invalid", "build the dashboard UI bundle")
+        return result
+    except DomainError as exc:
+        detail = exc.args[0] if exc.args and isinstance(exc.args[0], dict) else {}
+        raise runner.Refusal(str(detail.get("message", "dashboard unavailable")), str(detail.get("paved_road", "build the dashboard UI bundle")), code=str(detail.get("code", "refusal"))) from None
+
+
 def serve_stdio(*, stdin=None, stdout=None, **kwargs):
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout

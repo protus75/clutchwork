@@ -299,17 +299,18 @@ def _parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     mcp_sub = mcp_group.add_subparsers(dest="mcp_verb", required=True)
-    _command(
+    mcp_serve = _command(
         mcp_sub,
         "serve",
         summary="serve MCP tools over stdio",
-        does="Serve read, ticket, Suggestion Box, and detached engine-control MCP tools and prompts over stdio, including the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats.",
+        does="Serve read, ticket, Suggestion Box, and detached engine-control MCP tools and prompts over stdio, including the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. --check verifies the dashboard and tools without reading stdin.",
         reads="Repository config, tickets, journal, evidence, project index and git state.",
         writes="Tickets, Suggestion Box, control inbox, detached engine output, and rebuildable journal cache.",
         lock="Per-tool domain locks; no lock held by the stdio server.",
-        exits="0 on EOF or interruption; 2 on refusal.",
-        examples=["clutch mcp serve"],
+        exits="0 on EOF, interruption or successful --check; 2 on refusal.",
+        examples=["clutch mcp serve", "clutch mcp serve --check"],
     )
+    mcp_serve.add_argument("--check", action="store_true")
     view = sub.add_parser(
         "view",
         help="show read-only engine views",
@@ -427,15 +428,16 @@ def _parser() -> argparse.ArgumentParser:
         host_sub,
         "antigravity",
         summary="install Antigravity plugin or workspace skills",
-        does="Install or refresh the ClutchWork plugin, or install workspace skills.",
+        does="Install or refresh the ClutchWork plugin, or install workspace skills; --verify checks installed plugin files.",
         reads="Packaged logo and HOME unless a target is supplied; no config.",
         writes="Plugin files or workspace skills.",
         lock="None.",
-        exits="0 on installation; 2 for incompatible options or missing HOME.",
-        examples=["clutch host antigravity", "clutch host antigravity --workspace"],
+        exits="0 on installation and successful verification; 2 for incompatible options, verification failure or missing HOME.",
+        examples=["clutch host antigravity", "clutch host antigravity --workspace", "clutch host antigravity --verify"],
     )
     antigravity_parser.add_argument("--plugin-dir", type=Path, default=None)
     antigravity_parser.add_argument("--workspace", action="store_true")
+    antigravity_parser.add_argument("--verify", action="store_true")
     prompt = sub.add_parser(
         "prompt",
         help="render an operator prompt",
@@ -1319,7 +1321,13 @@ def main(
         from clutch import mcp
 
         try:
+            if args.check:
+                mcp.check_server(mcp.ClutchMCPServer(default_cwd=repo, config_path=args.config, env=env, clock=clock))
+                print("MCP dashboard and tools verified")
+                return 0
             mcp.serve_stdio(default_cwd=repo, config_path=args.config, env=env, clock=clock)
+        except runner.Refusal as exc:
+            return _fail("mcp serve", f"{exc.code}: {exc}")
         except KeyboardInterrupt:
             pass
         return 0
@@ -1405,6 +1413,8 @@ def main(
             return _fail(args.verb, f"{command[0]} not found -- install it or correct the command after --")
 
     def handle_antigravity():
+        if args.workspace and args.verify:
+            raise runner.Refusal("--workspace and --verify cannot be combined", "verify a plugin installation instead")
         if args.workspace and args.plugin_dir is not None:
             raise runner.Refusal("--workspace and --plugin-dir cannot be combined", "choose one installation target")
         if args.workspace:
@@ -1413,7 +1423,12 @@ def main(
             target = args.plugin_dir or antigravity.default_plugin_dir(env)
             if target is None:
                 raise runner.Refusal("HOME is missing or blank", "set HOME or use --plugin-dir PATH")
-            paths = antigravity.install_plugin(plugin_dir=target, fs=LocalFileSystem())
+            fs = LocalFileSystem()
+            paths = antigravity.install_plugin(plugin_dir=target, fs=fs)
+            if args.verify:
+                findings = antigravity.verify_plugin(target, fs=fs)
+                if findings:
+                    raise runner.Refusal("; ".join(findings), "repair the plugin installation")
         for path in paths:
             print(path)
         if not args.workspace:

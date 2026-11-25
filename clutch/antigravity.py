@@ -117,3 +117,33 @@ def doctor_finding(plugin_dir: Path | None, *, fs: FileSystem | None = None, dir
     except OSError, ValueError, UnicodeDecodeError, KeyError, TypeError:
         pass
     return "Antigravity MCP configuration is missing or drifted; run `clutch host antigravity`"
+
+
+def verify_plugin(plugin_dir: Path, *, fs: FileSystem, dir_exists=None, executable_exists=None) -> list[str]:
+    findings = []
+    try:
+        manifest = json.loads(fs.read_bytes(plugin_dir / "plugin.json"))
+        if not (
+            isinstance(manifest, dict)
+            and manifest.get("name") == PLUGIN_NAME
+            and isinstance(manifest.get("version"), str)
+            and manifest["version"].strip()
+            and manifest.get("logo") == "assets/logo.png"
+            and isinstance(manifest.get("suggestedPrompts"), list)
+            and manifest["suggestedPrompts"]
+        ):
+            raise ValueError("invalid manifest")
+    except OSError, ValueError, UnicodeDecodeError:
+        findings.append("plugin.json is missing or invalid")
+    finding = doctor_finding(plugin_dir, fs=fs, dir_exists=dir_exists, executable_exists=executable_exists)
+    if finding:
+        findings.append(finding)
+    elif not (dir_exists or Path.is_dir)(plugin_dir):
+        findings.append("plugin directory is missing")
+    for path in [plugin_dir / "assets/logo.png", *(plugin_dir / "skills" / name / "SKILL.md" for name in SKILLS)]:
+        try:
+            if not fs.read_bytes(path):
+                raise ValueError("empty")
+        except OSError, ValueError:
+            findings.append(f"{path} is missing or empty")
+    return findings

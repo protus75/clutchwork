@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 974804ad
-hash: 16a0d4049cd52779d09078dd433f8890aaacc4947c22c12eec564433a47346ba
+verified: 2c9877eb
+hash: aaf60cf6909c790e396dc1f0cdafd5e3f64153844ffb1d2e676a6ea64c2613a2
 -->
 # clutch roadmap
 
@@ -15,7 +15,7 @@ A plan change that moves a ticket, adds a dependency on another plan, or spends 
 
 ## Status
 
-Status reconciled on 2026-11-22 against main HEAD `e1ab1e16c`; the earlier six-pass audit remains a historical snapshot and touched findings are rechecked here. Re-run the audit before each minor release; the section headings are the checklist.
+Sections 2–4 rechecked on 2026-11-25 against base commit `dbc0daaf3`; counts below remain the historical 2026-11-22 snapshot against `e1ab1e16c` unless otherwise stated. Re-run the audit before each minor release; the section headings are the checklist.
 
 - 877 tickets merged, none in flight. Blocked: `authoring-reading-specs` (premise_failed), `clutch-ruff-reclean` (premise_failed), `evidence-never-prunes` (gate_failed), `host-mechanical-check` (abandoned), `llm-request-subject` (gate_failed), `phase7-continue` (abandoned), `restore-orphan-ticket-stems` (premise_failed), `retro-due-one-owner` (infra_error), and `roadmap-freshen-2026-11-22` (premise_failed on its earlier attempt).
 - Release status: 0.4.0 gate passed. 0.5.0 has 58 rows merged and `roadmap merged --release 0.5.0` passes; its recorded gate failure from 2026-11-20 is stale. 0.6.0 has 52 rows merged; on 2026-11-22 every gate line passed except `roadmap accept 0.6.0`, whose two findings (rows 215 and 216) were struck as premise false. 0.7.0 has 1 row merged and 12 blocked; 0.8.0 has 13 blocked.
@@ -61,50 +61,50 @@ Ranked by how many later tickets it blocks. Every item names the single owner th
 
 | # | Duplicated | Locations | Owner after fix | Ticket |
 |---|---|---|---|---|
-| 13 | Fence matching: `tickets.in_fence` is the owner; copies remain at `watchdog.py:57`, `drain.py:562` (different semantics: trailing-slash dirs only), and raw `startswith(f"{TICKETS_DIR}/")` at `merge.py:102,238`; `stages.py` now calls `in_fence` | as listed | `tickets.in_fence` | `fence-overlap` moved the owner; remaining copies (recurred in 0.5.0) |
+| 13 | Fence matching: `tickets.in_fence` is the owner; copies remain at `watchdog.py:57`, `drain.py:562` (different semantics: trailing-slash dirs only), and raw `startswith(f"{TICKETS_DIR}/")` at `merge.py:102,238`; `stages.py` now calls `in_fence` | as listed | `tickets.in_fence` | `fence-overlap` moved the owner; remaining copies (recurred in 0.7.0) |
 
 ### 2.2 Closed sets with more than one home
 
 | Set | Homes | Owner |
 |---|---|---|
-| Settled and retired states | `status.py:19` owns `CLOSED`; `tickets.py:813` still uses the literal `{"merged", "already_satisfied", "rejected"}` and `stats.py:149` hand-lists the same tuple | `status.CLOSED` (recurred in 0.5.0) |
-| Failed-attempt terminals | `caps.py:51-56` lists failed attempts, `scorecard.py:85` lists catch terminals, `journal.py:105` derives run terminals, `stats.py:124` excludes running and merged | `journal.py` (recurred in 0.5.0) |
-| Surfaces | `specs/__init__.py:31` owns the engine LLM surfaces; `observe.py:39-51` hand-lists display names, `stats.py:14` lists six measured surfaces, `providers.py:38` and `policy.py:14` list subsets | `specs/__init__.py`; observe and stats derive (recurred in 0.5.0) |
-| Spike kinds | `config.py:24` owner; `clutch/docs/host-contract.md` repeats the list at lines 160, 233, 246 | `config.py`; the contract lists it once (recurred in 0.5.0) |
-| Box classes and policy rows | `box.py:20`, `config.py:26-55`, `policy.py:36-49`, `host-contract.md:162,253`, `specs/triage.md` | `box.py` (classes), `config.py` (rows), `policy.py` the only bridge (recurred in 0.5.0) |
-| Triage verdicts | `triage.py:33`, `box.py:75,81,420` (three overlapping Literals in one file) | `box.py` (recurred in 0.5.0) |
-| Control verbs | `control.py:16,103` hand-lists the request vocabulary; CLI parsers and snapshot argv in `__main__.py` and `observe.py` repeat command names; `lockfile.py:19` lists engine verbs | `control.py` (recurred in 0.5.0) |
-| Ask kinds | `ask.py:11` owner; `__main__.py:412-421` hand-lists descriptions even though parser creation iterates `ask.KINDS`; `observe.py` hand-lists prompt menu argv | `ask.py` (recurred in 0.5.0) |
-| Finding codes | `ticket_schema` at `tickets.py:31`, `author.py:69`, `rework.py:67`; `requisition_review`/`requisition_rma` literals across author, rework, runner and CLI; `core_drift` at `hostfiles.py:193,206,215` | `gates.ENGINE_GATE_CODES` plus one registry for stage finding codes (recurred in 0.5.0) |
-| Conduct-file routing `{claude, qwen}` -> `CLAUDE.md` | `providers.py:151-152` `conduct_file`, `host-contract.md:316`, `how-clutch-works.md` section 12 | `providers.py`; docs cite it (recurred in 0.5.0) |
+| Settled and retired states | `status.py:19` owns `CLOSED`; `tickets.py:971` still uses the literal `{"merged", "already_satisfied", "rejected"}` and `stats.py:163` hand-lists the same tuple | `status.CLOSED` (recurred in 0.7.0) |
+| Failed-attempt terminals | `caps.py:65-69` lists failed attempts, `scorecard.py:139` lists catch terminals, `journal.py:109` derives run terminals, and `stats.py:124` excludes running and merged | `journal.py` (recurred in 0.7.0) |
+| Surfaces | `specs/__init__.py:31` owns the engine LLM surfaces; `observe.py:39-51` hand-lists display names, `stats.py:14` lists seven measured surfaces, `providers.py:38` and `policy.py:14` list subsets | `specs/__init__.py`; observe and stats derive (recurred in 0.7.0) |
+| Spike kinds | `config.py:24` owner; `clutch/docs/host-contract.md` repeats the list at lines 160, 233, 246 | `config.py`; the contract lists it once (recurred in 0.7.0) |
+| Box classes and policy rows | `box.py:20`, `config.py:26-55`, `policy.py:36-49`, `host-contract.md:162,253`, `specs/triage.md` | `box.py` (classes), `config.py` (rows), `policy.py` the only bridge (recurred in 0.7.0) |
+| Triage verdicts | `triage.py:33`, `box.py:75,81,420` (three overlapping Literals in one file) | `box.py` (recurred in 0.7.0) |
+| Control verbs | `control.py:16,20,103` repeats the request vocabulary; CLI parsers and snapshot argv in `__main__.py` and `observe.py` repeat command names; `lockfile.py:19` separately lists engine verbs | `control.py` (recurred in 0.7.0) |
+| Ask kinds | `ask.py:11` owner; `observe.py:731-735` hand-lists prompt menu argv | `ask.py` (recurred in 0.7.0) |
+| Finding codes | `ticket_schema` at `tickets.py:31`, `author.py:69`, `rework.py:67`; `requisition_review`/`requisition_rma` literals across author, rework, runner and CLI; `core_drift` at `hostfiles.py:193,206,215` | `gates.ENGINE_GATE_CODES` plus one registry for stage finding codes (recurred in 0.7.0) |
+| Conduct-file routing `{claude, qwen}` -> `CLAUDE.md` | `providers.py:151-152` `conduct_file`, `host-contract.md:316`, `how-clutch-works.md` section 12 | `providers.py`; docs cite it (recurred in 0.7.0) |
 
 Ticket: `closed-sets-remaining`.
 
 ### 2.3 Repeated helpers and projections
 
-- Retro-recurrence reopen boundary: `author.py:238,258`, `triage.py:263-270`. (recurred in 0.5.0)
-- `requisition_verdict` signal body built by hand: `__main__.py:1573`, `author.py:466`, `rework.py:227`, `runner.py:197`. `ticket_intake` body: `tickets.py:870` uses `INTAKE_SIGNAL`, `author.py:463` a literal. (recurred in 0.5.0)
-- Scorecard table builders in `status.py` and `retro.py` duplicate the header and row formatting, though the retro table includes an extra blank line. (recurred in 0.5.0)
-- Attempt counting with different semantics remains in `caps.failed_attempts`, `observe.py:432` (non-running terminals) and `stats.py:114` (running transitions). Spend sums now share `journal.total_spend`. (recurred in 0.5.0)
-- `"cap spent"` produced by `caps.py:113` and parsed back by `observe.py:346`. `provider_drought` bodies are still probed across `runner.py`, `providers.py`, `__main__.py`, `drain.py` and `audit.py`. (recurred in 0.5.0)
+- Retro-recurrence reopen boundary: `author.py:315,335`, `triage.py:264`. (recurred in 0.7.0)
+- `requisition_verdict` signal body built by hand: `__main__.py:2188`, `author.py:581`, `rework.py:230`, `runner.py:246`. `ticket_intake` body: `tickets.py:1034` uses `INTAKE_SIGNAL`, `author.py:577` a literal. (recurred in 0.7.0)
+- Scorecard table builders in `status.py` and `retro.py` duplicate the header and row formatting, though the retro table includes an extra blank line. (recurred in 0.7.0)
+- Attempt counting with different semantics remains in `caps.failed_attempts`, `observe.py:515` (non-running terminals) and `stats.py:114` (running transitions). Spend sums now share `journal.total_spend`. (recurred in 0.7.0)
+- `"cap spent"` produced by `caps.py:126` and parsed back by `observe.py:425`. `provider_drought` bodies are still probed across `runner.py`, `providers.py`, `__main__.py`, `drain.py` and `audit.py`. (recurred in 0.7.0)
 
 `projection-helpers-single-owner` centralized last-state folds, spend sums, `BOX_DIR`, `ticket_path()` and most log construction. The remaining metadata reads and constructor/path copies are assigned to `ticket-frontmatter-tolerant-reader`, `storm-producer-one-builder` and `projection-leftovers`.
 
 ### 2.5 Rules stated in more than one home
 
-Conduct-file restatements remain: second problems to the Box and verify at base, read before write, smallest change, never push, and never hand-edit the managed block appear in `hostfiles.py` `CORE_TEMPLATE`, the `CLAUDE.md` managed block, and the project-owned rules in `CLAUDE.md` section A and `AGENTS.md` Engine conduct. Specs still repeat the rules their stages need (`implement.md`, `review.md`, `retro.md`, `requisition_review.md`). The set-membership grep rule remains verbatim in `host-authoring.md:94` and `specs/requisition_review.md:25`. `rule-restatements-single-home` replaced the cited managed-block, bug-evidence and unit-test restatements in `host-contract.md`, `how-clutch-works.md` and `host-authoring.md` with owner links. (recurred in 0.5.0)
+Conduct-file restatements remain: second problems to the Box and verify at base, read before write, smallest change, never push, and never hand-edit the managed block appear in `hostfiles.py` `CORE_TEMPLATE`, the `CLAUDE.md` managed block, and the project-owned rules in `CLAUDE.md` section A and `AGENTS.md` Engine conduct. Specs still repeat the rules their stages need (`implement.md`, `review.md`, `retro.md`, `requisition_review.md`). The set-membership grep rule now lives in `host-authoring.md`; `requisition-contract-review-comparison` removed the duplicate from the review spec. `rule-restatements-single-home` replaced the cited managed-block, bug-evidence and unit-test restatements in `host-contract.md`, `how-clutch-works.md` and `host-authoring.md` with owner links. (recurred in 0.7.0)
 
 The `CLAUDE.md` rule "a rule has one of two homes" is the fix; `conduct-files-parity` aligned the conduct files; the remaining restatements need review. Specs may restate a rule the model needs; documents may not.
 
 ### 2.6 Tests
 
-- Shared clock, exec, filesystem, journal and git fakes now live in `tests/fakes.py`; other local fakes still exist (for example `tests/integration/test_git.py::FakeExec` and `tests/config_helpers.py::FakeExec`). (recurred in 0.5.0)
-- `tests/waiting.py` provides `wait_until`; local fixture builders such as `repo()` and `git()` still appear in multiple test modules. (recurred in 0.5.0)
-- Several test modules double as fixture libraries: `tests/integration/test_drain.py` imports `commit_lock` from `tests/integration/test_git.py`. (recurred in 0.5.0)
-- `CONFIG` and `TICKET` literals, configuration writes and git-init sequences appear across test modules. (recurred in 0.5.0)
-- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`. (recurred in 0.5.0)
+- Shared clock, exec, filesystem, journal and git fakes now live in `tests/fakes.py`; other local fakes still exist (for example `tests/integration/test_git.py::FakeExec` and `tests/config_helpers.py::FakeExec`). (recurred in 0.7.0)
+- `tests/waiting.py` provides `wait_until`; local fixture builders such as `repo()` and `git()` still appear in multiple test modules. (recurred in 0.7.0)
+- Several test modules double as fixture libraries: `tests/integration/test_baseline.py` imports fixtures from `tests/integration/test_policy.py`; `io-helpers-misc` moved the former `test_drain.py` `commit_lock` import to `tests/misc_helpers.py`. (recurred in 0.7.0)
+- `CONFIG` and `TICKET` literals, configuration writes and git-init sequences appear across test modules. (recurred in 0.7.0)
+- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`. (recurred in 0.7.0)
 
-Integration I/O restoration added `clutch/ioguard.py` and the `REAL_IO_TESTS` allowlist in `tests/integration/conftest.py`; restoration moves skipped tests to shared fakes while real-I/O subjects remain under that guard. Fixture duplication above remains (recurred in 0.5.0).
+Integration I/O restoration added `clutch/ioguard.py` and the `REAL_IO_TESTS` allowlist in `tests/integration/conftest.py`; restoration moves skipped tests to shared fakes while real-I/O subjects remain under that guard. Fixture duplication above remains (recurred in 0.7.0).
 
 Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 
@@ -115,7 +115,7 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 - `docs/api-image-provider-plan.md`: G0 must re-capture the current Gemini CLI and metering before the conditional API work; if it fails, C0 must establish provider contracts and open decision 0 must choose direct Google API or OpenRouter. Open decision 5 has no proposed release slot. Resolve those in Gate G0, Prerequisite C0 and Open decisions before admitting C1-C3; provisional row 56 remains conditional.
 - `docs/remote-view-plan.md`: Phase 1 leaves the service owner path, command, routes, response fields, errors and limits to authoring, and Delivery sequence has phases rather than ticket-sized units with prerequisites and discriminating checks. Anchor Status to a revision and specify those contracts and bounded units before admission; the remote-controls decision remains separate.
 - `docs/training-backup-plan.md`: Status explicitly waits for the owner to schedule backup; it lacks a revision anchor, release fit and ticket-level kind, priority, dependencies and discriminating checks. Resolve scheduling and add those to Status and Ticket breakdown before admission; settle evidence retention for the optional evidence work.
-- `docs/mcp-server-notes.md` is superseded by `docs/antigravity-plan.md` (rows 218–225 in `0.6.0`), which anchors Status to commit `bb5f97db2`, defines MCP vs. CLI ownership and bounded tickets, and validates explicit `repo` paths (defaulting to CWD) on the current state before `0.7.0`'s per-user project registry (`docs/engine-state-db-plan.md`) lands.
+- `docs/mcp-server-notes.md` is superseded by `docs/antigravity-plan.md` (rows 218–225 in `0.7.0`), which anchors Status to commit `bb5f97db2`, defines MCP vs. CLI ownership and bounded tickets, and validates explicit `repo` paths (defaulting to CWD) on the current state before `0.8.0`'s per-user project registry (`docs/engine-state-db-plan.md`) lands.
 - Rows 75-77 use `docs/document-agent/plan.md`: `clutch/roadmap.py::plan_path` resolves both `docs/*-plan.md` and single-level `docs/<name>/plan.md` paths, matching the nested directory's whole name or a hyphen-separated part of it. The match must be unique across both forms.
 - Row 210 remains held on the authored replacement: the rejected `state-verdict-ticket-service` exhausted its premise-bounce cap. Its attempt findings require a service-aware ticket-change check, coordinated Author publication, and an evidence publication and recovery contract compatible with checkpoints; the replacement must resolve these before it can run.
 
@@ -131,22 +131,22 @@ The listed defects were fixed by the 0.3.0 tickets.
 
 | §18.2 item | Trigger | Fired | Decision |
 |---|---|---|---|
-| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.3.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.4.0 (recurred in 0.5.0) |
-| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.6.0 is conditional on it (recurred in 0.5.0) |
-| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | `training-eval` merged with only the `review` lens; the triage lens remains a follow-up waiting for a real label source (recurred in 0.5.0) |
+| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.3.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.4.0 (recurred in 0.7.0) |
+| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; the conditional journal window is now in 0.8.0 (recurred in 0.7.0) |
+| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | `training-eval` merged with only the `review` lens; the triage lens remains a follow-up waiting for a real label source (recurred in 0.7.0) |
 
 ### 3.4 Never built, no ticket
 
-- P8 `rules-render`: `clutch core --check` and a start-command file. `host doctor` has a `core` drift row (`doctor.py:71-77`); `engine serve`, `engine drain`, `engine run` refuse on stale blocks. Decided 2026-11-13: dropped (section 6, decision 2). (recurred in 0.5.0)
-- `kind: api` provider: refused at `config.py:487-492`; stays deferred. (recurred in 0.5.0)
+- P8 `rules-render`: `clutch core --check` and a start-command file. `host doctor` has a `core` drift row (`doctor.py:71-77`); `engine serve`, `engine drain`, `engine run` refuse on stale blocks. Decided 2026-11-13: dropped (section 6, decision 2). (recurred in 0.7.0)
+- `kind: api` provider: refused at `config.py:487-492`; stays deferred. (recurred in 0.7.0)
 
 ### 3.5 Dev surface and tests
 
-- Engine tasks such as `coverage gate`, `host doctor`, `engine retro`, and `view snapshot` have no `./dev.py` subcommand; `dev-py-dev-tasks-only` leaves engine tasks to `clutch` verbs. (recurred in 0.5.0)
-- `tests/vscode_task_identity.js` is referenced by the regression script `tests/regress_vscode_task_identity.py`, not a regular test. (recurred in 0.5.0)
-- `vscode-clutchwork/extension.js::clutchRoot` chooses the workspace by probing for `tickets/`; `extension-argv-from-snapshot` moved verb argv to the snapshot but did not change this lookup. (recurred in 0.5.0)
-- Spec frontmatter `tier` is used by retro and acceptance (`clutch/retro.py`, `clutch/acceptance.py`), while other stage calls do not use it. (recurred in 0.5.0)
-- No engine caller: `Git.init` (`git.py:58`), `gates.lint_gate`, `providers.CliAdapter.parsed_failure`, `observe.uncommitted_tickets` (tests still monkeypatch it), `policy.baseline_identity`, and `audit.audit` plus its wrapper `audit_journal` (`audit.py:36,141`; the wrapper is called only by tests). `engine-callerless-code` deleted the other listed callerless symbols and added tests for `mergequeue.retained_ticket`, `serve.Responsiveness` and `runner.PreparedDispatch`. (recurred in 0.5.0)
+- Engine tasks such as `coverage gate`, `host doctor`, `engine retro`, and `view snapshot` have no `./dev.py` subcommand; `dev-py-dev-tasks-only` leaves engine tasks to `clutch` verbs. (recurred in 0.7.0)
+- `tests/vscode_task_identity.js` is referenced by the regression script `tests/regress_vscode_task_identity.py`, not a regular test. (recurred in 0.7.0)
+- `vscode-clutchwork/extension.js::clutchRoot` chooses the workspace by probing for `tickets/`; `extension-argv-from-snapshot` moved verb argv to the snapshot but did not change this lookup. (recurred in 0.7.0)
+- Spec frontmatter `tier` is used by retro, acceptance, metadata fill and merge-queue model stages (`clutch/retro.py`, `clutch/acceptance.py`, `clutch/metafill.py`, `clutch/mergequeue.py`), while ticket stages use their configured ticket tier. (recurred in 0.7.0)
+- No engine caller: `Git.init` (`git.py:58`), `gates.lint_gate`, `providers.CliAdapter.parsed_failure`, `observe.uncommitted_tickets` (tests still monkeypatch it), `policy.baseline_identity`, and `audit.audit` plus its wrapper `audit_journal` (`audit.py:36,141`; the wrapper is called only by tests). `engine-callerless-code` deleted the other listed callerless symbols and added tests for `mergequeue.retained_ticket`, `serve.Responsiveness` and `runner.PreparedDispatch`. (recurred in 0.7.0)
 
 Tickets: `dev-surface-completeness`, `regress-scripts-guarded`, `test-gate-floors`, `lint-guide-parity`, `extension-argv-from-snapshot`, `dead-config-and-spec-fields`.
 
@@ -164,7 +164,7 @@ The listed claims were corrected by `docs-truth-sweep` and the associated ticket
 
 ### 4.3 Plan documents
 
-The previously listed plan-document drift was fixed in the previous audit revision. `docs/parallel-tickets-plan.md:29,149` still claims 13 `merge_conflict_facts` events; the committed A0 capture (`tickets/merge-model-resolve/evidence/merge-conflict-facts.md`) records zero and identifies the matches as requisition prose. Filed as `box-000767-2717edce`. (recurred in 0.5.0)
+The previously listed plan-document drift was fixed in the previous audit revision. `docs/parallel-tickets-plan.md:38,158` still claims 13 `merge_conflict_facts` events; the committed A0 capture (`tickets/merge-model-resolve/evidence/merge-conflict-facts.md`) records zero and identifies the matches as requisition prose. Filed as `box-000767-2717edce`. (recurred in 0.7.0)
 
 
 ## 5. Cross-plan decisions
@@ -520,6 +520,8 @@ uv run clutch roadmap merged --release 0.6.0 --since v0.6.0 --at-least 1
 
 ```gate
 uv run clutch roadmap merged --release 0.7.0
+uv run clutch mcp serve --check
+uv run clutch host antigravity --plugin-dir .clutch/antigravity-gate --verify
 ./dev.py test
 uv run clutch roadmap accept 0.7.0
 ```
