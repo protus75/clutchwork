@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 .clutch/
+/.claude/
 dist/
 coverage.json
 .coverage
