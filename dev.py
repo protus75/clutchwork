@@ -30,17 +30,42 @@ def run(argv: list[str]) -> None:
         sys.exit(f"dev: `{' '.join(argv)}` failed")
 
 
+def _resolve_node_modules(root: Path) -> Path:
+    local = root / "node_modules"
+    if (local / ".bin/esbuild").is_file():
+        return local
+    try:
+        git_file = root / ".git"
+        if git_file.is_file():
+            for line in git_file.read_text().splitlines():
+                line = line.strip()
+                if line.startswith("gitdir:"):
+                    gitdir = (root / line.removeprefix("gitdir:").strip()).resolve()
+                    if gitdir.parent.name == "worktrees" and len(gitdir.parents) >= 3:
+                        main_modules = gitdir.parents[2] / "node_modules"
+                        if (main_modules / ".bin/esbuild").is_file():
+                            return main_modules
+                    break
+    except OSError:
+        pass
+    return local
+
+
 def build_ui_bundle(root=ROOT, out=None, run_cmd=subprocess.run) -> Path:
+    root = Path(root)
+    node_modules = _resolve_node_modules(root)
     out = Path(out) if out is not None else root / "clutch/ui/dashboard.html"
     paths = [root / "vscode-clutchwork/media/view.css", root / "clutch/ui/dashboard.css", root / "vscode-clutchwork/media/ticket-lifecycle.svg", root / "clutch/ui/app.js"]
+    kwargs = {"env": {**os.environ, "NODE_PATH": str(node_modules)}} if node_modules != root / "node_modules" else {}
     try:
         shared_css, dashboard_css, svg, _ = [path.read_text() for path in paths]
         result = run_cmd(
-            [str(root / "node_modules/.bin/esbuild"), str(paths[3]), "--bundle", "--format=iife", "--platform=browser", "--global-name=ClutchDashboardApp", "--minify"],
+            [str(node_modules / ".bin/esbuild"), str(paths[3]), "--bundle", "--format=iife", "--platform=browser", "--global-name=ClutchDashboardApp", "--minify"],
             cwd=root,
             capture_output=True,
             text=True,
             check=False,
+            **kwargs,
         )
     except OSError as error:
         raise RuntimeError(f"ui-bundle: missing source or esbuild: {error}") from error
