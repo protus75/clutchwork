@@ -7,7 +7,7 @@ kind: feature
 
 ## Depends on
 - mcp-read-server
-- mcp-app-dashboard
+- mcp-dashboard-resource
 - index-query-verb
 - index-fts-duplicate-selector
 
