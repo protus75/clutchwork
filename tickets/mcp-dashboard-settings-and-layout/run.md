@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification command passed all 55 tests; targeted mutation checks detected the tested regressions.
+The UI state response now includes savedOpen to distinguish persisted section preferences from defaults.
 
 ## Dead ends
 
-The first edit command used unavailable python; reran it with python3.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 20 minutes expected and 40 minutes stuck; elapsed time was not measured.
+none
 
