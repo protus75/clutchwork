@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Existing help topics remain first because an unchanged test expects the details topic to report a missing documentation heading.
+Preserved the existing help topic order because an unchanged test expects the details topic to be the first unresolved link.
 
 ## Dead ends
 
-An initial adapter validation test could pass because unrelated elements were missing; supplying those elements made the test check the intended failure.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 15 minutes expected; actual time not recorded.
+none
 
