@@ -1,0 +1,156 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d54fc4b9f2138d9edd74409d24a425c5dcc67ad7",
+  "stem": "engine-text-verbs-prune-logo-png",
+  "passed": true,
+  "changed_files": [
+    "tests/fixtures/repro_engine_text_verbs_logo_png.py",
+    "tests/integration/test_engine_text_verbs.py"
+  ],
+  "inserted_lines": 43,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/fixtures/repro_engine_text_verbs_logo_png.py"
+        ],
+        "head_sha": "d54fc4b9f2138d9edd74409d24a425c5dcc67ad7",
+        "base_sha": "85febd0125d1ca9986128404f40a2f84f9d0b6fa",
+        "overlay_paths": [
+          "tests/fixtures/repro_engine_text_verbs_logo_png.py"
+        ],
+        "evidence_paths": [
+          "tickets/engine-text-verbs-prune-logo-png/evidence/engine-text-verbs-evidence.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/engine-text-verbs-prune-logo-png\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/engine-text-verbs-prune-logo-png\nInstalled 31 packages in 19ms\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 20.991818,
+        "passed": 2413,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.9847176249604672,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.3172315320116468,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2888804789981805,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.1241981570492499,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.1071530969929881
+        }
+      },
+      "coverage": {
+        "percent": 78.62949581212021,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_engine_text_verbs.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_engine_text_verbs.py\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.92s\n",
+      "base_red": false,
+      "seconds": 4.851915
+    }
+  ]
+}
