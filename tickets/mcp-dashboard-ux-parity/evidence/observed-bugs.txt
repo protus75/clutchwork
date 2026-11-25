@@ -1,0 +1,47 @@
+=== 1. MCP serve_stdio output (no roots/list emitted; ready: false) ===
+{"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-03-26", "capabilities": {"tools": {"listChanged": false}, "prompts": {"listChanged": false}, "resources": {"listChanged": false}}, "serverInfo": {"name": "clutchwork", "version": "0.6.1"}}}
+{"jsonrpc": "2.0", "id": 2, "result": {"content": [{"type": "text", "text": "Supply a ClutchWork checkout path to load the dashboard."}], "structuredContent": {"repo": null, "tab": "tickets", "ready": false, "version": "0.6.1", "message": "Supply a ClutchWork checkout path to load the dashboard."}}}
+
+=== 2. clutch/ui/dashboard.css lines 1-25 (Antigravity tokens override VS Code palette) ===
+1: :root {
+2:   --vscode-clutchwork-blocked: var(--color-text-warning, #d97706);
+3:   --vscode-clutchwork-merged: var(--color-text-success, #8b5cf6);
+4:   --vscode-clutchwork-queued: var(--color-text-accent, #3794ff);
+5:   --vscode-descriptionForeground: var(--color-text-secondary, #71717a);
+6:   --vscode-editor-background: var(--color-background-primary, #fff);
+7:   --vscode-editorHoverWidget-border: var(--color-border-primary, #aaa);
+8:   --vscode-font-family: var(--font-sans, system-ui, sans-serif);
+9:   --vscode-font-size: var(--font-text-sm-size, 13px);
+10:   --vscode-foreground: var(--color-text-primary, #222);
+11:   --vscode-list-hoverBackground: var(--color-background-secondary, #eee);
+12:   --vscode-list-inactiveSelectionBackground: var(--color-background-tertiary, #ddd);
+13:   --vscode-scmGraph-historyItemBaseRefColor: var(--vscode-clutchwork-blocked);
+14:   --vscode-scmGraph-historyItemRefColor: var(--vscode-clutchwork-queued);
+15:   --vscode-scmGraph-historyItemRemoteRefColor: var(--vscode-clutchwork-merged);
+16:   --vscode-sideBar-background: var(--color-background-primary, #fff);
+17:   --vscode-textLink-foreground: var(--color-text-accent, #0066cc);
+18:   --clutch-icon-passed: var(--color-text-success, #16803c);
+19:   --clutch-icon-failed: var(--color-text-danger, #c42b1c);
+20:   --clutch-icon-warning: var(--color-text-warning, #b45309);
+21:   --clutch-icon-muted: var(--color-text-secondary, #71717a);
+22: }
+23: [data-theme="dark"] { --vscode-editor-background: var(--color-background-primary, #1e1e1e); --vscode-sideBar-background: var(--color-background-primary, #1e1e1e); --vscode-foreground: var(--color-text-primary, #eee); --clutch-icon-passed: var(--color-text-success, #73c991); --clutch-icon-failed: var(--color-text-danger, #f48771); --clutch-icon-warning: var(--color-text-warning, #cca700); }
+24: [data-theme="light"] { --vscode-editor-background: var(--color-background-primary, #fff); --vscode-foreground: var(--color-text-primary, #222); }
+25: body { background: var(--vscode-editor-background); color: var(--vscode-foreground); font-family: var(--vscode-font-family); }
+
+=== 3. clutch/ui/app.js lines 71-79 & 161-166 (no section-body/resizer/reorder; ontoolresult no-op) ===
+71:   const sections = {};
+72:   for (const [key, name, opened] of [["tickets", "Tickets", true], ["details", "Details", true], ["steps", "Recent Steps", true], ["box", "Suggestion Box", false], ["stats", "Stats", false], ["help", "Help & Lifecycle", false]]) {
+73:     const section = el("details", undefined, "sidebar-section"), summary = el("summary"); section.dataset.section = key; section.open = opened;
+74:     summary.append(el("span", name, "section-title"), el("span", "", "section-count")); section.append(summary); sections[key] = section;
+75:   }
+76:   sections.tickets.append(ticketsHeader, ticketsList); sections.details.append(detail, actions); sections.steps.append(steps);
+77:   sections.box.append(boxHeader, boxList, boxActions); sections.stats.append(windowSelect, stats); sections.help.append(help);
+78:   root.replaceChildren(toolbar, repoSwitcher, notice, promptBar, ...Object.values(sections));
+79:   const menu = el("div", undefined, "context-menu"); menu.hidden = true; root.append(menu);
+161:   const applyContext = context => { if (context?.theme) applyDocumentTheme(context.theme); if (context?.styles?.variables) applyHostStyleVariables(context.styles.variables); };
+162:   app.ontoolinput = params => { if (params?.arguments?.repo) { repo = params.arguments.repo; repoInput.value = repo; if (connected) refresh(); } options.ontoolinput?.(params); };
+163:   app.ontoolresult = options.ontoolresult ?? (() => {});
+164:   app.onhostcontextchanged = context => { applyContext(context); renderPrompts(); options.onhostcontextchanged?.(context); };
+165:   await app.connect(); connected = true; applyContext(app.getHostContext()); renderPrompts(); await refresh();
+166:   window.addEventListener("focus", () => refresh());
