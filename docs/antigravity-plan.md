@@ -4,8 +4,8 @@ kind: plan
 purpose: Onboard Google Antigravity as the primary ClutchWork operator UI, MCP server, and unattended drain/serve supervisor in place of VS Code
 relates: [clutch/__main__.py, clutch/ask.py, clutch/events.py, clutch/graph.py, clutch/help.py, clutch/hostfiles.py, clutch/observe.py, clutch/status.py, docs/engine-state-db-plan.md, docs/how-clutch-works.md, docs/mcp-server-notes.md, docs/roadmap.md, vscode-clutchwork/extension.js]
 owner: engine
-verified: 5e56ddef
-hash: 3df9331d61086ceace2a85d333f77d1466de33ff4cfc4013f10754eade1586d6
+verified: 53346a53
+hash: e2fdcba528281cefccb8bab63f0828cd275ea6e4bd2c852697293f1ea3d5515c
 -->
 # Antigravity UI, MCP server, and supervising agent: plan
 
@@ -13,7 +13,9 @@ Replace the VS Code extension workflow with Google Antigravity (Antigravity IDE 
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-24 at commit `bb5f97db2`; revised 2026-11-24 at commit `bb5f97db2`.
+The `0.7.0` implementation merged roadmap rows 218–227 and 229–231, including `clutch/events.py::wait_once`, `clutch/mcp.py::ClutchMCPServer`, and `clutch/antigravity.py::install_plugin`. Row 223 split into `mcp-dashboard-bundle`, `mcp-dashboard-resource`, and `mcp-dashboard-surfaces`, all merged. Row 228, `index-parquet-vss-sidecar`, remains open in `0.9.0`.
+
+Written 2026-11-24 at commit `bb5f97db2`; revised 2026-11-24 at commit `bb5f97db2`.
 
 ## Roadmap
 
