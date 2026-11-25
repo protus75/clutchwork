@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "dc02d1c208bdc1ce6f02c8d7b4ee49283c79b229",
+  "stem": "host-antigravity-plugin",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "README.md line 99 adds the markdown link `[ClutchWork](customization://clutchwork)`. tests/unit/test_readme.py::test_links_are_absolute requires every `](target)` in README.md to start with `https://`, so this link fails the test.",
+    "Fix README.md only: write the refresh hint as inline code (`customization://clutchwork`) or plain text, not a markdown link. Keep the `## Antigravity plugin` section and the `uv run clutch host antigravity` setup line. The ticket requires the link form only in CLI output and host-contract.md.",
+    "Before committing, run `./dev.py test tests/unit/test_readme.py` together with the ticket's `## Verification` command. README.md is fenced, and test_readme.py checks it even though the ticket does not list that test."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
