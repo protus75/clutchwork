@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: bb5f97db
-hash: 4eebe07ab286fe084dfc3e5643b385c860fa6ec9f7473cd47482c697923cd036
+verified: 33bcb130
+hash: 1efdcfed924a0bb4f902df173d1eb4a13605159e7a88d84a4499c5830ffc4d85
 -->
 # clutch roadmap
 
@@ -36,8 +36,9 @@ Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor 
 | **0.3.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
 | **0.4.0** | Boundary-contract trial and authoring ([plan](boundary-contract-plan.md)), parallel runs, and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`) (unchecked); decision 19’s credential rule applies while this machine has no Gemini credential (unchecked) | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit |
 | **0.5.0** | Boundary-contract review, training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain (unchecked) | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
-| **0.6.0** | Engine state rewrite: one DuckDB for all live engine state with no locks (`docs/engine-state-db-plan.md`), then the journal query layer (`docs/journal-sql-refactor-plan.md`) | 0.5.0 has shipped; no other 0.6.0 row is authored or run until the five engine state rows (210-214) have merged | the five engine state rows merged and the locks and exclusive sections that `docs/engine-state-db-plan.md` section 6 retires are gone (unchecked: no merged verb records it); then all four journal port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.7.0** | Antigravity UI, MCP server, and supervising skills (`docs/antigravity-plan.md`), plus the Document agent (`docs/document-agent/plan.md`) | phase 0.6.0 has shipped as tag `v0.7.0`; for document-agent rows: isolated read-only calls proven by `isolated-readonly-call` (unchecked); the owner's lens prompts adapted (unchecked) | `clutch mcp serve` serves the Antigravity dashboard resource and read/control tools; `clutch host antigravity` installs the plugin and supervising skills; the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
+| **0.6.0** | Antigravity UI, MCP server, and supervising skills (`docs/antigravity-plan.md`) | 0.5.0 has shipped | `clutch mcp serve` serves the Antigravity dashboard resource and read/control tools; `clutch host antigravity` installs the plugin and supervising skills |
+| **0.7.0** | Engine state rewrite: one DuckDB for all live engine state with no locks (`docs/engine-state-db-plan.md`), then the journal query layer (`docs/journal-sql-refactor-plan.md`) | 0.6.0 has shipped as tag `v0.7.0`; no other 0.7.0 row is authored or run until the five engine state rows (210-214) have merged | the five engine state rows merged and the locks and exclusive sections that `docs/engine-state-db-plan.md` section 6 retires are gone (unchecked: no merged verb records it); then all four journal port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
+| **0.8.0** | Document agent (`docs/document-agent/plan.md`) | phase 0.7.0 has shipped as tag `v0.8.0`; isolated read-only calls proven by `isolated-readonly-call` (unchecked); the owner's lens prompts adapted (unchecked) | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
 The `start` block for 0.4.0 checks the three dedup tickets; clauses marked (unchecked) have no merged verb to check them. A release without a `start` block starts unconditionally.
 
@@ -114,7 +115,7 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 - `docs/api-image-provider-plan.md`: G0 must re-capture the current Gemini CLI and metering before the conditional API work; if it fails, C0 must establish provider contracts and open decision 0 must choose direct Google API or OpenRouter. Open decision 5 has no proposed release slot. Resolve those in Gate G0, Prerequisite C0 and Open decisions before admitting C1-C3; provisional row 56 remains conditional.
 - `docs/remote-view-plan.md`: Phase 1 leaves the service owner path, command, routes, response fields, errors and limits to authoring, and Delivery sequence has phases rather than ticket-sized units with prerequisites and discriminating checks. Anchor Status to a revision and specify those contracts and bounded units before admission; the remote-controls decision remains separate.
 - `docs/training-backup-plan.md`: Status explicitly waits for the owner to schedule backup; it lacks a revision anchor, release fit and ticket-level kind, priority, dependencies and discriminating checks. Resolve scheduling and add those to Status and Ticket breakdown before admission; settle evidence retention for the optional evidence work.
-- `docs/mcp-server-notes.md` is superseded by `docs/antigravity-plan.md` (rows 218–225 in `0.7.0`), which anchors Status to commit `bb5f97db2`, defines MCP vs. CLI ownership and bounded tickets, and reuses `0.6.0`'s per-user project registry (`docs/engine-state-db-plan.md`) instead of an HTTP multi-host server.
+- `docs/mcp-server-notes.md` is superseded by `docs/antigravity-plan.md` (rows 218–225 in `0.6.0`), which anchors Status to commit `bb5f97db2`, defines MCP vs. CLI ownership and bounded tickets, and validates explicit `repo` paths (defaulting to CWD) on the current state before `0.7.0`'s per-user project registry (`docs/engine-state-db-plan.md`) lands.
 - Rows 75-77 use `docs/document-agent/plan.md`: `clutch/roadmap.py::plan_path` resolves both `docs/*-plan.md` and single-level `docs/<name>/plan.md` paths, matching the nested directory's whole name or a hyphen-separated part of it. The match must be unique across both forms.
 - Row 210 remains held on the authored replacement: the rejected `state-verdict-ticket-service` exhausted its premise-bounce cap. Its attempt findings require a service-aware ticket-change check, coordinated Author publication, and an evidence publication and recovery contract compatible with checkpoints; the replacement must resolve these before it can run.
 
@@ -230,6 +231,10 @@ Decided 2026-11-18:
 23. **Upstream process gaps.** Amend decision 10 by adding `process-gap` for a clutch prompt spec, gate, or process flaw that cost a real run an Implement attempt, review cycle, or escalation. The body identifies the clutch file and run evidence, including attempt count and review findings; its title prefix is `[process-gap]`. Bare ideas do not qualify.
 
 24. **The engine state rewrite comes first** (owner, 2026-11-21). When the last 0.5.0 feature tickets merge, feature work stops. The engine state rewrite in `docs/engine-state-db-plan.md` (one DuckDB for all live engine state, no locks or exclusive sections over it; rows 210-214) is implemented before any other 0.6.0 row, feature or ticket is authored or run, including the journal query layer. Multi-member review panels are for design reviews only, never for individual tickets. Serve's exclusive sections make tickets wait for running implementations (a confirm, an intake commit or a merge holds back the second ticket); the rewrite removes them.
+
+Decided 2026-11-24:
+
+25. **Antigravity UI and MCP server before the engine state rewrite** (owner, 2026-11-24). Amends decision 24: move the Antigravity UI, MCP server, and supervising skills (`docs/antigravity-plan.md`, rows 218–225) into `0.6.0` so Clutch development continues inside Antigravity immediately. Slide the engine state rewrite and conditional journal window (rows 210–214, 35–41, 200) to `0.7.0` (preserving its no-feature-tickets-during-window rule) and the Document agent plus `implement-best-of-n` (rows 75–87) to `0.8.0`. Rows 218, 219, and 222 drop their `state-service-handoff` dependency; `clutch mcp serve` accepts explicit `repo` paths (defaulting to CWD) on the current file+journal state and adopts the per-user project registry once `0.7.0` ships.
 
 ## 7. Plan document shape
 
@@ -486,10 +491,34 @@ uv run clutch context suggest context-suggest --require
 uv run clutch roadmap accept 0.5.0
 ```
 
-### 0.6.0 (conditional)
+### 0.6.0
 
 ```start
 uv run clutch roadmap merged --release 0.5.0 --since v0.6.0 --at-least 1
+```
+
+| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
+|---|---|---|---|---|---|---|---|
+| 218 | `events-once-cursor` | antigravity plan 1 | feature | P1 | | | Cursor token and `wait_once(state, *, cursor, timeout, sleep)` in `clutch/events.py`; `--once`, `--cursor`, and `--timeout` on `clutch view events` emitting structured JSON; CLI help and doc updates. |
+| 219 | `engine-serve-detach` | antigravity plan 2 | feature | P1 | | | `--detach` on `clutch engine serve` (detached session, `<state_dir>/serve.out`, startup check) matching `engine drain --detach`; CLI help and command docs. |
+| 220 | `mcp-read-server` | antigravity plan 3 | feature | P1 | `events-once-cursor` | | `clutch/mcp.py` stdio JSON-RPC 2.0 server and `clutch mcp serve` verb: read-only tools (`clutch_snapshot`, `clutch_status`, `clutch_stats`, `clutch_roadmap_status`, `clutch_wait_event`, `clutch_evidence_captures`, `clutch_evidence_show`, `clutch_context_suggest`, `clutch_prompt`) and MCP Prompts for `clutch/specs/ask/*.md`, with optional `repo` routing. |
+| 221 | `mcp-control-and-tickets` | antigravity plan 4 | feature | P1 | `mcp-read-server`, `engine-serve-detach` | | Admission-gated MCP tools for `ticket_new`, `ticket_lint`, `ticket_order`, `ticket_confirm`, `ticket_reject` (separating model `actor: operator` from `app`-only UI verdicts), `box_suggest`, `box_triage`, `box_dismiss`, detached `engine_start` (`drain`/`serve`), `engine_control` (`pause`/`resume`/`stop`/`kill`/`ping`), and `engine_retro`. |
+| 222 | `ui-shared-renderers` | antigravity plan 5 | chore | P1 | | | Refactor `vscode-clutchwork/media/{graph,view,detail,box}.js` and `view.css` behind a thin host adapter (`callTool`, `openFile`, `sendPrompt`, `openHelp`) while keeping `vscode-clutchwork` behavior identical; update `clutch/help.py` surfaces for shared UI views. |
+| 223 | `mcp-app-dashboard` | antigravity plan 6 | feature | P1 | `mcp-control-and-tickets`, `ui-shared-renderers` | | Build `clutch/ui/dashboard.html` with `@modelcontextprotocol/ext-apps` (`./dev.py ui-bundle`) and serve `ui://clutch/dashboard.html` on `clutch_open_dashboard` (`aux_pane` and `global` entrypoints) plus `app`-only data tools, theme variable binding, `toggle-aux-pane` file open, and `app.sendMessage` prompt launch. |
+| 224 | `ask-specs-mcp-supervision` | antigravity plan 7 | feature | P1 | `mcp-control-and-tickets` | | Update `clutch/specs/ask/drain-loop.md`, `plan-ticket-drain.md`, and `plan-ticket-serve.md`: remove `/loop` prefix, prefer `clutch_*` MCP tools where appropriate while keeping CLI for bootstrap/tests/gates, use `clutch_wait_event` cursor wakeups, detached `serve`, and explicit Antigravity `flash`/`pro` subagent mapping. |
+| 225 | `host-antigravity-plugin` | antigravity plan 8 | feature | P1 | `mcp-app-dashboard`, `ask-specs-mcp-supervision` | | `clutch host antigravity` installer for `~/.gemini/config/plugins/clutchwork/` (`plugin.json`, `mcp_config.json`, logo, and thin `clutch-drain-loop`, `clutch-plan-drain`, `clutch-plan-serve` skills), optional `--workspace` `.agents/skills/` output, `host doctor` check, and host/README onboarding docs. |
+| 208 | ~~`boundary-contract-outcome-compare`~~ | boundary | chore | P1 | | | **Merged** (`tickets/boundary-contract-outcome-compare/`). docs/boundary-contract-plan.md Rollout Phase 3 and row 153 compare premise failures, rework and duplicate-owner findings with the trial baseline, but the plan records only the baseline (Trial results); once tickets have run after row 153, record that comparison in the plan. |
+
+```gate
+uv run clutch roadmap merged --release 0.6.0
+./dev.py test
+uv run clutch roadmap accept 0.6.0
+```
+
+### 0.7.0 (conditional)
+
+```start
+uv run clutch roadmap merged --release 0.6.0 --since v0.7.0 --at-least 1
 ```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -506,33 +535,24 @@ uv run clutch roadmap merged --release 0.5.0 --since v0.6.0 --at-least 1
 | 39 | `journal-ports-feedback` | journal plan (c) | chore | P2 | `journal-query-layer` | | `retro`, `triage`, `box`, `storm`, `flake`, `thresh`, `audit`, `notify`, `providers`. |
 | 40 | `journal-ports-cli-authoring` | journal plan (c) | chore | P2 | `journal-query-layer` | | `__main__`, `author`, `tickets`, `observe` (its raw reader goes). |
 | 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
-| 200 | `release-audit-060` | roadmap | chore | P1 | rows 36-41 | | Re-run the six passes of sections 2-4 at the base commit: remove fixed items, mark recurring ones "recurred in 0.6.0", add gate commands for ship clauses that merged code records, and add the same audit row with its own stem as the last row of the next release table, with Depends on listing every non-provisional row of that release. |
-| 208 | ~~`boundary-contract-outcome-compare`~~ | boundary | chore | P1 | | | **Merged** (`tickets/boundary-contract-outcome-compare/`). docs/boundary-contract-plan.md Rollout Phase 3 and row 153 compare premise failures, rework and duplicate-owner findings with the trial baseline, but the plan records only the baseline (Trial results); once tickets have run after row 153, record that comparison in the plan. |
+| 200 | `release-audit-060` | roadmap | chore | P1 | rows 36-41 | | Re-run the six passes of sections 2-4 at the base commit: remove fixed items, mark recurring ones "recurred in 0.7.0", add gate commands for ship clauses that merged code records, and add the same audit row with its own stem as the last row of the next release table, with Depends on listing every non-provisional row of that release. |
 
-The 0.6.0 gate checks the port groups and SQL-only gate through the release rows; the clause that no feature ticket runs during the window remains unchecked because no merged verb records it.
+The 0.7.0 gate checks the port groups and SQL-only gate through the release rows; the clause that no feature ticket runs during the window remains unchecked because no merged verb records it.
 
 ```gate
-uv run clutch roadmap merged --release 0.6.0
+uv run clutch roadmap merged --release 0.7.0
 ./dev.py test
-uv run clutch roadmap accept 0.6.0
+uv run clutch roadmap accept 0.7.0
 ```
 
-### 0.7.0
+### 0.8.0
 
 ```start
-uv run clutch roadmap merged --release 0.6.0 --since v0.7.0 --at-least 1
+uv run clutch roadmap merged --release 0.7.0 --since v0.8.0 --at-least 1
 ```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 218 | `events-once-cursor` | antigravity plan 1 | feature | P1 | `state-service-handoff` | `doc-facet-registry` | Cursor token and `wait_once(state, *, cursor, timeout, sleep)` in `clutch/events.py`; `--once`, `--cursor`, and `--timeout` on `clutch view events` emitting structured JSON; CLI help and doc updates. |
-| 219 | `engine-serve-detach` | antigravity plan 2 | feature | P1 | `state-service-handoff` | `doc-facet-registry` | `--detach` on `clutch engine serve` (detached session, `<state_dir>/serve.out`, startup check) matching `engine drain --detach`; CLI help and command docs. |
-| 220 | `mcp-read-server` | antigravity plan 3 | feature | P1 | `events-once-cursor` | `doc-facet-registry` | `clutch/mcp.py` stdio JSON-RPC 2.0 server and `clutch mcp serve` verb: read-only tools (`clutch_snapshot`, `clutch_status`, `clutch_stats`, `clutch_roadmap_status`, `clutch_wait_event`, `clutch_evidence_captures`, `clutch_evidence_show`, `clutch_context_suggest`, `clutch_prompt`) and MCP Prompts for `clutch/specs/ask/*.md`, with optional `repo` routing. |
-| 221 | `mcp-control-and-tickets` | antigravity plan 4 | feature | P1 | `mcp-read-server`, `engine-serve-detach` | `doc-facet-registry` | Admission-gated MCP tools for `ticket_new`, `ticket_lint`, `ticket_order`, `ticket_confirm`, `ticket_reject` (separating model `actor: operator` from `app`-only UI verdicts), `box_suggest`, `box_triage`, `box_dismiss`, detached `engine_start` (`drain`/`serve`), `engine_control` (`pause`/`resume`/`stop`/`kill`/`ping`), and `engine_retro`. |
-| 222 | `ui-shared-renderers` | antigravity plan 5 | chore | P1 | `state-service-handoff` | `doc-facet-registry` | Refactor `vscode-clutchwork/media/{graph,view,detail,box}.js` and `view.css` behind a thin host adapter (`callTool`, `openFile`, `sendPrompt`, `openHelp`) while keeping `vscode-clutchwork` behavior identical; update `clutch/help.py` surfaces for shared UI views. |
-| 223 | `mcp-app-dashboard` | antigravity plan 6 | feature | P1 | `mcp-control-and-tickets`, `ui-shared-renderers` | `doc-facet-registry` | Build `clutch/ui/dashboard.html` with `@modelcontextprotocol/ext-apps` (`./dev.py ui-bundle`) and serve `ui://clutch/dashboard.html` on `clutch_open_dashboard` (`aux_pane` and `global` entrypoints) plus `app`-only data tools, theme variable binding, `toggle-aux-pane` file open, and `app.sendMessage` prompt launch. |
-| 224 | `ask-specs-mcp-supervision` | antigravity plan 7 | feature | P1 | `mcp-control-and-tickets` | `doc-facet-registry` | Update `clutch/specs/ask/drain-loop.md`, `plan-ticket-drain.md`, and `plan-ticket-serve.md`: remove `/loop` prefix, prefer `clutch_*` MCP tools where appropriate while keeping CLI for bootstrap/tests/gates, use `clutch_wait_event` cursor wakeups, detached `serve`, and explicit Antigravity `flash`/`pro` subagent mapping. |
-| 225 | `host-antigravity-plugin` | antigravity plan 8 | feature | P1 | `mcp-app-dashboard`, `ask-specs-mcp-supervision` | `doc-facet-registry` | `clutch host antigravity` installer for `~/.gemini/config/plugins/clutchwork/` (`plugin.json`, `mcp_config.json`, logo, and thin `clutch-drain-loop`, `clutch-plan-drain`, `clutch-plan-serve` skills), optional `--workspace` `.agents/skills/` output, `host doctor` check, and host/README onboarding docs. |
 | 75 | `doc-facet-registry` | document plan 1 | feature | P2 | | | Facet format, loader, `clutch doc facets`, facet files. |
 | 76 | `docset-manifest` | document plan 2 | feature | P2 | | | `clutch.docset/1.0`, section hashing, `clutch doc status` over any `docs/<name>/` with a manifest. |
 | 77 | `isolated-readonly-call` | document plan 3 | feature | P2 | `evidence-envelope` | | Scratch working directory with only the declared files; evidence record with `repo: null`. |
@@ -544,13 +564,13 @@ uv run clutch roadmap merged --release 0.6.0 --since v0.7.0 --at-least 1
 | 83 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
 | 84 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest`, `context-suggest` | | Headless draft (with `--from <topic>` through the index) and the `doc-plan` ask prompt. |
 | 85 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
-| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten plans under `docs/`, including `docs/document-agent/plan.md`, into doc sets and run `scope` and `buildability` on each; 0.7.0's ship gate. |
+| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten plans under `docs/`, including `docs/document-agent/plan.md`, into doc sets and run `scope` and `buildability` on each; 0.8.0's ship gate. |
 | 87 | `implement-best-of-n` | panels plan 5 | feature | P3 | `panel-combiners`, `serve-parallel-dispatch-r2` | | **Authored** (`tickets/implement-best-of-n/`). Per-member worktrees, Check on every candidate, selection by Check pass then fewest soft findings then smallest diff, retirement of the rest. |
 
 ```gate
-uv run clutch roadmap merged --release 0.7.0
+uv run clutch roadmap merged --release 0.8.0
 ./dev.py test
-uv run clutch roadmap accept 0.7.0
+uv run clutch roadmap accept 0.8.0
 ```
 
 ### Agent tasks (not tickets)
