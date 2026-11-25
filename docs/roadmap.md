@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 62a64dee
-hash: b3ab253e9f1291390a0a42425060bab4ead6797f87598d54bd5d8da622cf043e
+verified: 7069918a
+hash: 79043fd178615be7805a149c6ba4a295579b869921f6035270197378168db7f4
 -->
 # clutch roadmap
 
@@ -507,6 +507,7 @@ uv run clutch roadmap merged --release 0.6.0 --since v0.6.0 --at-least 1
 | 223 | `mcp-app-dashboard` | antigravity plan 6 | feature | P1 | `mcp-control-and-tickets`, `ui-shared-renderers` | | Build `clutch/ui/dashboard.html` with `@modelcontextprotocol/ext-apps` (`./dev.py ui-bundle`) and serve `ui://clutch/dashboard.html` on `clutch_open_dashboard` (`aux_pane` and `global` entrypoints) plus `app`-only data tools, theme variable binding, `toggle-aux-pane` file open, and `app.sendMessage` prompt launch. |
 | 224 | `ask-specs-mcp-supervision` | antigravity plan 7 | feature | P1 | `mcp-control-and-tickets` | | Update `clutch/specs/ask/drain-loop.md`, `plan-ticket-drain.md`, and `plan-ticket-serve.md`: remove `/loop` prefix, prefer `clutch_*` MCP tools where appropriate while keeping CLI for bootstrap/tests/gates, use `clutch_wait_event` cursor wakeups, detached `serve`, and explicit Antigravity `flash`/`pro` subagent mapping. |
 | 225 | `host-antigravity-plugin` | antigravity plan 8 | feature | P1 | `mcp-app-dashboard`, `ask-specs-mcp-supervision` | | `clutch host antigravity` installer for `~/.gemini/config/plugins/clutchwork/` (`plugin.json`, `mcp_config.json`, logo, and thin `clutch-drain-loop`, `clutch-plan-drain`, `clutch-plan-serve` skills), optional `--workspace` `.agents/skills/` output, `host doctor` check, and host/README onboarding docs. |
+| 226 | `antigravity-plugin-bundle` | antigravity plan 9 | feature | P1 | `host-antigravity-plugin` | | Commit the publishable Antigravity plugin root (`plugin.json` with full Marketplace metadata, portable `mcp_config.json` using `uvx --from clutchwork clutch mcp serve`, `assets/logo.svg`, and thin `skills/clutch-*/SKILL.md`) generated from `clutch/antigravity.py`, with a unit test preventing drift and README install/Marketplace instructions. |
 | 208 | ~~`boundary-contract-outcome-compare`~~ | boundary | chore | P1 | | | **Merged** (`tickets/boundary-contract-outcome-compare/`). docs/boundary-contract-plan.md Rollout Phase 3 and row 153 compare premise failures, rework and duplicate-owner findings with the trial baseline, but the plan records only the baseline (Trial results); once tickets have run after row 153, record that comparison in the plan. |
 
 ```gate

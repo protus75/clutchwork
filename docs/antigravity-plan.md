@@ -4,8 +4,8 @@ kind: plan
 purpose: Onboard Google Antigravity as the primary ClutchWork operator UI, MCP server, and unattended drain/serve supervisor in place of VS Code
 relates: [clutch/__main__.py, clutch/ask.py, clutch/events.py, clutch/graph.py, clutch/help.py, clutch/hostfiles.py, clutch/observe.py, clutch/status.py, docs/engine-state-db-plan.md, docs/how-clutch-works.md, docs/mcp-server-notes.md, docs/roadmap.md, vscode-clutchwork/extension.js]
 owner: engine
-verified: 62a64dee
-hash: 33d4d205eb4d765b33ec011947367ab47d974bb4271852c50846184331a9ba4c
+verified: 7069918a
+hash: fb86e1e229c65bfc41123458743b7250976e0fc52b3f2085299263144032633d
 -->
 # Antigravity UI, MCP server, and supervising agent: plan
 
@@ -99,15 +99,19 @@ In keeping with `AGENTS.md` (*"Keep shipped process prompts in sync"* and *"One 
 - **Explicit child-model routing across agent hosts:** Retains the Claude `Sonnet`-not-`Opus` rule for Claude hosts and adds explicit Antigravity `invoke_subagent` guidance: use `Model: "flash"` for row authors (`clutch prompt author <stem>`), `roadmap gate` runners, and open-decision proposal agents, and `Model: "pro"` (or `"inherit"`) for phase-closing acceptance reviews, while keeping calibration/baseline label panels routed through Clutch's cross-family provider config (`docs/roadmap.md` §5, decision 13).
 - **Detached `serve` supervision:** `plan-ticket-serve.md` starts the daemon via `clutch_engine_start(mode="serve")` / `clutch engine serve --detach`, monitors via `clutch_wait_event` and `clutch_evidence_captures` / `engine.log`, stops cleanly with `clutch_engine_control(action="stop")` when no-engine steps (`box dismiss`, Reject-queue edits, `host doctor`) require quiescence, and restarts detached afterward.
 
-### 6. Host and machine onboarding (`host-antigravity-plugin`)
+### 6. Host and machine onboarding + publishable plugin bundle (`host-antigravity-plugin`, `antigravity-plugin-bundle`)
 
-- **`clutch host antigravity [--plugin-dir PATH] [--workspace]`:**
+- **`clutch host antigravity [--plugin-dir PATH] [--workspace]` (`host-antigravity-plugin`):**
   - Default (global machine setup): writes/refreshes `~/.gemini/config/plugins/clutchwork/` containing:
-    - `plugin.json`: `name: "clutchwork"`, `displayName: "ClutchWork"`, `logo: "assets/logo.svg"`, and 3 `suggestedPrompts` (*"Open the ClutchWork dashboard"*, *"Supervise the Clutch queue (drain-loop)"*, *"Run docs/roadmap.md unattended with serve"*).
+    - `plugin.json`: `name: "clutchwork"`, `displayName: "ClutchWork"`, `version` (from package metadata), `description`, `author`, `homepage`, `repository` (`https://github.com/protus75/clutchwork`), `logo: "assets/logo.svg"`, and 3 `suggestedPrompts` (*"Open the ClutchWork dashboard"*, *"Supervise the Clutch queue (drain-loop)"*, *"Run docs/roadmap.md unattended with serve"*).
     - `mcp_config.json`: configures `"clutchwork"` stdio server invoking the exact Python/clutch executable of the installing environment (`sys.executable -m clutch mcp serve`), avoiding `PATH` lookup failures inside sandboxed shells.
     - `assets/logo.svg`: copied from Clutch's package assets.
     - Thin skills (`skills/clutch-drain-loop/SKILL.md`, `skills/clutch-plan-drain/SKILL.md`, `skills/clutch-plan-serve/SKILL.md`): each skill is under 40 lines, instructs Antigravity to call `clutch_prompt` for the canonical spec, binds Antigravity's `invoke_subagent` / `clutch_wait_event` / side-pane UI tools, and carries zero duplicated process rules.
   - With `--workspace`: writes `.agents/skills/clutch-*/SKILL.md` into the target host checkout for teams checking Antigravity skills into VCS (leaving `routed_conduct_paths` and `CoreDriftGate` strictly scoped to `CLAUDE.md` and `AGENTS.md`).
+- **Committed publishable GitHub & Marketplace plugin bundle (`antigravity-plugin-bundle`):**
+  - Commits the portable Antigravity plugin root directly in this public repository (`plugin.json`, `mcp_config.json`, `assets/logo.svg`, and `skills/clutch-{drain-loop,plan-drain,plan-serve}/SKILL.md`, sharing the repo's `README.md`) so users can install directly via `agy plugin install https://github.com/protus75/clutchwork` (Option 1) and the repo can be submitted to the official Antigravity Marketplace (Option 3) after `0.7.0` ships to PyPI.
+  - Generated from the same single source in `clutch/antigravity.py` (portable mode) with `mcp_config.json` invoking `uvx --from clutchwork clutch mcp serve` instead of a machine-local `sys.executable` path, and verified against drift by a unit test comparing the committed files and `pyproject.toml` version against the generator.
+  - Manual publish step (after `clutch release ship` publishes `clutchwork 0.7.0` to PyPI): run `agy plugin validate --strict .` and submit `https://github.com/protus75/clutchwork` through the Antigravity Marketplace submission form.
 - **`clutch host core`:** Unchanged in scope—continues to render `CORE_TEMPLATE` into `AGENTS.md`, which Antigravity loads automatically in every workspace.
 - **`clutch host doctor`:** When `~/.gemini/config/plugins/clutchwork/` exists, verifies its `mcp_config.json` executable still resolves and matches the current schema, printing a warning with paved road `clutch host antigravity` if drifted.
 
@@ -138,6 +142,7 @@ Each ticket targets <= 30 AI minutes (`docs/roadmap.md` §6, decision 22) and pl
 | 6 | `mcp-app-dashboard` | feature | P1 | `mcp-control-and-tickets`, `ui-shared-renderers` | Build `clutch/ui/dashboard.html` with `@modelcontextprotocol/ext-apps` (`./dev.py ui-bundle`) and serve `ui://clutch/dashboard.html` on `clutch_open_dashboard` (`aux_pane` and `global` entrypoints) plus `app`-only data tools, theme variable binding, `toggle-aux-pane` file open, and `app.sendMessage` prompt launch. |
 | 7 | `ask-specs-mcp-supervision` | feature | P1 | `mcp-control-and-tickets` | Update `clutch/specs/ask/drain-loop.md`, `plan-ticket-drain.md`, and `plan-ticket-serve.md`: remove `/loop` prefix, prefer `clutch_*` MCP tools where appropriate while keeping CLI for bootstrap/tests/gates, use `clutch_wait_event` cursor wakeups, detached `serve`, and explicit Antigravity `flash`/`pro` subagent mapping. |
 | 8 | `host-antigravity-plugin` | feature | P1 | `mcp-app-dashboard`, `ask-specs-mcp-supervision` | `clutch host antigravity` installer for `~/.gemini/config/plugins/clutchwork/` (`plugin.json`, `mcp_config.json`, logo, and thin `clutch-drain-loop`, `clutch-plan-drain`, `clutch-plan-serve` skills), optional `--workspace` `.agents/skills/` output, `host doctor` check, and host/README onboarding docs. |
+| 9 | `antigravity-plugin-bundle` | feature | P1 | `host-antigravity-plugin` | Commit the publishable Antigravity plugin root (`plugin.json` with full Marketplace metadata, portable `mcp_config.json` using `uvx --from clutchwork clutch mcp serve`, `assets/logo.svg`, and thin `skills/clutch-*/SKILL.md`) generated from `clutch/antigravity.py`, with a unit test preventing drift and README install/Marketplace instructions. |
 
 `Runs before`: none within `0.7.0` (release `0.7.0` ships before `0.8.0`'s engine state rewrite and `0.9.0`'s Document agent).
 
@@ -156,3 +161,4 @@ Decided by the owner on 2026-11-24:
 1. **Fate of `vscode-clutchwork/` once `mcp-app-dashboard` ships.** **Decided: keep.** Keep `vscode-clutchwork/` in tree sharing the extracted `media/` renderers (`ui-shared-renderers`) so existing extension tests and VSIX builds continue passing without churn; freeze new VS Code-only features and retire `vscode-clutchwork/` only in a later chore ticket if the owner asks.
 2. **MCP protocol implementation (`mcp` PyPI SDK vs. pure-Python JSON-RPC over Pydantic).** **Decided: plain Python.** Implement stdio JSON-RPC 2.0 in `clutch/mcp.py` using Clutch's existing `pydantic` dependency (~250 lines, zero new core dependencies, direct control over `_meta` `ui://` and `com.google.antigravity/ui` entrypoints, unit-testable with in-memory streams under `clutch.testguard`).
 3. **Plugin scope (`~/.gemini/config/plugins/clutchwork/` global vs. `.agents/` per repo).** **Decided: global by default.** Install globally to `~/.gemini/config/plugins/clutchwork/` via `clutch host antigravity` (required by Antigravity for MCP servers and sidebar UI panels), with `--workspace` available to emit `.agents/skills/` when a repo wants versioned workspace skills.
+4. **Plugin distribution (direct GitHub install + Antigravity Marketplace).** **Decided (2026-11-25): ship both.** Commit the portable plugin bundle at the repository root (`antigravity-plugin-bundle`, row 226) generated from `clutch/antigravity.py` with `uvx --from clutchwork clutch mcp serve` and full Marketplace `plugin.json` metadata so `agy plugin install https://github.com/protus75/clutchwork` works directly and the repo is ready for `agy plugin validate --strict .` + Marketplace submission once `clutchwork 0.7.0` ships to PyPI.
