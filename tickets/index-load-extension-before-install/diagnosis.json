@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d75465f5747e7b473af9eeebf98f7105a7de9ca2",
+  "stem": "index-load-extension-before-install",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket can't pass as written: its Verification runs tests/unit/test_index_build.py, but line 283 of that file (test_default_creator) asserts [f\"INSTALL {kind}\", f\"LOAD {kind}\"] and the file is outside the scope fence. Add tests/unit/test_index_build.py to ## Scope fence.",
+    "Rewrite the ticket to require changing tests/unit/test_index_build.py:283 to assert conn.calls == [f\"LOAD {kind}\"]. Line 287 can stay: Recorder(True) fails every execute, so the fallback still returns [f\"{kind} unavailable: offline\"].",
+    "The failed branch d75465f57 already has the scoped loader change in clutch/index.py and both new tests. Per the run record, the reproducer printed defect on base and pass on the branch. After the fence fix, change only test_index_build.py:283 and rerun ./dev.py test",
+    "Class prevention for the ticket author: before filing a behavior change, search tests/ for assertions on the old behavior (here grep \"INSTALL {kind}\") and fence every test that pins it, as the project CLAUDE.md requires for tests pinning a changed value."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
