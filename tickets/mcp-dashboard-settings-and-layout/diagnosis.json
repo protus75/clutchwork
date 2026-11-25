@@ -1,17 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ac02407d7a6acb26595f301c3b72fd4ffc182bc5",
+  "produced_at_sha": "c19ab7f5c36992ee3b34f0ce90c0f579fb0cad37",
   "stem": "mcp-dashboard-settings-and-layout",
-  "attempt": 3,
+  "attempt": 4,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In tests/mcp_app_dashboard.js near line 51, the `Refresh seconds` = `0` check asserts `cleared.includes(1)`, but id 1 was already cleared by the earlier `2.5` change, so the assertion cannot fail. Replace it with checks on the live interval id.",
-    "Before dispatching the `0` change, record `const live = intervals.length` (the active interval id). Afterwards assert `cleared.includes(live)` and `intervals.length === live`, so the test fails unless the active timer is cleared and no new one is scheduled (criterion 5).",
-    "Change only the test. Do not touch clutch/mcp.py, clutch/ui/app.js or clutch/ui/dashboard.css: review found the server tools, layout, steps styling, Settings wiring and dirty-input fix match the ticket.",
-    "Prove the new assertion can fail: temporarily make schedule() skip clearing or schedule an interval at 0 ms and confirm tests/integration/test_mcp_app_dashboard.py fails, then restore the code. Then run the full ## Verification command."
+    "In clutch/ui/app.js, the windowSelect (Stats section) change listener near line 73 must also set statsInput.value = windowSelect.value, so the Settings 'Stats window' select matches the persisted statsWindow. Declare statsInput before the listener or assign it lazily.",
+    "Add an assertion to tests/mcp_app_dashboard.js (run by tests/integration/test_mcp_app_dashboard.py): dispatch a change on the Stats section window select to '30d', then assert the Settings 'Stats window' select value is '30d' and the clutch_app_ui_state set state has statsWindow '30d'.",
+    "Keep the rest of the reviewed implementation as is (server tools, persistence, polling, labels, box parity, step styling, config dirty tracking). Review found nothing else. Then run the ticket's ## Verification command and confirm all tests pass."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
