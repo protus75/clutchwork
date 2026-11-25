@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "e4c47b05c42af9eb05381eae497d598c23a1c25a",
+  "produced_at_sha": "3c5c0c75d75e6152e90fb96eff066f1a354ddf81",
   "stem": "ui-shared-renderers",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "merge",
   "verdict": "abandon-human",
   "lessons": [
-    "The diff is not the cause. Main commit 38cb9c7b0 (clutch view: add --short) changed handle_status in clutch/__main__.py:1548 to call render(..., short=...). Unit tests that stub render without a short kwarg now fail on main, and they are all outside this ticket's fence.",
-    "Failing tests: tests/unit/test_evidence_warn_threshold.py:39 stubs render as lambda projection: ..., plus test_main_view_group.py::test_dispatch_and_optional_locks and test_manual_retro_calibration_verbs.py::test_manual_maintenance_help[command2]. Fix them on main in a separate P0 ticket.",
-    "This candidate passed Verification, ruff, and review approve. After main's unit suite is green again, re-merge it unchanged. Do not add the out-of-fence test fixes to this ticket.",
-    "To prevent this class, the --short ticket should have been gated on the full tests/unit suite before merge. Also check why a dirty tests/unit/test_status_short.py sits uncommitted in the main checkout."
+    "The merge unit gate failed in 3 tests the diff does not touch: test_main_view_group::test_dispatch_and_optional_locks, test_manual_retro_calibration_verbs::test_manual_maintenance_help[command2] and test_evidence_warn_threshold::test_size_warning_doctor_and_status.",
+    "Root cause is on main, outside the fence: clutch/__main__.py:1548 handle_status calls render(..., short=bool(args.short)), but the render fake in tests/unit/test_evidence_warn_threshold.py takes no 'short' kwarg. A merged change added --short without updating these tests.",
+    "A human should fix main first: update the 3 unit tests (or the change that added --short to view status) so 'tests/unit' passes on main, and order that fix ahead with '## Runs before: ui-shared-renderers'.",
+    "Do not change this ticket's diff. Check (Verification exit 0) and Review (approve) both passed, and the fence forbids clutch/__main__.py and those tests. After main is green, merge the same branch again unchanged."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
