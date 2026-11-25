@@ -1,22 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ae1674949dd04a2894005a1a92a9290c56a65a52",
+  "produced_at_sha": "25ec6f3b0ca600e1c59738c718b0bdfbd75204b0",
   "stem": "mcp-control-and-tickets",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "retry",
   "lessons": [
-    "The premise finding is a misreading. 'Blank reason' means a supplied string that is empty or whitespace. reason=None (an omitted --reason) stays valid. tests/unit/test_reject_reason_paths.py already passes None through runner.verdict, verdict_locked, apply_admission and _verdict.",
-    "In runner.submit_verdict and runner.submit_engine, raise Refusal(code=\"blank_reason\") only when kill/reject is set and reason is not None and reason.strip() == \"\". Keep forwarding reason through the existing **({\"reason\": reason} if reason is not None else {}) pattern so CLI output and exit codes",
-    "control.py:80 already refuses an empty operator_reason in an AdmissionRequest. Refusing a blank string earlier in submit_engine therefore removes no valid CLI path. Keep the missing-hold refusal on \"resume\" exactly as at __main__.py:2181.",
-    "In clutch/mcp.py, clutch_ticket_reject and clutch_app_ticket_reject take an optional reason. Pass a blank string to submit_verdict so it returns isError true with code blank_reason. Pass an omitted reason as None, matching the CLI.",
-    "This attempt starts from main, so do all of the ticket's Scope-in work: the tickets/box/observe/serve/runner helpers, delegation from __main__ using module globals, the 13 MCP tools, the docs rows, the 22-name set in test_mcp_tools.py, and the new tests/unit/test_mcp_control_and_tickets.py."
+    "test_closed_set_literals_have_one_home fails because a clutch/*.py file other than tickets.py now spells out the kind or P0-P3 set, probably a Literal in clutch/mcp.py. Build those fields from tickets.KINDS / tickets.PRIORITIES (clutch/tickets.py:41-43) instead.",
+    "test_shared_fakes_guard fails because the new tests/unit/test_mcp_control_and_tickets.py defines a function named verdict, requisition_reply, review_verdict or implement_reply. Rename that fake, e.g. fake_verdict. Do not edit the guard's exemption list, which is outside the fence.",
+    "test_verdict_submitted_message: entry._verdict must still print 'confirm submitted: <id> -- `clutch view status` shows the outcome' with the id from the clutch.__main__.uuid4 seam. Pass that seam into runner.submit_engine, and don't let submit_verdict's redirect_stdout swallow CLI output.",
+    "test_stale_running::test_order_refuses_only_a_live_running_stem: entry._order must resolve entry.observe.lock_holder, entry.order and entry.validate_ticket at call time. Raise Refusal('... is running') from journal state, reach files only via checkout.repo / ..., is_file() and read_bytes(), and",
+    "Before committing, run the full unit and integration suites (`./dev.py test tests/unit tests/integration`), not only the ## Verification list. All four failures were in tests outside that list that read clutch/ source or call the delegated CLI seams."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    1
+    3
   ],
   "spec_version": "1.11",
   "provider": "claude",
