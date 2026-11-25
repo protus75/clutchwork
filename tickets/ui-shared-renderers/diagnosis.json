@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e4c47b05c42af9eb05381eae497d598c23a1c25a",
+  "stem": "ui-shared-renderers",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "merge",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The diff is not the cause. Main commit 38cb9c7b0 (clutch view: add --short) changed handle_status in clutch/__main__.py:1548 to call render(..., short=...). Unit tests that stub render without a short kwarg now fail on main, and they are all outside this ticket's fence.",
+    "Failing tests: tests/unit/test_evidence_warn_threshold.py:39 stubs render as lambda projection: ..., plus test_main_view_group.py::test_dispatch_and_optional_locks and test_manual_retro_calibration_verbs.py::test_manual_maintenance_help[command2]. Fix them on main in a separate P0 ticket.",
+    "This candidate passed Verification, ruff, and review approve. After main's unit suite is green again, re-merge it unchanged. Do not add the out-of-fence test fixes to this ticket.",
+    "To prevent this class, the --short ticket should have been gated on the full tests/unit suite before merge. Also check why a dirty tests/unit/test_status_short.py sits uncommitted in the main checkout."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
