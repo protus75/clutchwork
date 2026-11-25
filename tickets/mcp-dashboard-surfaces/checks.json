@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "0bbe775b9d2bbc5cc680d378af2ad6ec30164c0f",
+  "produced_at_sha": "e74b43a66cdb637c55d0448a4777ff0a7fe5b5a6",
   "stem": "mcp-dashboard-surfaces",
   "passed": true,
   "changed_files": [
@@ -11,7 +11,7 @@
     "tests/integration/test_mcp_app_dashboard.py",
     "tests/mcp_app_dashboard.js"
   ],
-  "inserted_lines": 193,
+  "inserted_lines": 197,
   "bypassed": [],
   "reports": [
     {
@@ -80,15 +80,17 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 19.802458,
+        "seconds": 20.491391,
         "passed": 2398,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8426404370111413,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.3698732201009989,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3568747320096008,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0303798860986717
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8981836540042423,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.43935436202446,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3500960439560004,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0495684659690596,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.022921686002519,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[timeout]": 1.004000068991445
         }
       },
       "coverage": {
@@ -102,15 +104,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 11.945813,
+        "seconds": 12.375406,
         "passed": 319,
         "failed": 0,
         "skipped": 3294,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.053910344024189,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1697130310349166,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1530349599779584,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.004535090061836
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0489833559840918,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2345698430435732,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1526073419954628,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0035091399913654
         }
       }
     },
@@ -140,9 +142,9 @@
         "tests/unit/test_mcp_app_dashboard.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/integration/test_disk_io_skip_list.py tests/integration/test_ui_shared_renderers.py tests/integration/test_mcp_read_server.py tests/unit/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.64s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/integration/test_disk_io_skip_list.py tests/integration/test_ui_shared_renderers.py tests/integration/test_mcp_read_server.py tests/unit/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.50s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.425696
+      "seconds": 5.291604
     }
   ]
 }
