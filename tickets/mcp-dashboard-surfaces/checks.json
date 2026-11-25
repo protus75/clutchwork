@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "4010677b82195017cca7d36448e02daa6c63fb57",
+  "produced_at_sha": "0bbe775b9d2bbc5cc680d378af2ad6ec30164c0f",
   "stem": "mcp-dashboard-surfaces",
   "passed": true,
   "changed_files": [
@@ -11,7 +11,7 @@
     "tests/integration/test_mcp_app_dashboard.py",
     "tests/mcp_app_dashboard.js"
   ],
-  "inserted_lines": 189,
+  "inserted_lines": 193,
   "bypassed": [],
   "reports": [
     {
@@ -80,16 +80,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.291679,
+        "seconds": 19.802458,
         "passed": 2398,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8762796789524145,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3082444189931266,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.282224366965238,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.167995736002922,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.007211206946522
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8426404370111413,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.3698732201009989,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3568747320096008,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0303798860986717
         }
       },
       "coverage": {
@@ -103,15 +102,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 13.83459,
+        "seconds": 11.945813,
         "passed": 319,
         "failed": 0,
         "skipped": 3294,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.915956503013149,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2044878240558319,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1574411920155399,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0047923640231602
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.053910344024189,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1697130310349166,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1530349599779584,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.004535090061836
         }
       }
     },
@@ -141,9 +140,9 @@
         "tests/unit/test_mcp_app_dashboard.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/integration/test_disk_io_skip_list.py tests/integration/test_ui_shared_renderers.py tests/integration/test_mcp_read_server.py tests/unit/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.50s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/integration/test_disk_io_skip_list.py tests/integration/test_ui_shared_renderers.py tests/integration/test_mcp_read_server.py tests/unit/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.64s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 6.788611
+      "seconds": 5.425696
     }
   ]
 }
