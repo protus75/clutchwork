@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "41b5d3a5b3ddc8561870df1415b7ee385c5055be",
+  "stem": "release-audit-070",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In docs/roadmap.md section 2.2, restore the 'Ask kinds' row. Drop only the fixed __main__.py description clause (now derived from ask.DESCRIPTIONS). Keep the clutch/observe.py:731-735 prompt-menu argv clause (askDiagnose, askReview, askDrafts, askDrainLoop, askBox) and mark it (recurred in 0.7.0).",
+    "In docs/roadmap.md, restore the scorecard home in the 'Failed-attempt terminals' row: clutch/scorecard.py:139 still hand-lists {merged, gate_failed, abandoned, rejected}. Put it next to the caps, journal and stats homes and mark it (recurred in 0.7.0).",
+    "Criterion 5: before removing any sections 2-4 item or clause, grep every home it names at the base commit. Remove only clauses a merged change fixed. Partly fixed rows keep their still-true clauses with current line numbers.",
+    "Review passed the --check/--verify code, gate block, docs rows and tests. Leave clutch/mcp.py, clutch/antigravity.py, clutch/__main__.py and the tests alone. Edit only docs/roadmap.md, then rerun the ## Verification command."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
