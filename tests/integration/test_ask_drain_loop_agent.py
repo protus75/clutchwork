@@ -4,8 +4,8 @@
 # purpose: Checks the drain-loop prompt delegates Recommendation-driven verdicts, keeps hard limits (no push, no --extension) and limits Suggestion Box triage per tick
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 18f3cf87
-# hash: cb76d91e77abb1a8094cee6e103ad5562cf5bac0c9be0dc0cca3b5d3ae137a2c
+# verified: cd9fb2dc
+# hash: 43d89660289cf45a60385fc3aa312800b3391529642041f1f6cf881fff026d3b
 import pytest
 
 from clutch import ask
@@ -72,8 +72,9 @@ def test_prompt_bounds_box_triage(tmp_path):
         "clutch box triage",
         "clutch box dismiss",
         "only between drains",
-        "pending when the tick starts",
-        "at most once per tick",
+        "once at the end of a phase right before the release gate",
+        "unless the owner explicitly asks otherwise",
+        "not on every tick",
         "never re-file",
     ):
         assert phrase in text, f"Omitting {phrase} differs"

@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: ac37eddd
-hash: 2e797944bde5c698813796ba4b5be5e0a2826dfc244e1b61dc59c6ac99e89bf0
+verified: cd9fb2dc
+hash: a2cb97e6279e19926064bf216e2ef2b8501397259ea518e6f722c8c9ef9363de
 -->
 # How ClutchWork works
 
@@ -633,7 +633,7 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 
 The plan-ticket agent authors rows using `clutch roadmap author` and runs `clutch roadmap gate` after the queue drains. Once the release rows merge and the gate passes, it reports readiness to the owner. The owner runs `clutch release ship`, which gates the current release, bumps and tags it, publishes when configured, and runs packages. Serve and drain do not run these steps.
 
-The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch box suggest` and never authors a ticket itself. It triages Suggestion Box messages pending when its tick starts, including during a drain, and dismisses them between drains, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
+The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch box suggest` and never authors a ticket itself. It prefers `clutch_*` MCP tools when present, with CLI fallback. It runs Suggestion Box triage once at the end of a phase right before the release gate unless the owner explicitly asks otherwise, and dismisses messages between drains by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
 
 ## 8. AI providers and prompts
 

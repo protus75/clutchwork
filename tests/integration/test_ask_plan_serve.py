@@ -4,8 +4,8 @@
 # purpose: Checks the plan-ticket-serve prompt uses serve instead of drain, shares drain's limits, and is listed in the run guide and how-clutch-works
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 18f3cf87
-# hash: 30159213f5b6a4790fb921c5230dde69e4b567a2f11b94c6efcb13808848e583
+# verified: cd9fb2dc
+# hash: ba40444e02f6d56fb63ed1ce434a14adfd800bfc2623fe74bf65bc20168c8f3b
 from pathlib import Path
 
 import pytest
@@ -30,12 +30,14 @@ def test_serve_prompt_and_docs(tmp_path):
         "clutch prompt drain-loop",
         "clutch engine stop",
         "tail a drain's output or start a drain",
-        "only with `clutch engine serve`",
+        'clutch_engine_start(mode="serve")',
+        'clutch_engine_control(action="stop")',
+        "clutch engine serve --detach",
         "idle with nothing running or confirmed unrun",
-        "background-process facility",
         "picks them up live",
     ):
         assert phrase in serve
+    assert "background-process facility" not in serve
     assert "drain.out" not in serve
     assert "clutch engine drain" not in serve
     root = Path(__file__).resolve().parents[2]

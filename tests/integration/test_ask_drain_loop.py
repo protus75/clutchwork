@@ -4,8 +4,8 @@
 # purpose: Checks the drain-loop prompt renders with the /loop prefix, the configured state dir and owner verdict limits, and that the prompt verb writes no state
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 38957300
-# hash: 214115b31f67c7dc36f5760df696a0042bfafc8d4940b1ee3671a6311fc631ff
+# verified: cd9fb2dc
+# hash: 179adf4d77a936d83fb53c234df3519f449878b64227958445be3837a41ddce3
 import pytest
 
 from clutch import ask
@@ -20,7 +20,7 @@ def test_drain_loop_renders_state_dir_and_loop_prefix(tmp_path):
     (tmp_path / "config.yaml").write_text(VALID.replace("state_dir: .clutch", "state_dir: custom/state"))
     config = load_config(None, cwd=tmp_path)
     text = ask.render("drain-loop", "", config, tmp_path)
-    assert text.startswith("/loop ")  # Dropping the loop prefix differs.
+    assert text.startswith("You are the supervising agent loop")  # Retaining the loop prefix differs.
     assert "custom/state/drain.out" in text  # A fixed state path differs.
     assert ".clutch/state" not in text  # A hard-coded default differs.
 
@@ -36,5 +36,5 @@ def test_prompt_verb_drain_loop_prints_without_state(tmp_path, capsys):
     (tmp_path / "config.yaml").write_text(VALID)
     config = load_config(None, cwd=tmp_path)
     assert main(["prompt", "drain-loop"], cwd=tmp_path) == 0  # A refusal differs.
-    assert capsys.readouterr().out.startswith("/loop ")  # Empty or non-loop output differs.
+    assert capsys.readouterr().out.startswith("You are the supervising agent loop")  # Retaining the loop prefix differs.
     assert not config.state_dir.exists()  # Taking a lock or writing state creates the directory.
