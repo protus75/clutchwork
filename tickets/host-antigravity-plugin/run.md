@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Focused unit coverage reported 100% branch coverage for clutch/antigravity.py.
+The existing implementation was retained; the README uses inline code for the custom-scheme address to satisfy its absolute-link check.
 
 ## Dead ends
 
-An initial drift-test fixture accidentally used a valid default executable; corrected the fixture and reran verification.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 25 minutes expected, 50 minutes stuck; actual duration not measured.
+none
 
