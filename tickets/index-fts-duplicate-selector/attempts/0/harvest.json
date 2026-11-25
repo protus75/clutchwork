@@ -1,0 +1,45 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tickets/index-fts-duplicate-selector/ticket.md",
+      "line": null,
+      "message": "For headings `Dup`, `Dup`, and `Dup (2)`, the required suffix for the second `Dup` and the required unchanged selector for the unique `Dup (2)` are both `doc.md#Dup (2)`, contradicting the uniqueness requirement.",
+      "paved_road": "Define a collision-safe selector scheme and specify which existing selector strings may change.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "clutch/index.py",
+      "line": 416,
+      "message": "The boundary contract says rebuilding refreshes existing duplicate rows, but build skips files whose content hash is unchanged; changing extraction alone cannot refresh them.",
+      "paved_road": "Specify an index migration or explicit full-rebuild mechanism and include its required implementation and tests in scope.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "clutch/tickets.py",
+      "line": 360,
+      "message": "Context suggestions can emit the new suffixed selector, but the heading resolver matches actual heading text and cannot resolve `Dup (2)` to the second `Dup`; the unsuffixed first occurrence also remains ambiguous.",
+      "paved_road": "Define how duplicate-heading selectors resolve in ticket context and include the resolver and its consumers in scope.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The ticket’s selector and rebuild contracts cannot both be met as written.\",\"surprises\":\"The existing incremental build skips unchanged files, and context suggestions are expected to resolve to unique Markdown headings.\",\"second_problems\":[],\"dead_ends\":\"A per-heading counter cannot guarantee unique selectors while preserving the specified strings for every heading.\",\"predicted_vs_actual\":\"10-minute estimate; stopped during contract inspection.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tickets/index-fts-duplicate-selector/ticket.md\",\"line\":null,\"message\":\"For headings `Dup`, `Dup`, and `Dup (2)`, the required suffix for the second `Dup` and the required unchanged selector for the unique `Dup (2)` are both `doc.md#Dup (2)`, contradicting the uniqueness requirement.\",\"paved_road\":\"Define a collision-safe selector scheme and specify which existing selector strings may change.\"},{\"code\":\"premise\",\"path\":\"clutch/index.py\",\"line\":416,\"message\":\"The boundary contract says rebuilding refreshes existing duplicate rows, but build skips files whose content hash is unchanged; changing extraction alone cannot refresh them.\",\"paved_road\":\"Specify an index migration or explicit full-rebuild mechanism and include its required implementation and tests in scope.\"},{\"code\":\"premise\",\"path\":\"clutch/tickets.py\",\"line\":360,\"message\":\"Context suggestions can emit the new suffixed selector, but the heading resolver matches actual heading text and cannot resolve `Dup (2)` to the second `Dup`; the unsuffixed first occurrence also remains ambiguous.\",\"paved_road\":\"Define how duplicate-heading selectors resolve in ticket context and include the resolver and its consumers in scope.\"}]}",
+  "events_tail": "ends on\\\")\\n1071:            end = headings[i + 1][1] if i + 1 < len(headings) else len(text)\\n1197:            raise runner.Refusal(\\\"ticket ordering fields cannot be edited\\\", \\\"use ordinary priority and section headings, then retry ticket order\\\") from None\\nclutch/stages.py:689:    # A payload newline could forge a ticket section heading inside the rendered ticket block.\\nclutch/index.py:90:            elif not fenced and (heading := re.match(r\\\"^#{1,6}[ \\\\t]+(.*?)[ \\\\t]*$\\\", line.rstrip(\\\"\\\\r\\\\n\\\"))):\\nclutch/specs/doc/facets/type/roadmap.md:22:For each release, section 1 must contain a row whose first cell is exactly bold release name, for example `| **1.2.0** | theme | start | ship |`. Under section 8 use `### 1.2.0` headings and exactly these eight columns, numbered uniquely across releases. Stems must be backticked and unique across rows, tickets and journal. Owner's first word must uniquely match a word in one `docs/*-plan.md` filename, or be `roadmap` for the roadmap itself. Cite the plan section and discriminating outcome in Content. Example (illustrative only; derive actual argv from the host):\\nclutch/specs/__init__.py:172:        out.append(_f(\\\"spec_sections\\\", f\\\"sections are {list(headings)}\\\", f\\\"use exactly the sections {list(SPEC_SECTIONS)}, in that order, each once\\\"))\\nclutch/tickets.py:359:            headings.append((i, len(match[1]), match[2]))\\nclutch/tickets.py:362:        raise ValueError(f\\\"heading {heading!r} must match exactly one heading\\\")\\nclutch/tickets.py:518:                            \\\"select an existing definition or unique heading in a matching file, or list the whole file; \\\"\\nclutch/tickets.py:1059:                headings.append((match.group(1), offset))\\nclutch/tickets.py:1197:            raise runner.Refusal(\\\"ticket ordering fields cannot be edited\\\", \\\"use ordinary priority and section headings, then retry ticket order\\\") from None\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The ticket’s selector and rebuild contracts cannot both be met as written.\\\",\\\"surprises\\\":\\\"The existing incremental build skips unchanged files, and context suggestions are expected to resolve to unique Markdown headings.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"A per-heading counter cannot guarantee unique selectors while preserving the specified strings for every heading.\\\",\\\"predicted_vs_actual\\\":\\\"10-minute estimate; stopped during contract inspection.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tickets/index-fts-duplicate-selector/ticket.md\\\",\\\"line\\\":null,\\\"message\\\":\\\"For headings `Dup`, `Dup`, and `Dup (2)`, the required suffix for the second `Dup` and the required unchanged selector for the unique `Dup (2)` are both `doc.md#Dup (2)`, contradicting the uniqueness requirement.\\\",\\\"paved_road\\\":\\\"Define a collision-safe selector scheme and specify which existing selector strings may change.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/index.py\\\",\\\"line\\\":416,\\\"message\\\":\\\"The boundary contract says rebuilding refreshes existing duplicate rows, but build skips files whose content hash is unchanged; changing extraction alone cannot refresh them.\\\",\\\"paved_road\\\":\\\"Specify an index migration or explicit full-rebuild mechanism and include its required implementation and tests in scope.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/tickets.py\\\",\\\"line\\\":360,\\\"message\\\":\\\"Context suggestions can emit the new suffixed selector, but the heading resolver matches actual heading text and cannot resolve `Dup (2)` to the second `Dup`; the unsuffixed first occurrence also remains ambiguous.\\\",\\\"paved_road\\\":\\\"Define how duplicate-heading selectors resolve in ticket context and include the resolver and its consumers in scope.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":214099,\"cached_input_tokens\":176384,\"cache_write_input_tokens\":0,\"output_tokens\":957,\"reasoning_output_tokens\":261}}\n",
+  "wall_seconds": 41.79271,
+  "usd": 1.0,
+  "run_record": "tickets/index-fts-duplicate-selector/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
