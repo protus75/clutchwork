@@ -53,8 +53,10 @@ Scope in:
   - `tests/unit/test_antigravity_bundle.py`: update `assets/logo.svg` expectations in `plugin_manifest` and `portable_bundle_files` tests to `assets/logo.png`.
   - `tests/integration/test_antigravity_bundle.py`: update the drift check to read `clutch/assets/logo.png`, verify `assets/logo.png` matches `portable_bundle_files(...)` byte-for-byte, verify `assets/logo.svg` does not exist, and verify `vscode-clutchwork/media/marketplace-icon.png` matches `assets/hatchling-512.png` byte-for-byte.
 
+- Update `docs/antigravity-plan.md` (§6 and ticket breakdown row #9) to reference `assets/logo.png` instead of `assets/logo.svg`.
+
 Scope out:
-- Do not modify `vscode-clutchwork/media/icon.svg`, `vscode-clutchwork/package.json`, `mcp_config.json`, `skills/`, `clutch/__main__.py`, `clutch/doctor.py`, any documentation or conduct files, or any of the 18 source files under `assets/{badge,hatchling,medallion}-*`.
+- Do not modify `vscode-clutchwork/media/icon.svg`, `vscode-clutchwork/package.json`, `mcp_config.json`, `skills/`, `clutch/__main__.py`, `clutch/doctor.py`, any other documentation or conduct files, or any of the 18 source files under `assets/{badge,hatchling,medallion}-*`.
 
 ## Scope fence
 - clutch/antigravity.py
@@ -63,6 +65,7 @@ Scope out:
 - assets/logo.png
 - assets/logo.svg
 - plugin.json
+- docs/antigravity-plan.md
 - vscode-clutchwork/media/marketplace-icon.png
 - tests/unit/test_antigravity_plugin.py
 - tests/integration/test_antigravity_plugin.py
