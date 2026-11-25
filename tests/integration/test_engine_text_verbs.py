@@ -5,8 +5,8 @@
 # purpose: Engine text must name host-accessible operator verbs.
 # relates: []
 # owner: engine
-# verified: 148a8874
-# hash: a9078fa211eb870da212af635f56adee07f981a79923375567d917591ae9f40f
+# verified: d6f7e6b4
+# hash: 31a910cce1d8fb7a407d9f0fcb579453c5df0d3f81f713e203060970498aed56
 
 import os
 from pathlib import Path
@@ -21,6 +21,8 @@ def test_no_engine_text_names_dev_py():
         dirs[:] = [name for name in dirs if name != "__pycache__"]
         for name in files:
             path = Path(directory, name)
+            if path == root / "clutch" / "assets" / "logo.png":
+                continue
             try:
                 lines = path.read_text(encoding="utf-8").splitlines()
             except UnicodeDecodeError as error:
