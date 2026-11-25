@@ -1,23 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "09e60ec552da7685baeed2f62759c867328b015a",
+  "produced_at_sha": "6b1f5125449e3850281f4712cf20c0da88018a73",
   "stem": "mcp-dashboard-vscode-parity",
-  "attempt": 0,
-  "terminal": "incomplete",
-  "stage": "implement",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "The attempt made no changes. The scratch script failed because .clutch/scratch/ did not exist and the python command was unavailable. Edit clutch/ui/app.js and clutch/ui/dashboard.css directly with the edit tool. Do not use python string-replace scripts in a scratch directory.",
-    "Restate the full work: in clutch/ui/app.js, replace the tabs with stacked <details data-section> sections and add .step-row rows with STEP_KINDS SVG icons. Move Open config.yaml into the header, add the .repo-switcher and Agent Actions drawer, and fetch stats with {window, tree:true} into",
-    "Add WeakMap-guarded contextmenu menus to the ticket and box rows. Build them only from row.menu, priorityChoices and runsBeforeChoices, and close them on Escape or an outside click. In dashboard.css, define all 16 --vscode-* tokens from view.css plus the --clutch-icon-* variables, with dark and",
-    "Extend tests/mcp_app_dashboard.js with a fake DOM that supports multiple listeners, contains(), and open/hidden state. In tests/integration/test_mcp_app_dashboard.py, pass json.dumps(list(STEP_KINDS)) as argv[3]. Run the ## Verification command until it exits 0 before reporting the outcome."
+    "Review found one gap in tests/mcp_app_dashboard.js near line 44, for criterion 7. Inside <details data-section=\"stats\">, assert that nodes with className === 'stats-row' exist. A check for the text 'Passed' and '7' alone does not satisfy the criterion.",
+    "In the Stats harness, assert that the nested child row from the fake result.tree is rendered inside its parent .stats-row/<details> node, not just found anywhere in the section.",
+    "Assert that the summary or row labelled 'Health' has title === 'health tip', so tooltips from result.tree are proven to reach the DOM. If clutch/ui/app.js does not set title from node.tooltip, fix it there.",
+    "Keep the existing app.js/dashboard.css changes and the other passing assertions. Make only these Stats assertion fixes, then rerun ./dev.py test tests/integration/test_mcp_app_dashboard.py tests/unit/test_dev_ui_bundle.py tests/unit/test_mcp_app_dashboard.py."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    1,
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
