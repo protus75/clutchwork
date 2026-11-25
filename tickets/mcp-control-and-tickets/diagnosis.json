@@ -1,18 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c73ee052bb458592ee656c2aef50c74b239822b5",
+  "produced_at_sha": "9d2f6b0b05631183b143c812f00cfd2dd97beb6b",
   "stem": "mcp-control-and-tickets",
-  "attempt": 2,
+  "attempt": 3,
   "terminal": "gate_failed",
   "stage": "review",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "Fence gap: tests/integration/test_main_verb_groups.py::test_shared_call_has_one_owner uses ast to pin `_require_engine`, `control.read_active` and `control.publish_request` calls to `_submit_engine` in clutch/__main__.py. The ticket's runner boundary forces moving them, so the test must change too.",
-    "Re-author: add tests/integration/test_main_verb_groups.py to `## Scope fence` and `## Context`. Its owner table should pin the moved calls to `runner.submit_engine`, and the runner boundary's `tests:` list should name the test.",
-    "The same test pins `Lockfile` to `_locked` in clutch/__main__.py. Review rejected the copy `runner.locked`. Declare one lock-context owner, `_locked` moved into clutch/runner.py with __main__ aliasing it, and update that owner row in the same test.",
-    "Do not fake Call nodes in `_submit_engine`, such as wrapper lambdas, just to satisfy the ast test. That keeps two owners, which is the duplication the ticket's Goal rejects.",
-    "clutch/docs/host-running.md `mcp serve` row: keep `Yes` in 'Works while serve runs?'. In the description, say mutation tools submit to the running engine's inbox on LockHeld."
+    "In docs/how-clutch-works.md section 2.1 (line 57), the `mcp serve` row's Lock cell was changed from `no` to `Yes`. Change it back to lowercase `no`. The stdio server holds no writer lock, which matches the `mcp serve` lock help text in clutch/__main__.py.",
+    "If you mention that individual MCP tools take domain locks or submit to the engine inbox on LockHeld, put that in the description column of that row. Do not change the Lock column. `Yes` belongs only in host-running.md's `Works while serve runs?` column.",
+    "Leave every other part of the diff as it is. The Verification command passed (181 passed, 13 skipped), and the review raised only this one documentation finding. Re-run the full `## Verification` command after the one-cell fix."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
