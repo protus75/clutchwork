@@ -1,10 +1,10 @@
 # Review: snag
 
-The prior dirty-input finding is fixed and the server tools, layout, steps styling and Settings wiring match the ticket, but the harness check that `refreshSeconds: 0` stops polling cannot fail.
+The prior review's polling-test finding is fixed and the server tools, layout persistence, polling, labels, box parity, step styling and config dirty-tracking all match the ticket, but the new Settings `Stats window` select falls out of sync when the Stats section's own window select changes.
 
 ## Findings
 
-- [logic] tests/mcp_app_dashboard.js:51 After setting `Refresh seconds` to `0`, the test asserts `cleared.includes(1)`. Interval id 1 was already cleared by the earlier change to `2.5` (line 47), so this assertion passes even if `schedule()` neither clears the current interval (id 2) nor stops creating new ones. Nothing checks that no new interval is scheduled. Acceptance criterion 5 says polling is cleared when `refreshSeconds` is `0`, and this harness check cannot detect a regression there. (do instead: Before dispatching the `0` change, record `const live = intervals.length` (the active id). After the change, assert `cleared.includes(live)` and `intervals.length === live`, so the test fails unless the active timer is cleared and no replacement is scheduled.)
+- [logic] clutch/ui/app.js:73 The diff adds a second control for the same `statsWindow` value: `statsInput`, the Settings `Stats window` select. Its change handler copies its value into `windowSelect`, but the `windowSelect` change listener added on this line calls `persist()` and `loadStats()` without updating `statsInput.value`. If the operator picks `30d` in the Stats section, stats load and `30d` is persisted, but Settings still shows `7d` until the next reboot. The two UI-preference controls then disagree about the active window. (do instead: In the `windowSelect` change listener, also set `statsInput.value = windowSelect.value` (declare `statsInput` before use or assign it lazily) so both controls always show the persisted `statsWindow`. Add a harness assertion that changing the Stats section select updates the Settings `Stats window` value.)
 
 ## Record
 
@@ -12,17 +12,17 @@ The prior dirty-input finding is fixed and the server tools, layout, steps styli
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ac02407d7a6acb26595f301c3b72fd4ffc182bc5",
+  "produced_at_sha": "c19ab7f5c36992ee3b34f0ce90c0f579fb0cad37",
   "stem": "mcp-dashboard-settings-and-layout",
-  "reviewed_sha": "ac02407d7a6acb26595f301c3b72fd4ffc182bc5",
-  "summary": "The prior dirty-input finding is fixed and the server tools, layout, steps styling and Settings wiring match the ticket, but the harness check that `refreshSeconds: 0` stops polling cannot fail.",
+  "reviewed_sha": "c19ab7f5c36992ee3b34f0ce90c0f579fb0cad37",
+  "summary": "The prior review's polling-test finding is fixed and the server tools, layout persistence, polling, labels, box parity, step styling and config dirty-tracking all match the ticket, but the new Settings `Stats window` select falls out of sync when the Stats section's own window select changes.",
   "findings": [
     {
       "code": "logic",
-      "path": "tests/mcp_app_dashboard.js",
-      "line": 51,
-      "message": "After setting `Refresh seconds` to `0`, the test asserts `cleared.includes(1)`. Interval id 1 was already cleared by the earlier change to `2.5` (line 47), so this assertion passes even if `schedule()` neither clears the current interval (id 2) nor stops creating new ones. Nothing checks that no new interval is scheduled. Acceptance criterion 5 says polling is cleared when `refreshSeconds` is `0`, and this harness check cannot detect a regression there.",
-      "paved_road": "Before dispatching the `0` change, record `const live = intervals.length` (the active id). After the change, assert `cleared.includes(live)` and `intervals.length === live`, so the test fails unless the active timer is cleared and no replacement is scheduled.",
+      "path": "clutch/ui/app.js",
+      "line": 73,
+      "message": "The diff adds a second control for the same `statsWindow` value: `statsInput`, the Settings `Stats window` select. Its change handler copies its value into `windowSelect`, but the `windowSelect` change listener added on this line calls `persist()` and `loadStats()` without updating `statsInput.value`. If the operator picks `30d` in the Stats section, stats load and `30d` is persisted, but Settings still shows `7d` until the next reboot. The two UI-preference controls then disagree about the active window.",
+      "paved_road": "In the `windowSelect` change listener, also set `statsInput.value = windowSelect.value` (declare `statsInput` before use or assign it lazily) so both controls always show the persisted `statsWindow`. Add a harness assertion that changing the Stats section select updates the Settings `Stats window` value.",
       "kind": null,
       "unit": null
     }
