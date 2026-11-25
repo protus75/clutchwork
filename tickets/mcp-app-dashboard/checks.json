@@ -1,9 +1,9 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "18185e410d293870ecef5043d6d55b00ad256601",
+  "produced_at_sha": "5e173a5cc034b8a3e7ca4729d50028eec2ebc881",
   "stem": "mcp-app-dashboard",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "AGENTS.md",
     "CLAUDE.md",
@@ -25,7 +25,7 @@
     "tests/unit/test_mcp_protocol.py",
     "tests/unit/test_mcp_tools.py"
   ],
-  "inserted_lines": 31037,
+  "inserted_lines": 928,
   "bypassed": [],
   "reports": [
     {
@@ -60,18 +60,8 @@
     },
     {
       "code": "diff_budget",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "diff_budget",
-          "path": null,
-          "line": null,
-          "message": "diff is 31037 inserted lines, over the budget of 1500 lines",
-          "paved_road": "split the ticket into smaller stems, each under the diff budget",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false
     },
     {
@@ -104,16 +94,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 19.985459,
+        "seconds": 19.438484,
         "passed": 2386,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.6737170590786263,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.4589118369622156,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.3207665359950624,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2733931160182692,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0656249729800038
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.6106752599589527,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2752520100330003,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.2007361620198935,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1069918290013447
         }
       },
       "coverage": {
@@ -130,15 +119,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 12.742883,
+        "seconds": 12.403106,
         "passed": 319,
         "failed": 0,
         "skipped": 3294,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0660838469630107,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1723972540348768,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1259266249835491,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0038758490118198
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0537849960965104,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1799382420140319,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0846881370525807,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0040641709929332
         }
       }
     },
@@ -176,9 +165,9 @@
         "tests/integration/test_mcp_read_server.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_protocol.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_dev_testguard.py tests/integration/test_mcp_app_dashboard.py tests/integration/test_ui_shared_renderers.py tests/integration/test_help.py tests/integration/test_disk_io_skip_list.py tests/integration/test_mcp_read_server.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 70%]\n..............................                                           [100%]\n102 passed in 2.32s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_protocol.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_control_and_tickets.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_dev_testguard.py tests/integration/test_mcp_app_dashboard.py tests/integration/test_ui_shared_renderers.py tests/integration/test_help.py tests/integration/test_disk_io_skip_list.py tests/integration/test_mcp_read_server.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 70%]\n..............................                                           [100%]\n102 passed in 2.21s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.419517
+      "seconds": 5.308927
     }
   ]
 }
