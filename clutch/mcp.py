@@ -193,6 +193,30 @@ def _error(exc):
     return {"code": type(exc).__name__, "message": str(exc) or type(exc).__name__, "paved_road": "check the repository and retry"}
 
 
+def _recent_repos(value):
+    result = []
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                try:
+                    path = Path(item).resolve()
+                    if path.is_dir() and (path / "tickets").is_dir() and str(path) not in result:
+                        result.append(str(path))
+                        if len(result) == 10:
+                            break
+                except OSError, ValueError, RuntimeError:
+                    pass
+    return result
+
+
+def _read_ui_state(path):
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else {}
+    except OSError, ValueError, UnicodeError, TypeError:
+        return {}
+
+
 class ClutchMCPServer:
     def __init__(
         self,
@@ -262,6 +286,14 @@ class ClutchMCPServer:
             self.last_repo_path.write_text(str(root), encoding="utf-8")
         except OSError:
             pass
+        state = _read_ui_state(self.ui_state_path)
+        recent = state.get("recentRepos")
+        state["recentRepos"] = _recent_repos([str(root.resolve()), *(recent if isinstance(recent, list) else [])])
+        try:
+            self.ui_state_path.parent.mkdir(parents=True, exist_ok=True)
+            self.ui_state_path.write_text(json.dumps(state), encoding="utf-8")
+        except OSError:
+            pass
         return checkout, ctx
 
     def prompt(self, checkout, ctx, kind, stems, name=None):
@@ -298,14 +330,10 @@ class ClutchMCPServer:
                     if incoming.get(field) in allowed:
                         state[field] = incoming[field]
 
-            saved = []
-            try:
-                incoming = json.loads(self.ui_state_path.read_text(encoding="utf-8"))
-                merge(incoming)
-                if isinstance(incoming, dict) and isinstance(incoming.get("open"), dict):
-                    saved = [key for key, value in incoming["open"].items() if key in keys and isinstance(value, bool)]
-            except OSError, ValueError, UnicodeError, TypeError:
-                pass
+            incoming = _read_ui_state(self.ui_state_path)
+            merge(incoming)
+            state["recentRepos"] = _recent_repos(incoming.get("recentRepos"))
+            saved = [key for key, value in incoming.get("open", {}).items() if key in keys and isinstance(value, bool)] if isinstance(incoming.get("open"), dict) else []
             if args.action == "set":
                 merge(args.state)
                 try:

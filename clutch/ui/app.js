@@ -62,10 +62,10 @@ export async function createDashboardApp(options = {}) {
   const iconPaths = { play: "M4 2v12l9-6z", stop: "M3 3h10v10H3z", refresh: "M8 1a7 7 0 1 0 7 7h-2a5 5 0 1 1-1-3L9 5v2h6V1l-2 2A7 7 0 0 0 8 1z", gear: "M7 1h2l1 2 2-1 2 2-1 2 2 1v2l-2 1 1 2-2 2-2-1-1 2H7l-1-2-2 1-2-2 1-2-2-1V7l2-1-1-2 2-2 2 1zm1 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", folder: "M1 3h5l2 2h7v8H1z", warning: "M8 1 0 15h16zm-1 5h2v4H7zm0 5h2v2H7z" };
   const iconButton = (label, icon, action) => { const n = button(label, action); n.prepend(svgIcon(iconPaths[icon])); return n; };
   const repoInput = el("input"); repoInput.placeholder = "Repository path";
-  const repoButton = button("Load repository", () => { explicitRepo = repoInput.value.trim(); return refresh(); });
+  const repoButton = button("Load repository", () => { explicitRepo = repoInput.value.trim(); repoOpen = false; return refresh(); });
   const repoSwitcher = el("div", undefined, "repo-switcher"); repoSwitcher.append(repoInput, repoButton);
   let repoOpen = false, boxInitialized = false, hydrated = false, refreshing = false, timer;
-  let refreshSeconds = 15, playAction = "drain";
+  let refreshSeconds = 15, playAction = "drain", recentRepos = [];
   const toolbar = el("header", undefined, "top-bar"), promptBar = el("details", undefined, "agent-actions");
   const ticketsHeader = el("div", undefined, "view-header"), ticketsList = el("div"), actions = el("div", undefined, "toolbar"), detail = el("div");
   const boxHeader = el("div", undefined, "view-header"), boxList = el("div"), boxActions = el("div", undefined, "toolbar"), steps = el("div"), stats = el("div", undefined, "stats-list"), help = el("div");
@@ -75,7 +75,7 @@ export async function createDashboardApp(options = {}) {
     const section = el("details", undefined, "sidebar-section"), summary = el("summary"), body = el("div", undefined, "section-body"), resizer = el("div", undefined, "section-resizer"), controls = el("span", undefined, "section-controls"); section.dataset.section = key; section.open = opened; section.addEventListener("toggle", () => { if (hydrated) persist(); });
     for (const [label, direction] of [["▲", -1], ["▼", 1]]) { const move = el("button", label); move.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); const siblings = Array.from(root.children).filter(n => n.className === "sidebar-section"); const target = siblings[siblings.indexOf(section) + direction]; if (target) root.insertBefore(section, direction < 0 ? target : target.nextSibling); persist(); }); controls.append(move); }
     summary.draggable = true; summary.addEventListener("dragstart", () => { dragged = section; }); summary.addEventListener("dragover", e => e.preventDefault()); summary.addEventListener("drop", e => { e.preventDefault(); if (dragged && dragged !== section) { const siblings = Array.from(root.children); root.insertBefore(dragged, siblings.indexOf(dragged) < siblings.indexOf(section) ? section.nextSibling : section); } dragged = undefined; persist(); });
-    resizer.addEventListener("pointerdown", e => { e.preventDefault(); const start = e.clientY, height = body.getBoundingClientRect().height; const move = e => { body.style.height = `${Math.max(60, height + e.clientY - start)}px`; }; const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); persist(); }; window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); });
+    resizer.addEventListener("pointerdown", e => { e.preventDefault(); const previousSelection = document.body.style.userSelect; document.body.style.userSelect = "none"; resizer.setPointerCapture?.(e.pointerId); const start = e.clientY, height = body.getBoundingClientRect().height; const move = e => { body.style.height = `${Math.max(60, height + e.clientY - start)}px`; }; const up = () => { document.body.style.userSelect = previousSelection; window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); persist(); }; window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); });
     summary.append(el("span", name, "section-title"), el("span", "", "section-count"), controls); section.append(summary, body, resizer); sections[key] = section; bodies[key] = body;
   }
   function persist() {
@@ -169,18 +169,35 @@ export async function createDashboardApp(options = {}) {
     if (refreshing) return; refreshing = true;
     try {
       const [data, ping] = await Promise.all([callTool("clutch_app_snapshot"), callTool("clutch_engine_control", { action: "ping" })]); snap = data;
+      if (snap.root) recentRepos = [snap.root, ...recentRepos.filter(path => path !== snap.root)].slice(0, 10);
       const running = ping.engine && snap.engine;
       notice.textContent = ""; repoInput.value = explicitRepo || snap.root || "";
       toolbar.replaceChildren(el("span", `Engine: ${running ? "running" : "stopped"}`));
       if (!running) for (const mode of playAction === "serve" ? ["serve", "drain"] : ["drain", "serve"]) toolbar.append(iconButton(mode === "drain" ? "Drain" : "Serve", "play", async () => { await callTool("clutch_engine_start", { mode }); await refresh(); }));
       if (running) toolbar.append(iconButton("Stop", "stop", async () => { await callTool("clutch_engine_control", { action: "stop" }); await refresh(); }));
-      for (const [label, icon, action] of [["Refresh", "refresh", refresh], ["Open config.yaml", "gear", () => openFile(snap?.configPath)], [`Switch repository: ${snap.root || "none"}`, "folder", () => { repoOpen = !repoOpen; repoSwitcher.hidden = !!snap?.root && !repoOpen; }]]) { const control = iconButton("", icon, action); control.title = label; control.setAttribute("aria-label", label); toolbar.append(control); }
+      for (const [label, icon, action] of [["Refresh", "refresh", refresh], ["Open config.yaml", "gear", () => openFile(snap?.configPath)]]) { const control = iconButton("", icon, action); control.title = label; control.setAttribute("aria-label", label); toolbar.append(control); }
+      const repoSelect = el("select", undefined, "repo-select"); repoSelect.setAttribute("aria-label", "Switch repository");
+      for (const path of recentRepos) { const option = el("option", path.replace(/\/+$/, "").split("/").pop() || path); option.value = path; option.title = path; repoSelect.append(option); }
+      const other = el("option", "Other path..."); other.value = "__other__"; repoSelect.append(other);
+      repoSelect.value = explicitRepo || snap.root || ""; repoSelect.title = explicitRepo || snap.root || "";
+      repoSelect.addEventListener("change", () => { if (repoSelect.value === "__other__") { repoOpen = true; repoSwitcher.hidden = false; } else { explicitRepo = repoSelect.value; repoOpen = false; repoSwitcher.hidden = true; refresh(); } });
+      toolbar.append(repoSelect);
       repoSwitcher.hidden = !!snap.root && !repoOpen;
       if (!boxInitialized) { sections.box.open = snap.boxCounts.pending > 0; boxInitialized = true; }
       ticketsView.render(snap); boxView.render(snap); detailView.render(snap, focus); renderActions();
       steps.replaceChildren(...snap.steps.map(stepRow));
-      help.replaceChildren(...Object.entries(snap.help).map(([key, entry]) => { const section = el("div", `${key}: ${entry.text} `); const link = entry.link.path ? button(entry.link.label, () => openFile(entry.link.path)) : el("a", entry.link.label); if (entry.link.url) { link.href = entry.link.url; link.target = "_blank"; } section.append(link); return section; }));
-      const svg = document.querySelector("body > div[hidden] svg"); if (svg) help.append(svg.cloneNode(true));
+      help.replaceChildren();
+      const svg = document.querySelector("body > div[hidden] svg"); if (svg) { const diagram = el("div", undefined, "lifecycle-diagram"); diagram.append(svg.cloneNode(true)); help.append(diagram); }
+      let heading, headingAdded = false;
+      for (const item of snap.helpPick || []) {
+        if (item.kind === "separator") { heading = item.label; headingAdded = false; continue; }
+        const entry = snap.help?.[item.topic];
+        if (!item.topic || item.command || item.topic.startsWith("view.") || item.topic.startsWith("command.") || entry?.link?.label === "VS Code extension") continue;
+        if (heading && !headingAdded) { help.append(el("div", heading, "help-group-heading")); headingAdded = true; }
+        const row = el("div", undefined, "help-row"); row.append(el("span", item.label, "help-label"), el("span", entry?.what || item.detail || item.description || "", "help-desc"));
+        const link = entry?.link; if (link?.path) row.append(button(link.label, () => openFile(link.path))); else if (link?.url) { const anchor = el("a", link.label); anchor.href = link.url; anchor.target = "_blank"; row.append(anchor); }
+        help.append(row);
+      }
       const config = await callTool("clutch_app_config", { action: "get" });
       for (const [path, input] of Object.entries(configInputs)) { if (dirtyConfig.has(path)) continue; const value = path.split(".").reduce((v, k) => v?.[k], config); if (input.type === "checkbox") input.checked = !!value; else input.value = value; }
       await loadStats();
@@ -198,6 +215,7 @@ export async function createDashboardApp(options = {}) {
   app.onhostcontextchanged = context => { applyContext(context); renderPrompts(); options.onhostcontextchanged?.(context); };
   await app.connect(); connected = true; applyContext(app.getHostContext()); renderPrompts();
   const state = await callTool("clutch_app_ui_state", { action: "get" });
+  recentRepos = state.recentRepos || [];
   for (const key of state.order || []) if (sections[key]) root.insertBefore(sections[key], menu);
   for (const [key, section] of Object.entries(sections)) { if (typeof state.open?.[key] === "boolean") section.open = state.open[key]; if (state.heights?.[key] != null) bodies[key].style.height = `${state.heights[key]}px`; }
   boxInitialized = state.saved?.includes("box") || false; refreshSeconds = state.refreshSeconds ?? 15; playAction = state.playAction || "drain"; windowSelect.value = state.statsWindow || "7d"; refreshInput.value = refreshSeconds; statsInput.value = windowSelect.value; playInput.value = playAction; hydrated = true; schedule(); await refresh();

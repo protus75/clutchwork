@@ -49,8 +49,11 @@ button { cursor: pointer; } button:disabled { opacity: .5; cursor: default; }
 .notice { color: var(--color-text-danger, #a22); }
 
 .view-header { padding: 2px 8px 4px; color: var(--vscode-descriptionForeground); font-size: 11px; }
-.section-body { overflow: auto; min-height: 60px; }
-.section-resizer { height: 6px; cursor: ns-resize; }
+.section-body { height: 200px; overflow: auto; min-height: 60px; }
+[data-section="tickets"] > .section-body { height: 280px; }
+[data-section="details"] > .section-body { height: 180px; }
+[data-section="steps"] > .section-body { height: 160px; }
+.section-resizer { height: 6px; cursor: ns-resize; user-select: none; touch-action: none; }
 .section-controls { display: flex; margin-left: auto; gap: 4px; }
 .section-controls button { padding: 0 4px; }
 .top-bar { gap: 6px; }
@@ -62,3 +65,10 @@ button { cursor: pointer; } button:disabled { opacity: .5; cursor: default; }
 .context-menu { background: var(--color-background-secondary, #252526); border-radius: 6px; padding: 4px 0; font-size: 13px; }
 .context-menu button { padding: 5px 14px; width: 100%; border-radius: 0; }
 .menu-sep { border: 0; border-top: 1px solid var(--color-border-primary, #454545); margin: 4px 0; }
+
+.lifecycle-diagram svg { width: 100%; height: auto; display: block; }
+.help-group-heading { font-weight: bold; margin-top: 8px; }
+.help-row { display: flex; gap: 8px; align-items: baseline; padding: 4px; }
+.help-label { font-weight: bold; }
+.help-desc { flex: 1; }
+.top-bar .repo-select { max-width: 180px; }
