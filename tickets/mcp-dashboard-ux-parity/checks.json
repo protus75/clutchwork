@@ -1,9 +1,9 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "de4cfd9634e33ea4f43bfb6cd3659b338e80e825",
+  "produced_at_sha": "20eff574fb2fec55482bc8b6f0035cf8e1245c11",
   "stem": "mcp-dashboard-ux-parity",
-  "passed": true,
+  "passed": false,
   "changed_files": [
     "clutch/mcp.py",
     "clutch/ui/app.js",
@@ -14,7 +14,7 @@
     "tests/unit/test_mcp_repo_resolution.py",
     "tests/unit/test_mcp_tools.py"
   ],
-  "inserted_lines": 265,
+  "inserted_lines": 269,
   "bypassed": [],
   "reports": [
     {
@@ -37,8 +37,18 @@
     },
     {
       "code": "verification",
-      "verdict": "pass",
-      "findings": [],
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "verification",
+          "path": null,
+          "line": null,
+          "message": "`./dev.py test tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/integration/test_mcp_app_dashboard.py` exited 1: pp_dashboard.py:23: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nroot = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity')\nout = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/.test-tmp/3452112/pytest/popen-gw17/test_dashboard_bundle0/dashboard.html')\nrun_cmd = <function run at 0x77c6f7564720>\n\n    def build_ui_bundle(root=ROOT, out=None, run_cmd=subprocess.run) -> Path:\n        out = Path(out) if out is not None else root / \"clutch/ui/dashboard.html\"\n        paths = [root / \"vscode-clutchwork/media/view.css\", root / \"clutch/ui/dashboard.css\", root / \"vscode-clutchwork/media/ticket-lifecycle.svg\", root / \"clutch/ui/app.js\"]\n        try:\n            shared_css, dashboard_css, svg, _ = [path.read_text() for path in paths]\n            result = run_cmd(\n                [str(root / \"node_modules/.bin/esbuild\"), str(paths[3]), \"--bundle\", \"--format=iife\", \"--platform=browser\", \"--global-name=ClutchDashboardApp\", \"--minify\"],\n                cwd=root,\n                capture_output=True,\n                text=True,\n                check=False,\n            )\n        except OSError as error:\n>           raise RuntimeError(f\"ui-bundle: missing source or esbuild: {error}\") from error\nE           RuntimeError: ui-bundle: missing source or esbuild: [Errno 2] No such file or directory: '/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/node_modules/.bin/esbuild'\n\n/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/dev.py:46: RuntimeError\n=========================== short test summary info ============================\nFAILED tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle - R...\n1 failed, 17 passed in 1.49s\ndev: `uv run pytest -q tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/integration/test_mcp_app_dashboard.py` failed",
+          "paved_road": "make `./dev.py test tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/integration/test_mcp_app_dashboard.py` exit 0 on the branch and commit the fix",
+          "kind": null,
+          "unit": null
+        }
+      ],
       "autofix_applied": false
     },
     {
@@ -71,8 +81,8 @@
           "python",
           "tests/regression/mcp_dashboard_ux_parity.py"
         ],
-        "head_sha": "de4cfd9634e33ea4f43bfb6cd3659b338e80e825",
-        "base_sha": "4423fb8af8b21b561592d82b185cdaf9d5fc1758",
+        "head_sha": "20eff574fb2fec55482bc8b6f0035cf8e1245c11",
+        "base_sha": "64e84a24c3f34f5ab31a80d666ec91296f2a8b05",
         "overlay_paths": [
           "tests/regression/mcp_dashboard_ux_parity.py"
         ],
@@ -87,7 +97,7 @@
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/mcp-dashboard-ux-parity\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/mcp-dashboard-ux-parity\nInstalled 31 packages in 23ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/mcp-dashboard-ux-parity\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/mcp-dashboard-ux-parity\nInstalled 31 packages in 25ms\n"
         }
       }
     },
@@ -109,17 +119,17 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 21.035281,
+        "seconds": 19.946319,
         "passed": 2436,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.145090264035389,
-          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.653538286976982,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.4677719179890119,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3749294910230674,
-          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.2749498370103538,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0924046520376578
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.9041968699893914,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.412229009962175,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.3728220878983848,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3714016809826717,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.247131217038259,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0273137569893152
         }
       },
       "coverage": {
@@ -133,20 +143,7 @@
       "code": "integration",
       "verdict": "pass",
       "findings": [],
-      "autofix_applied": false,
-      "timing": {
-        "seconds": 14.327087,
-        "passed": 324,
-        "failed": 0,
-        "skipped": 3294,
-        "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.207462874997873,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.308574783965014,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1944343879586086,
-          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.0480919789988548,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043224850087427
-        }
-      }
+      "autofix_applied": false
     },
     {
       "code": "lint",
@@ -173,10 +170,10 @@
         "tests/unit/test_mcp_protocol.py",
         "tests/integration/test_mcp_app_dashboard.py"
       ],
-      "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/integration/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n..................                                                       [100%]\n18 passed in 1.61s\n",
+      "rc": 1,
+      "tail": "pp_dashboard.py:23: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nroot = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity')\nout = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/.test-tmp/3452112/pytest/popen-gw17/test_dashboard_bundle0/dashboard.html')\nrun_cmd = <function run at 0x77c6f7564720>\n\n    def build_ui_bundle(root=ROOT, out=None, run_cmd=subprocess.run) -> Path:\n        out = Path(out) if out is not None else root / \"clutch/ui/dashboard.html\"\n        paths = [root / \"vscode-clutchwork/media/view.css\", root / \"clutch/ui/dashboard.css\", root / \"vscode-clutchwork/media/ticket-lifecycle.svg\", root / \"clutch/ui/app.js\"]\n        try:\n            shared_css, dashboard_css, svg, _ = [path.read_text() for path in paths]\n            result = run_cmd(\n                [str(root / \"node_modules/.bin/esbuild\"), str(paths[3]), \"--bundle\", \"--format=iife\", \"--platform=browser\", \"--global-name=ClutchDashboardApp\", \"--minify\"],\n                cwd=root,\n                capture_output=True,\n                text=True,\n                check=False,\n            )\n        except OSError as error:\n>           raise RuntimeError(f\"ui-bundle: missing source or esbuild: {error}\") from error\nE           RuntimeError: ui-bundle: missing source or esbuild: [Errno 2] No such file or directory: '/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/node_modules/.bin/esbuild'\n\n/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-ux-parity/dev.py:46: RuntimeError\n=========================== short test summary info ============================\nFAILED tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle - R...\n1 failed, 17 passed in 1.49s\ndev: `uv run pytest -q tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/integration/test_mcp_app_dashboard.py` failed\n",
       "base_red": false,
-      "seconds": 5.760768
+      "seconds": 5.686653
     }
   ]
 }
