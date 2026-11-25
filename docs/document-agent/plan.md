@@ -4,8 +4,8 @@ kind: plan
 purpose: Document agent: plan
 relates: [CHANGELOG.md, clutch/docs/host-authoring.md, clutch/docs/host-running.md, clutch/specs/doc/facets/type/roadmap.md, docs/boundary-contract-plan.md, docs/document-agent/audience/ai.md, docs/document-agent/audience/developer.md, docs/document-agent/audience/non-technical.md, docs/document-agent/audience/student.md, docs/document-agent/audience/technical.md, docs/document-agent/audience/user.md, docs/document-agent/format/html.md, docs/document-agent/format/markdown.md, docs/document-agent/format/pdf.md, docs/document-agent/review/AutomatableReview.md, docs/document-agent/review/BuildItReview.md, docs/document-agent/review/CompressionReview.md, docs/document-agent/review/CutReview.md, docs/document-agent/review/KillReview.md, docs/document-agent/review/evidence/OutcomeReview.md, docs/document-agent/review/evidence/SeedPlanDiagnosis.md, docs/document-agent/theme/dark.css, docs/document-agent/theme/dark.md, docs/document-agent/theme/light.css, docs/document-agent/theme/light.md, docs/document-agent/tone/default.md, docs/document-agent/tone/examples.md, docs/document-agent/type/api.md, docs/document-agent/type/architecture.md, docs/document-agent/type/blog.md, docs/document-agent/type/overview.md, docs/document-agent/type/plan.md, docs/document-agent/type/release-notes.md, docs/document-agent/type/seed.md, docs/document-agent/type/spec.md, docs/document-agent/type/whitepaper.md, docs/evidence-trail-plan.md, docs/how-clutch-works.md, docs/roadmap.md, docs/training-data-plan.md]
 owner: engine
-verified: d7719818
-hash: a61870a3d584f6cbc89165ac107f84c05afbc8622ab876883c7450a08110f806
+verified: 62a64dee
+hash: 7af2625d4ea4fe11646ef089fe93bdd539438b9f5fd0f0a6362288aa7af481c0
 -->
 # Document agent: plan
 
@@ -17,7 +17,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.7.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.3.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.4.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.5.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.5.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `clutch/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
+Release 0.8.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.4.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.5.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.6.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.6.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `clutch/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
 
 ## What it is for
 
@@ -357,7 +357,7 @@ Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 i
 3. **Verbs only, or a `doc` ticket kind too?** Decided 2026-11-13: verbs only for v1; a `doc` kind is the follow-up if doc sets start being changed by the drain.
 4. **Where doc sets live.** Decided 2026-11-14: any `docs/<name>/` with a `docset.yaml`, found by search; no registry file.
 5. **Panel size.** Decided 2026-11-14: default 3, minimum 2; `--panel 1` is refused because a single reviewer has nothing to converge with. Promoting an `automatable` consensus ticket set into a Seed stays an explicit owner step, never automatic.
-6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Decided 2026-11-14: yes; `plans-into-docsets` (roadmap row 76) runs `scope` and `buildability` on each as the first real use and is 0.7.0's ship gate.
+6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Decided 2026-11-14: yes; `plans-into-docsets` (roadmap row 76) runs `scope` and `buildability` on each as the first real use and is 0.8.0's ship gate.
 
 ## Appendix: draft `AutomatableReview` prompt
 

@@ -4,8 +4,8 @@ kind: plan
 purpose: Stage panels: plan
 relates: [clutch/driver.py]
 owner: clutch/driver.py
-verified: 1b07e648
-hash: 512dc82ba4bac36075da095e327c7a387725e04e8e059f09fd7a42e5934c9080
+verified: 62a64dee
+hash: 8627e22035d002923bbe85a3b965d5c5388c2823bc2ec7a118dd777759f7bb29
 -->
 # Stage panels: plan
 
@@ -19,7 +19,7 @@ Owner decision, 2026-11-21 (`requisition-contract-review-comparison`, commit `36
 
 ## Roadmap
 
-Release 0.5.0 for the combiners, the routing key, review and diagnosis panels, and the scorecard (`docs/roadmap.md` rows 65-68); 0.7.0 for best-of-N implementation (row 87), which needs the parallel plan's run slots. Needs from other plans: `route-kinds-filter` (0.4.0) lands first because both add an optional key to `Route`; `evidence-envelope` (0.3.0) so each panel member's call has its own record. What needs this plan: the document agent's `doc-review-runner` depends on `panel-combiners` instead of building its own panel (roadmap decision 19); the graphics plan's judge majority (`visual-review-surface`, `graphics.judge_samples`) is the same `majority-verdict` combiner applied per rubric row and moves onto it when this lands. Shared budgets: none. Cost is the budget: a panel of N multiplies that surface's spend by N, so the key is per routing row and off by default.
+Release 0.6.0 for the combiners, the routing key, review and diagnosis panels, and the scorecard (`docs/roadmap.md` rows 65-68); 0.8.0 for best-of-N implementation (row 87), which needs the parallel plan's run slots. Needs from other plans: `route-kinds-filter` (0.5.0) lands first because both add an optional key to `Route`; `evidence-envelope` (0.4.0) so each panel member's call has its own record. What needs this plan: the document agent's `doc-review-runner` depends on `panel-combiners` instead of building its own panel (roadmap decision 19); the graphics plan's judge majority (`visual-review-surface`, `graphics.judge_samples`) is the same `majority-verdict` combiner applied per rubric row and moves onto it when this lands. Shared budgets: none. Cost is the budget: a panel of N multiplies that surface's spend by N, so the key is per routing row and off by default.
 
 ## Current state
 
@@ -61,7 +61,7 @@ routing:
 |---|---|---|
 | `findings-union` | `review`, `requisition_review` | Verdict is the worst any member gave (`rma` > `snag` > `approve`). Findings are merged on `(code, path, line)`; each carries `agreement: k/N` and the members that raised it; messages from several members are kept, not averaged. Summary lists each member's summary in member order. |
 | `majority-verdict` | `diagnose`, `triage`, `review_visual` | The verdict most members gave; the findings, lessons, or per-row results come from the first member in that majority. A tie falls to the safer verdict: `escalate` over `retry` for diagnosis, `declined` over `author` for triage, `unsure` for a visual row. |
-| `best-of-n` | `implement` | Each member implements in its own worktree; Check runs on every candidate; the kept candidate is the one that passes Check with the fewest soft findings, then the smallest inserted-line count; the others are retired. Needs the parallel plan's slots; 0.7.0. |
+| `best-of-n` | `implement` | Each member implements in its own worktree; Check runs on every candidate; the kept candidate is the one that passes Check with the fewest soft findings, then the smallest inserted-line count; the others are retired. Needs the parallel plan's slots; 0.8.0. |
 
 Combiners take and return the existing artifact models (`ReviewArtifact`, `Diagnosis`, and so on) so every downstream gate is unchanged. A combined review is one `review.md` with the merged findings; `reviewed_sha` is the same for every member because they judged the same branch head.
 
@@ -74,8 +74,8 @@ Combiners take and return the existing artifact models (`ReviewArtifact`, `Diagn
 
 ### 4. Which stages, in which release
 
-- 0.5.0: `review`, `diagnose`, `triage` (`requisition_review` was dropped on 2026-11-21; see Status). All read-only, one worktree, no new git.
-- 0.7.0: `implement` best-of-N, after `serve-parallel-dispatch` gives the engine run slots and a per-candidate worktree name (`<worktree_root>/<stem>.m<k>`).
+- 0.6.0: `review`, `diagnose`, `triage` (`requisition_review` was dropped on 2026-11-21; see Status). All read-only, one worktree, no new git.
+- 0.8.0: `implement` best-of-N, after `serve-parallel-dispatch` gives the engine run slots and a per-candidate worktree name (`<worktree_root>/<stem>.m<k>`).
 - The document agent's lenses and the graphics judge are consumers from the day they land: their plans point here.
 
 ### 5. Measurement
@@ -101,11 +101,11 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 1 | `panel-combiners` | feature | P2 | | `clutch/panel.py` with the three combiners over the existing artifact models; `panel_facts` body model. Pure, unit-tested. Release 0.5.0. |
-| 2 | `panel-routing-config` | feature | P2 | `route-kinds-filter` | `Route.panel`, surface-fit refusal, distinct-candidate assignment, `doctor` warning for single-slot providers, host-contract inventory. Release 0.5.0. |
-| 3 | `review-panel` | feature | P2 | 1, 2 | Driver fan-out with member effect keys and records; review, requisition review, diagnosis, and triage use the combined result. how-clutch-works updates. Release 0.5.0. |
-| 4 | `panel-scorecard` | feature | P3 | 3 | Per-member catch attribution; unique catches per 100 reviews and the cost multiplier in the retro report. Release 0.5.0. |
-| 5 | `implement-best-of-n` | feature | P3 | 1, `serve-parallel-dispatch` | Per-member worktrees, Check on every candidate, selection, retirement of the rest. Release 0.7.0. |
+| 1 | `panel-combiners` | feature | P2 | | `clutch/panel.py` with the three combiners over the existing artifact models; `panel_facts` body model. Pure, unit-tested. Release 0.6.0. |
+| 2 | `panel-routing-config` | feature | P2 | `route-kinds-filter` | `Route.panel`, surface-fit refusal, distinct-candidate assignment, `doctor` warning for single-slot providers, host-contract inventory. Release 0.6.0. |
+| 3 | `review-panel` | feature | P2 | 1, 2 | Driver fan-out with member effect keys and records; review, requisition review, diagnosis, and triage use the combined result. how-clutch-works updates. Release 0.6.0. |
+| 4 | `panel-scorecard` | feature | P3 | 3 | Per-member catch attribution; unique catches per 100 reviews and the cost multiplier in the retro report. Release 0.6.0. |
+| 5 | `implement-best-of-n` | feature | P3 | 1, `serve-parallel-dispatch` | Per-member worktrees, Check on every candidate, selection, retirement of the rest. Release 0.8.0. |
 
 `Runs before`: `contention-authoring-rules` (roadmap row 13) before every ticket here. Ticket 1 before `doc-review-runner` (`docs/document-agent/plan.md`), which consumes it.
 

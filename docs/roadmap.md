@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 33bcb130
-hash: 1efdcfed924a0bb4f902df173d1eb4a13605159e7a88d84a4499c5830ffc4d85
+verified: 62a64dee
+hash: b3ab253e9f1291390a0a42425060bab4ead6797f87598d54bd5d8da622cf043e
 -->
 # clutch roadmap
 
@@ -18,7 +18,7 @@ A plan change that moves a ticket, adds a dependency on another plan, or spends 
 Status reconciled on 2026-11-22 against main HEAD `e1ab1e16c`; the earlier six-pass audit remains a historical snapshot and touched findings are rechecked here. Re-run the audit before each minor release; the section headings are the checklist.
 
 - 877 tickets merged, none in flight. Blocked: `authoring-reading-specs` (premise_failed), `clutch-ruff-reclean` (premise_failed), `evidence-never-prunes` (gate_failed), `host-mechanical-check` (abandoned), `llm-request-subject` (gate_failed), `phase7-continue` (abandoned), `restore-orphan-ticket-stems` (premise_failed), `retro-due-one-owner` (infra_error), and `roadmap-freshen-2026-11-22` (premise_failed on its earlier attempt).
-- Release status: 0.3.0 gate passed. 0.4.0 has 58 rows merged and `roadmap merged --release 0.4.0` passes; its recorded gate failure from 2026-11-20 is stale. 0.5.0 has 52 rows merged; on 2026-11-22 every gate line passed except `roadmap accept 0.5.0`, whose two findings (rows 215 and 216) were struck as premise false. 0.6.0 has 1 row merged and 12 blocked; 0.7.0 has 13 blocked.
+- Release status: 0.4.0 gate passed. 0.5.0 has 58 rows merged and `roadmap merged --release 0.5.0` passes; its recorded gate failure from 2026-11-20 is stale. 0.6.0 has 52 rows merged; on 2026-11-22 every gate line passed except `roadmap accept 0.6.0`, whose two findings (rows 215 and 216) were struck as premise false. 0.7.0 has 1 row merged and 12 blocked; 0.8.0 has 13 blocked.
 - Since 2026-11-19, 242 stems merged on main, 160 absent from this roadmap. Merged work outside the roadmap includes integration I/O restoration (`integration-io-guard`, `integration-disk-io-skip`, `disk-io-skip-per-file`, `io-helpers-*`, `restore-helpers-*`, `restore-io-tests-01..39`, `shared-git-fake*`, `shared-fakes-guard`, `test-io-rules`, `test-tmp-in-checkout`); serve and parallel hardening (`serve-*`, retro checks, dispatch and scheduler ordering); requisition review (`requisition-review-*`, `requisition-contract-review-comparison`); meta blocks (`meta-*`, `check-owns-meta-headers`, `check-meta-fill-nested-stage`, `implement-spec-meta-headers-from-verbs`); atomic ticket-write commits and serialization; extension changes (`extension-*`); plan prompts (`plan-prompts-*`, `plan-ticket-serve-prompt`, `plan-subagents-explicit-sonnet`, `host-prompts`); and image quality, provider parser, hot-path and other fixes.
 
 Earlier audit facts, not re-measured:
@@ -29,27 +29,27 @@ Earlier audit facts, not re-measured:
 
 ## 1. Release plan
 
-Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor version, named for the version `clutch release --minor` gives it: a phase is bumped and tagged at its start, so tag `v0.3.0` (`c761b213`) opened 0.3.0. These names were once one minor lower (0.3.0 was `0.2.0`), and older commits, tickets, and Suggestion Box messages use the old names. Each phase takes the next minor when it starts, so if the conditional 0.6.0 window slides, the phases after 0.3.0 are renamed to the versions they start at. `clutch release --minor|--patch` (`release-verb`, merged) bumps, commits, and tags; `clutch publish` uploads without bumping the version (row 92).
+Release slots name the next minor version that `clutch release ship` bumps to and tags at phase close. Tag `v0.3.0` opened the first phase, which shipped as `v0.4.0`; later phases likewise open at the preceding release tag. Older decisions and ticket records retain their historical names.
 
 | Release | Theme | Gate to start | Gate to ship |
 |---|---|---|---|
-| **0.3.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
-| **0.4.0** | Boundary-contract trial and authoring ([plan](boundary-contract-plan.md)), parallel runs, and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`) (unchecked); decision 19’s credential rule applies while this machine has no Gemini credential (unchecked) | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit |
-| **0.5.0** | Boundary-contract review, training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain (unchecked) | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
-| **0.6.0** | Antigravity UI, MCP server, and supervising skills (`docs/antigravity-plan.md`) | 0.5.0 has shipped | `clutch mcp serve` serves the Antigravity dashboard resource and read/control tools; `clutch host antigravity` installs the plugin and supervising skills |
-| **0.7.0** | Engine state rewrite: one DuckDB for all live engine state with no locks (`docs/engine-state-db-plan.md`), then the journal query layer (`docs/journal-sql-refactor-plan.md`) | 0.6.0 has shipped as tag `v0.7.0`; no other 0.7.0 row is authored or run until the five engine state rows (210-214) have merged | the five engine state rows merged and the locks and exclusive sections that `docs/engine-state-db-plan.md` section 6 retires are gone (unchecked: no merged verb records it); then all four journal port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.8.0** | Document agent (`docs/document-agent/plan.md`) | phase 0.7.0 has shipped as tag `v0.8.0`; isolated read-only calls proven by `isolated-readonly-call` (unchecked); the owner's lens prompts adapted (unchecked) | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
+| **0.4.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
+| **0.5.0** | Boundary-contract trial and authoring ([plan](boundary-contract-plan.md)), parallel runs, and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.4.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`) (unchecked); decision 19’s credential rule applies while this machine has no Gemini credential (unchecked) | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit |
+| **0.6.0** | Boundary-contract review, training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain (unchecked) | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
+| **0.7.0** | Antigravity UI, MCP server, and supervising skills (`docs/antigravity-plan.md`) | 0.6.0 has shipped | `clutch mcp serve` serves the Antigravity dashboard resource and read/control tools; `clutch host antigravity` installs the plugin and supervising skills |
+| **0.8.0** | Engine state rewrite: one DuckDB for all live engine state with no locks (`docs/engine-state-db-plan.md`), then the journal query layer (`docs/journal-sql-refactor-plan.md`) | 0.7.0 has shipped as tag `v0.7.0`; no other 0.8.0 row is authored or run until the five engine state rows (210-214) have merged | the five engine state rows merged and the locks and exclusive sections that `docs/engine-state-db-plan.md` section 6 retires are gone (unchecked: no merged verb records it); then all four journal port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
+| **0.9.0** | Document agent (`docs/document-agent/plan.md`) | phase 0.8.0 has shipped as tag `v0.8.0`; isolated read-only calls proven by `isolated-readonly-call` (unchecked); the owner's lens prompts adapted (unchecked) | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
-The `start` block for 0.4.0 checks the three dedup tickets; clauses marked (unchecked) have no merged verb to check them. A release without a `start` block starts unconditionally.
+The `start` block for 0.5.0 checks the three dedup tickets; clauses marked (unchecked) have no merged verb to check them. A release without a `start` block starts unconditionally.
 
-Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.3.0 because they touch nothing the later releases reshape, and both wait on an agent-run capture committed as their evidence; their plans say which agent action captures which facts.
+Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.4.0 because they touch nothing the later releases reshape, and both wait on an agent-run capture committed as their evidence; their plans say which agent action captures which facts.
 
 ### 1.1 Why this order
 
 - **Truth first.** The audit found 16 places where the maintained documents say something the code does not do, and a capture bug that has lost 1,662 of 3,960 raw model-call records (counted at `328d07d9`). None of the feature plans can be authored against documents that are wrong, and the training plan cannot capture data that is being overwritten.
 - **Dedup before parallel.** Parallel runs change the one-run assumption in six separate trackers and the merge path in two separate implementations. Making each of those a single owner first turns the parallel tickets from a rewrite into an edit.
-- **Trial before changing ticket intake.** In 0.4.0, use 10–20 merged tickets to settle the grammar before applying it to new parallel and graphics work. Those tickets exercise shared owners and give requisition review real cases. Carry their findings into 0.5.0 before adding stricter checks.
-- **Capture early, export late.** The evidence store (0.3.0) only has value once it holds data. Export and eval (0.5.0) are useful on day one if capture started three releases earlier.
+- **Trial before changing ticket intake.** In 0.5.0, use 10–20 merged tickets to settle the grammar before applying it to new parallel and graphics work. Those tickets exercise shared owners and give requisition review real cases. Carry their findings into 0.6.0 before adding stricter checks.
+- **Capture early, export late.** The evidence store (0.4.0) only has value once it holds data. Export and eval (0.6.0) are useful on day one if capture started three releases earlier.
 - **Journal window is conditional.** Its measured trigger (157 of 164 seconds in journal reads) predates `journal-incremental-read`. The refactor freezes features for a release; it earns that only if re-measurement shows the cost is still there.
 - **Document agent last.** It is the largest new surface, depends on the isolated-call mode and the evidence record, and its first real use is reviewing the other plans, which is more useful once those plans have tickets behind them.
 
@@ -248,7 +248,7 @@ A release may also have a fenced `start` block under its heading, with the same 
 
 Each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use. Every block ends with `uv run clutch roadmap accept <release>`, after the `roadmap merged` checks and the suite: a model reviews the release's merged rows, taken together, against its theme and ship gate in section 1 and its owning plans' Target design, and appends a P1 row for each partial or unmet promise to the release's table (or, for a gap that should wait, to the next release's table) in a `clutch(roadmap): accept <release>` commit, so the gate fails until those rows merge. A later release's block checks only the suite, that release's rows, and the acceptance review: its other ship-gate clauses in section 1 have no command until merged code records their facts. The audit re-run before each minor release (section 9) adds to the next release's block a command for each such clause whose fact merged code now records.
 
-### 0.3.0
+### 0.4.0
 
 Rows 94-107 come from the 0.3.0 acceptance review of 2026-11-16, which read the merged rows, taken together, against section 1 and the owning plans, and from the owner's requests made with it. Each is P0 or P1, so the gate's first command waits on them.
 
@@ -321,14 +321,14 @@ Rows 94-107 come from the 0.3.0 acceptance review of 2026-11-16, which read the 
 | 148 | ~~`plan-status-sweep-030`~~ | roadmap | chore | P1 | `plan-status-rusage-packages` | | **Merged** (`tickets/plan-status-sweep-030/`). Covers the stale claims row 147 left out, so the 0.3.0 acceptance review (`clutch/acceptance.py::accept`) starts clean. Four of the six plans it reads still describe merged work as open or missing. `docs/evidence-trail-plan.md`: Roadmap (the Gemini normalizer waits on `gemini-provider`; rows 32-33 merged); principle 6 and Target design section 7 (`spools/providers/` exists today; row 29 removed it); Current state (`Parsed` lacks `model`; the Codex cached-token basis is unpinned, but `clutch/evidence/codex.py::INPUT_INCLUDES_CACHED` pins it; raw capture is written only at exit with no arrival times; the exec seam reports no resource usage, but `clutch/seams.py` has `on_rusage` and row 123 records it); Target design section 6 table (killed or timed-out calls are dropped; row 29 writes `end.json`). `docs/roadmap-driver-plan.md`: summary (publishes to the Marketplace, and the operator does it by hand; decision 20, rows 89 and 96); Status (stem `supervise-idle-point` is `supervise-at-idle-point`, row 114); Current state (Rework-update fires only on `split`, but `clutch/runner.py::failure_terminal` and `clutch/supervise_idle.py` supervise `premise_failed` and spent caps, rows 89, 96 and 114; a cap's lineage counts only operator keeps, but `clutch/caps.py::lineage` also counts supervisor keeps). `docs/gemini-graphics-refactor-plan.md`: Roadmap and Part A Current state (no gemini adapter, watchdog branch or `live_call` label; rows 32-33 merged). `docs/upstream-issue-plan.md`: Roadmap (waits on its capture; row 34 merged) and Current state (CORE_TEMPLATE names no way to report; it names `clutch issue`). A Current state section that records the baseline before its plan's rows merged is re-headed as that baseline, with one sentence naming what merged, rather than rewritten. No test reads plan text. |
 
 ```gate
-uv run clutch roadmap merged --release 0.3.0 --priority P0 P1
+uv run clutch roadmap merged --release 0.4.0 --priority P0 P1
 uv run clutch roadmap merged docs-truth-sweep evidence-envelope
 uv run clutch roadmap merged --since v0.3.0 --at-least 3 --source box:roadmap_row --unattended
 ./dev.py test
-uv run clutch roadmap accept 0.3.0
+uv run clutch roadmap accept 0.4.0
 ```
 
-### 0.3.0, last group: the roadmap driver
+### 0.4.0, last group: the roadmap driver
 
 Runs after the rows above; it is what runs every later release (`docs/roadmap-driver-plan.md`).
 
@@ -341,7 +341,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 92 | ~~`release-publish`~~ | driver plan 5 | feature | P2 | `release-verb` | | **Merged** (`tickets/release-publish/`). Publishing never bumps the version: `clutch publish` (PyPI, token env name in config) uploads the `pyproject.toml` version only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480). `clutch release` (merged in `release-verb`) gains the `release` journal signal. PyPI uploads require `release.publish: true`; Marketplace publishing is manual (decision 20), and row 108 keeps the package. |
 | 93 | ~~`driver-loop`~~ | driver plan 6 | feature | P1 | rows 89-92 | | **Merged** (`tickets/driver-loop/`). The idle-point sequence in serve and drain (supervise, author ahead, release when the gate passes, digest); the rewritten `drain-loop` prompt; how-clutch-works "Roadmap driver". |
 
-### 0.4.0
+### 0.5.0
 
 ```start
 uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner merge-admission-single-owner
@@ -409,16 +409,16 @@ uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner m
 | 173 | ~~`graphics-generate-first-ticket`~~ | roadmap | chore | P1 | | | **Withdrawn** (owner, 2026-11-21). No generated-graphics ship clause for 0.4.0. |
 | 174 | ~~`visual-baseline-go-gate`~~ | roadmap | feature | P1 | | | **Withdrawn** (owner, 2026-11-21). No `visual_baseline` GO gate for 0.4.0; the owner checks the visual baseline directly. |
 
-The 0.4.0 gate block checks ten parallel merges without a conflict-rerun cap hit with `roadmap merged --parallel`.
+The 0.5.0 gate block checks ten parallel merges without a conflict-rerun cap hit with `roadmap merged --parallel`.
 
 ```gate
-uv run clutch roadmap merged --release 0.4.0
+uv run clutch roadmap merged --release 0.5.0
 uv run clutch roadmap merged --since v0.4.0 --at-least 10 --parallel
 ./dev.py test
-uv run clutch roadmap accept 0.4.0
+uv run clutch roadmap accept 0.5.0
 ```
 
-### 0.5.0
+### 0.6.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
@@ -480,7 +480,7 @@ uv run clutch roadmap accept 0.4.0
 The gate checks filled meta blocks in docs and tests, `context suggest` selectors, and training eval scoring one lens; the recorded 2026-11-22 eval command fails as noted in Status.
 
 ```gate
-uv run clutch roadmap merged --release 0.5.0
+uv run clutch roadmap merged --release 0.6.0
 uv run clutch meta check docs clutch/docs tests
 uv run clutch training export --out .clutch/training-export --kinds implement preference review diagnosis ticket conflict triage --require-records
 uv run clutch training export --out .clutch/training-eval --kinds review --holdout 100
@@ -488,13 +488,13 @@ uv run clutch training eval --route medium/review --holdout .clutch/training-eva
 uv run clutch index build
 uv run clutch context suggest context-suggest --require
 ./dev.py test
-uv run clutch roadmap accept 0.5.0
+uv run clutch roadmap accept 0.6.0
 ```
 
-### 0.6.0
+### 0.7.0
 
 ```start
-uv run clutch roadmap merged --release 0.5.0 --since v0.6.0 --at-least 1
+uv run clutch roadmap merged --release 0.6.0 --since v0.6.0 --at-least 1
 ```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -510,15 +510,15 @@ uv run clutch roadmap merged --release 0.5.0 --since v0.6.0 --at-least 1
 | 208 | ~~`boundary-contract-outcome-compare`~~ | boundary | chore | P1 | | | **Merged** (`tickets/boundary-contract-outcome-compare/`). docs/boundary-contract-plan.md Rollout Phase 3 and row 153 compare premise failures, rework and duplicate-owner findings with the trial baseline, but the plan records only the baseline (Trial results); once tickets have run after row 153, record that comparison in the plan. |
 
 ```gate
-uv run clutch roadmap merged --release 0.6.0
+uv run clutch roadmap merged --release 0.7.0
 ./dev.py test
-uv run clutch roadmap accept 0.6.0
+uv run clutch roadmap accept 0.7.0
 ```
 
-### 0.7.0 (conditional)
+### 0.8.0 (conditional)
 
 ```start
-uv run clutch roadmap merged --release 0.6.0 --since v0.7.0 --at-least 1
+uv run clutch roadmap merged --release 0.7.0 --since v0.7.0 --at-least 1
 ```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -535,20 +535,20 @@ uv run clutch roadmap merged --release 0.6.0 --since v0.7.0 --at-least 1
 | 39 | `journal-ports-feedback` | journal plan (c) | chore | P2 | `journal-query-layer` | | `retro`, `triage`, `box`, `storm`, `flake`, `thresh`, `audit`, `notify`, `providers`. |
 | 40 | `journal-ports-cli-authoring` | journal plan (c) | chore | P2 | `journal-query-layer` | | `__main__`, `author`, `tickets`, `observe` (its raw reader goes). |
 | 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
-| 200 | `release-audit-060` | roadmap | chore | P1 | rows 36-41 | | Re-run the six passes of sections 2-4 at the base commit: remove fixed items, mark recurring ones "recurred in 0.7.0", add gate commands for ship clauses that merged code records, and add the same audit row with its own stem as the last row of the next release table, with Depends on listing every non-provisional row of that release. |
+| 200 | `release-audit-080` | roadmap | chore | P1 | rows 36-41 | | Re-run the six passes of sections 2-4 at the base commit: remove fixed items, mark recurring ones "recurred in 0.8.0", add gate commands for ship clauses that merged code records, and add the same audit row with its own stem as the last row of the next release table, with Depends on listing every non-provisional row of that release. |
 
-The 0.7.0 gate checks the port groups and SQL-only gate through the release rows; the clause that no feature ticket runs during the window remains unchecked because no merged verb records it.
+The 0.8.0 gate checks the port groups and SQL-only gate through the release rows; the clause that no feature ticket runs during the window remains unchecked because no merged verb records it.
 
 ```gate
-uv run clutch roadmap merged --release 0.7.0
+uv run clutch roadmap merged --release 0.8.0
 ./dev.py test
-uv run clutch roadmap accept 0.7.0
+uv run clutch roadmap accept 0.8.0
 ```
 
-### 0.8.0
+### 0.9.0
 
 ```start
-uv run clutch roadmap merged --release 0.7.0 --since v0.8.0 --at-least 1
+uv run clutch roadmap merged --release 0.8.0 --since v0.8.0 --at-least 1
 ```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -564,13 +564,13 @@ uv run clutch roadmap merged --release 0.7.0 --since v0.8.0 --at-least 1
 | 83 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
 | 84 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest`, `context-suggest` | | Headless draft (with `--from <topic>` through the index) and the `doc-plan` ask prompt. |
 | 85 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
-| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten plans under `docs/`, including `docs/document-agent/plan.md`, into doc sets and run `scope` and `buildability` on each; 0.8.0's ship gate. |
+| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten plans under `docs/`, including `docs/document-agent/plan.md`, into doc sets and run `scope` and `buildability` on each; 0.9.0's ship gate. |
 | 87 | `implement-best-of-n` | panels plan 5 | feature | P3 | `panel-combiners`, `serve-parallel-dispatch-r2` | | **Authored** (`tickets/implement-best-of-n/`). Per-member worktrees, Check on every candidate, selection by Check pass then fewest soft findings then smallest diff, retirement of the rest. |
 
 ```gate
-uv run clutch roadmap merged --release 0.8.0
+uv run clutch roadmap merged --release 0.9.0
 ./dev.py test
-uv run clutch roadmap accept 0.8.0
+uv run clutch roadmap accept 0.9.0
 ```
 
 ### Agent tasks (not tickets)

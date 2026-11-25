@@ -4,8 +4,8 @@
 # purpose: Tests that roadmap start gates hold back status and author-ahead until they pass, and checks the repository's start and ship gate blocks.
 # relates: [clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/seams.py]
 # owner: clutch/roadmap.py
-# verified: 7ad3c1c2
-# hash: 7e8b17f7dd8227788a9899c922afed1e9434504faa530b10687d58e11c0fa833
+# verified: 62a64dee
+# hash: 70f1bb8e39a2375505181ffa329ed1ec03e676118fc96be8ed3dd6f3033142cb
 import asyncio
 import shlex
 import sys
@@ -86,5 +86,10 @@ def test_status_and_author_start(tmp_path, monkeypatch):
 
 def test_repository_start_and_ship_blocks():
     text = (Path(__file__).resolve().parents[2] / roadmap.ROADMAP).read_text()
-    assert roadmap.gates(text, "start") == {"0.4.0": (("uv", "run", "clutch", "roadmap", "merged", "closed-sets-single-owner", "active-slot-single-owner", "merge-admission-single-owner"),)}
-    assert set(roadmap.gates(text, "gate")) == {"0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0"}
+    assert roadmap.gates(text, "start") == {
+        "0.5.0": (("uv", "run", "clutch", "roadmap", "merged", "closed-sets-single-owner", "active-slot-single-owner", "merge-admission-single-owner"),),
+        "0.7.0": (("uv", "run", "clutch", "roadmap", "merged", "--release", "0.6.0", "--since", "v0.6.0", "--at-least", "1"),),
+        "0.8.0": (("uv", "run", "clutch", "roadmap", "merged", "--release", "0.7.0", "--since", "v0.7.0", "--at-least", "1"),),
+        "0.9.0": (("uv", "run", "clutch", "roadmap", "merged", "--release", "0.8.0", "--since", "v0.8.0", "--at-least", "1"),),
+    }
+    assert set(roadmap.gates(text, "gate")) == {"0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0", "0.9.0"}

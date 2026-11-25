@@ -4,8 +4,8 @@
 # purpose: test roadmap release boundary
 # relates: [clutch/roadmap.py, tests/unit/test_roadmap_author.py, tests/unit/test_roadmap_status.py]
 # owner: engine
-# verified: 9a610809
-# hash: 92e9f4f06cd636594d40e63534f4a88e4c2372ad4156806c610d63308caf2f00
+# verified: 62a64dee
+# hash: e37b23b4a57adad8364551c72f4ffef894644915694c03bd68bbd39c3a4f157b
 import asyncio
 
 from clutch import roadmap
@@ -46,9 +46,10 @@ def test_current_release(tmp_path):
         ("invalid [", None),
         ("[project]\n", None),
         ('[project]\nversion="dev"', None),
-        ('[project]\nversion="0.3.0"', "0.3.0"),
-        ('[project]\nversion="0.3.1"', "0.3.0"),
-        ('[project]\nversion="2.10.4"', "2.10.0"),
+        ('[project]\nversion="0.3.0"', "0.4.0"),
+        ('[project]\nversion="0.3.1"', "0.4.0"),
+        ('[project]\nversion="0.6.1"', "0.7.0"),
+        ('[project]\nversion="2.10.4"', "2.11.0"),
     ]:
         path.write_text(text)
         assert roadmap.current_release(tmp_path) == expected
@@ -57,6 +58,8 @@ def test_current_release(tmp_path):
 def test_callers_pass_the_current_release(tmp_path, setup, monkeypatch):
     checkout, *_ = fixture(tmp_path)
     assert "next: q-eleven, r-six" in asyncio.run(roadmap.status(checkout))
+    path = tmp_path / roadmap.ROADMAP
+    path.write_text(path.read_text().replace("### 2.0.0", "### 2.1.0"))
     (tmp_path / "pyproject.toml").write_text('[project]\nversion="2.0.0"')
     assert "next: n-nine" in asyncio.run(roadmap.status(checkout))
     checkout, _ = setup
@@ -75,4 +78,4 @@ def test_callers_pass_the_current_release(tmp_path, setup, monkeypatch):
         pass
 
     run(checkout, 1, author)
-    assert calls == ["1.0.0"]
+    assert calls == ["1.1.0"]

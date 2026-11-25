@@ -193,7 +193,7 @@ def current_release(repo: Path) -> str | None:
     parts = version.split(".")
     if len(parts) < 2 or not all(re.fullmatch(r"[0-9]+", part) for part in parts[:2]):
         return None
-    return f"{parts[0]}.{parts[1]}.0"
+    return f"{parts[0]}.{int(parts[1]) + 1}.0"
 
 
 def unfinished_dependency(dependencies, rows, strikes, states):

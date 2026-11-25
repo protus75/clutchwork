@@ -4,8 +4,8 @@
 # purpose: Tests that clutch release ship passes the roadmap gate, bumps, commits and tags the release, then stops at the next failing gate and refuses a dirty tree
 # relates: [clutch/config.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: 18f3cf87
-# hash: 9ccbb26b77e3c8b46d4a4b73c02ffb5edcd4f02e1e47696671e07194c6157510
+# verified: 62a64dee
+# hash: bf3f9757a3866e46561a83cbab62723127456ca7a68b91a5c24081dade075e46
 import asyncio
 import shlex
 import sys
@@ -61,11 +61,11 @@ def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch, capsy
         path.parent.mkdir()
         header = "| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |\n|---|---|---|---|---|---|---|---|\n"
         path.write_text(
-            "### 1.0.0\n"
+            "### 1.1.0\n"
             + header
             + "| 1 | `one` | roadmap | feature | P1 | | | one |\n```gate\n"
             + shlex.join([sys.executable, "-c", "pass"])
-            + "\n```\n### 1.1.0\n"
+            + "\n```\n### 1.2.0\n"
             + header
             + "| 2 | `two` | roadmap | feature | P1 | | | two |\n```gate\n"
             + shlex.join([sys.executable, "-c", "raise SystemExit(1)"])
@@ -81,16 +81,16 @@ def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch, capsy
     assert cli.main(["release", "ship"], cwd=c.repo, env=c.env, clock=clock) == 0
     lines = capsys.readouterr().out.splitlines()
     head = call("rev-parse", "HEAD")
-    assert lines[-2:] == ["gate 1.0.0: passed", f"release: tagged v1.1.0 at {head}"]
+    assert lines[-2:] == ["gate 1.1.0: passed", f"release: tagged v1.1.0 at {head}"]
     assert call("show", "-s", "--format=%s", "HEAD") == "release: 1.1.0"
     assert call("rev-parse", "v1.1.0^{commit}") == head
     assert [e.body for e in c.journal.read()] == [
-        {"signal": "roadmap_gate", "release": "1.0.0", "passed": True, "failed": None},
+        {"signal": "roadmap_gate", "release": "1.1.0", "passed": True, "failed": None},
         {"signal": "release", "version": "1.1.0", "tag": "v1.1.0", "commit": head},
     ]
     assert uv_calls == [["uv", "version", "--bump", "minor", "--dry-run", "--short"], ["uv", "version", "--bump", "minor"]]
     assert cli.main(["release", "ship"], cwd=c.repo, env=c.env, clock=clock) == 1
-    assert capsys.readouterr().out.splitlines()[-1] == "gate 1.1.0: failed"
+    assert capsys.readouterr().out.splitlines()[-1] == "gate 1.2.0: failed"
     assert call("rev-parse", "HEAD") == head and call("tag", "--list") == "v1.1.0"
     dirty, dirty_call = repository(tmp_path / "dirty", True)
     before = dirty_call("rev-parse", "HEAD")

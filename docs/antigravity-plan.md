@@ -4,8 +4,8 @@ kind: plan
 purpose: Onboard Google Antigravity as the primary ClutchWork operator UI, MCP server, and unattended drain/serve supervisor in place of VS Code
 relates: [clutch/__main__.py, clutch/ask.py, clutch/events.py, clutch/graph.py, clutch/help.py, clutch/hostfiles.py, clutch/observe.py, clutch/status.py, docs/engine-state-db-plan.md, docs/how-clutch-works.md, docs/mcp-server-notes.md, docs/roadmap.md, vscode-clutchwork/extension.js]
 owner: engine
-verified: 33bcb130
-hash: 07ccf48d52543c9a0ce8995235388778eb3f60a28eb3134502b8b14a10eda6be
+verified: 62a64dee
+hash: 33d4d205eb4d765b33ec011947367ab47d974bb4271852c50846184331a9ba4c
 -->
 # Antigravity UI, MCP server, and supervising agent: plan
 
@@ -17,7 +17,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release phase `0.6.0` in `docs/roadmap.md` (which ships as PyPI `0.7.0` / tag `v0.7.0`, since `clutch release ship` bumps `--minor` at phase close: phase `0.5.0` shipped as `v0.6.0`, and current `pyproject.toml` `0.6.1` drives phase `0.6.0` toward `v0.7.0`). Scheduled as rows 218–225 at `P1` immediately after phase `0.5.0` (`docs/roadmap.md` §6, decision 25 amends decision 24 so Antigravity lands ahead of the `0.7.0` engine state rewrite and `0.8.0` Document agent). Needs from other plans: `view-events-stream` (row 161, merged) for actionable event filtering; `cli-help-standard` (row 129, merged) for command-group help. Runs on the current file+journal state with explicit `repo` path validation (defaulting to CWD); once `0.7.0`'s `state-service-handoff` (`docs/engine-state-db-plan.md`, row 214) merges, MCP reads and controls inherit the lockless DuckDB state service automatically and can adopt its per-user project registry. What needs this plan: daily operator supervision and UI inspection in Antigravity across Clutch and all external host repos; supersedes the exploratory `docs/mcp-server-notes.md`. Shared budgets: one new CLI group `mcp` (`clutch mcp serve`), one new `host` subcommand (`clutch host antigravity`), `--once`/`--cursor`/`--timeout` on `clutch view events`, `--detach` on `clutch engine serve`, and zero bytes of `CORE_TEMPLATE` budget (`AGENTS.md` is already loaded natively by Antigravity).
+Release phase `0.7.0` in `docs/roadmap.md` ships as PyPI `0.7.0` / tag `v0.7.0`: phase `0.6.0` shipped as `v0.6.0`, and current `pyproject.toml` `0.6.1` drives phase `0.7.0` toward `v0.7.0`. Scheduled as rows 218–225 at `P1` immediately after phase `0.6.0` (`docs/roadmap.md` §6, decision 25 amends decision 24 so Antigravity lands ahead of the `0.8.0` engine state rewrite and `0.9.0` Document agent). Needs from other plans: `view-events-stream` (row 161, merged) for actionable event filtering; `cli-help-standard` (row 129, merged) for command-group help. Runs on the current file+journal state with explicit `repo` path validation (defaulting to CWD); once `0.8.0`'s `state-service-handoff` (`docs/engine-state-db-plan.md`, row 214) merges, MCP reads and controls inherit the lockless DuckDB state service automatically and can adopt its per-user project registry. What needs this plan: daily operator supervision and UI inspection in Antigravity across Clutch and all external host repos; supersedes the exploratory `docs/mcp-server-notes.md`. Shared budgets: one new CLI group `mcp` (`clutch mcp serve`), one new `host` subcommand (`clutch host antigravity`), `--once`/`--cursor`/`--timeout` on `clutch view events`, `--detach` on `clutch engine serve`, and zero bytes of `CORE_TEMPLATE` budget (`AGENTS.md` is already loaded natively by Antigravity).
 
 ## Current state
 
@@ -31,7 +31,7 @@ Release phase `0.6.0` in `docs/roadmap.md` (which ships as PyPI `0.7.0` / tag `v
 
 | Record says | This plan | Why |
 |---|---|---|
-| `CLUTCH_PLAN.md` §18.1 closed CLI verb set of 16; `docs/mcp-server-notes.md` deferred mutating MCP tools and daemon start/stop | Adds `clutch mcp serve` (group `mcp`), `clutch host antigravity`, `view events --once`, and `engine serve --detach`; exposes admission-gated ticket, box, and detached engine-control MCP tools | Owner decision 2026-11-24 to onboard Antigravity as primary UI instead of VS Code and drive `drain` and `serve` through MCP where appropriate. Daemon lifetime stays detached in the engine service (`--detach` / `0.6.0` service), never tied to the MCP stdio pipe |
+| `CLUTCH_PLAN.md` §18.1 closed CLI verb set of 16; `docs/mcp-server-notes.md` deferred mutating MCP tools and daemon start/stop | Adds `clutch mcp serve` (group `mcp`), `clutch host antigravity`, `view events --once`, and `engine serve --detach`; exposes admission-gated ticket, box, and detached engine-control MCP tools | Owner decision 2026-11-24 to onboard Antigravity as primary UI instead of VS Code and drive `drain` and `serve` through MCP where appropriate. Daemon lifetime stays detached in the engine service (`--detach` / `0.7.0` service), never tied to the MCP stdio pipe |
 | `AGENTS.md` Pure Python rule (with `vscode-clutchwork/` as the sole operator-only JS exception) | Extends the operator-only client JS exception to the shared UI bundle rendered into `clutch/ui/dashboard.html` for the MCP App | Same boundary and reason: the engine never executes JS; `clutch/observe.py`, `clutch/graph.py`, and `clutch/help.py` own all projection, layout, admission, and help logic, while browser JS only renders DOM/SVG and calls MCP App bridge methods |
 
 `CLUTCH_PLAN.md` stays frozen. Implementation tickets update `docs/how-clutch-works.md` §2.1–2.2, `clutch/docs/host-running.md`, `clutch/docs/host-contract.md`, and `README.md`.
@@ -55,7 +55,7 @@ Following the `AGENTS.md` rule *"Launchers carry no process policy"*, `clutch en
 
 ### 3. Clutch MCP server vs. direct CLI boundary (`mcp-read-server`, `mcp-control-and-tickets`)
 
-`clutch mcp serve` runs a pure-Python JSON-RPC 2.0 MCP server over **Stdio** (`clutch/mcp.py`), using Pydantic schemas already in core Clutch (no heavy third-party framework required). Each tool accepts an optional `repo` path (defaulting to the current working directory and validated as a Clutch checkout containing `tickets/`, with `0.7.0`'s per-user project registry added later when `state-service-handoff` lands) so a single global Antigravity plugin works seamlessly across every host project.
+`clutch mcp serve` runs a pure-Python JSON-RPC 2.0 MCP server over **Stdio** (`clutch/mcp.py`), using Pydantic schemas already in core Clutch (no heavy third-party framework required). Each tool accepts an optional `repo` path (defaulting to the current working directory and validated as a Clutch checkout containing `tickets/`, with `0.8.0`'s per-user project registry added later when `state-service-handoff` lands) so a single global Antigravity plugin works seamlessly across every host project.
 
 **Principle — MCP where structured or interactive, CLI where deterministic or headless:**
 
@@ -126,7 +126,7 @@ In keeping with `AGENTS.md` (*"Keep shipped process prompts in sync"* and *"One 
 
 ## Ticket breakdown
 
-Each ticket targets <= 30 AI minutes (`docs/roadmap.md` §6, decision 22) and places all new unit and integration tests in new `tests/unit/test_<module>_<behavior>.py` / `tests/integration/test_<behavior>.py` files outside the seven do-not-grow test files (`docs/parallel-tickets-plan.md` §7). Release `0.6.0`.
+Each ticket targets <= 30 AI minutes (`docs/roadmap.md` §6, decision 22) and places all new unit and integration tests in new `tests/unit/test_<module>_<behavior>.py` / `tests/integration/test_<behavior>.py` files outside the seven do-not-grow test files (`docs/parallel-tickets-plan.md` §7). Release `0.7.0`.
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
@@ -139,14 +139,14 @@ Each ticket targets <= 30 AI minutes (`docs/roadmap.md` §6, decision 22) and pl
 | 7 | `ask-specs-mcp-supervision` | feature | P1 | `mcp-control-and-tickets` | Update `clutch/specs/ask/drain-loop.md`, `plan-ticket-drain.md`, and `plan-ticket-serve.md`: remove `/loop` prefix, prefer `clutch_*` MCP tools where appropriate while keeping CLI for bootstrap/tests/gates, use `clutch_wait_event` cursor wakeups, detached `serve`, and explicit Antigravity `flash`/`pro` subagent mapping. |
 | 8 | `host-antigravity-plugin` | feature | P1 | `mcp-app-dashboard`, `ask-specs-mcp-supervision` | `clutch host antigravity` installer for `~/.gemini/config/plugins/clutchwork/` (`plugin.json`, `mcp_config.json`, logo, and thin `clutch-drain-loop`, `clutch-plan-drain`, `clutch-plan-serve` skills), optional `--workspace` `.agents/skills/` output, `host doctor` check, and host/README onboarding docs. |
 
-`Runs before`: none within `0.6.0` (release `0.6.0` ships before `0.7.0`'s engine state rewrite and `0.8.0`'s Document agent).
+`Runs before`: none within `0.7.0` (release `0.7.0` ships before `0.8.0`'s engine state rewrite and `0.9.0`'s Document agent).
 
 ## Risks
 
-- **MCP stdio lifecycle vs. running engine.** Antigravity terminates stdio MCP servers when the plugin disables or the app exits. Mitigated by never running `drain`, `serve`, or worker subprocesses as children of `clutch mcp serve`; `engine_start` always launches detached (and later delegates to the `0.7.0` per-user state service).
+- **MCP stdio lifecycle vs. running engine.** Antigravity terminates stdio MCP servers when the plugin disables or the app exits. Mitigated by never running `drain`, `serve`, or worker subprocesses as children of `clutch mcp serve`; `engine_start` always launches detached (and later delegates to the `0.8.0` per-user state service).
 - **Trajectory bloat from large snapshots.** Antigravity caps tool results stored in conversation trajectories at 1 MiB. Mitigated by keeping model-facing `clutch_open_dashboard` / `clutch_status` responses concise and fetching full dashboard payloads through `visibility: ["app"]` tools that do not enter model context.
 - **Prompt drift between Antigravity skills and `clutch/specs/ask/`.** Mitigated by shipping thin (<40-line) wrapper `SKILL.md` files that call `clutch_prompt` at runtime rather than copying rules.
-- **Multi-project ambiguity in a global plugin.** A global MCP server has no fixed checkout CWD when opened from a global sidebar view. Mitigated by requiring an explicit `repo` path when CWD is not a Clutch checkout (and listing registered projects from the `0.7.0` per-user state database in the MCP App's project switcher once `state-service-handoff` ships).
+- **Multi-project ambiguity in a global plugin.** A global MCP server has no fixed checkout CWD when opened from a global sidebar view. Mitigated by requiring an explicit `repo` path when CWD is not a Clutch checkout (and listing registered projects from the `0.8.0` per-user state database in the MCP App's project switcher once `state-service-handoff` ships).
 - **Stale MCP server process after `clutch` upgrade.** As documented in Antigravity's MCP guide, a running stdio server keeps its old Python process until restarted. `clutch host antigravity` prints the refresh hint / `customization://clutchwork` toggle instruction, and `clutch_status` includes the running server's package version so mismatches are visible immediately.
 
 ## Open decisions
