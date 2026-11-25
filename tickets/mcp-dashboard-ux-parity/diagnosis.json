@@ -1,19 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "de4cfd9634e33ea4f43bfb6cd3659b338e80e825",
+  "produced_at_sha": "20eff574fb2fec55482bc8b6f0035cf8e1245c11",
   "stem": "mcp-dashboard-ux-parity",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
-  "stage": "review",
-  "verdict": "retry",
+  "stage": "check",
+  "verdict": "abandon-human",
   "lessons": [
-    "In clutch/ui/app.js (summary `drop` handler near line 77), if the dragged .sidebar-section comes before the target among its siblings, call root.insertBefore(dragged, section.nextSibling). Otherwise call root.insertBefore(dragged, section). Scope in requires a drop before or after the target.",
-    "In tests/mcp_app_dashboard.js, add a drag-and-drop assertion: dragging a section's summary onto the section directly below moves it past that section. Also assert that a drag onto the last section places it last. Keep the existing upward-drag assertion.",
-    "Change only the drop logic and its JS test. Review approved everything else: roots resolution, palette, context menu, header, hover/pin, and the boot notice. Then rerun the ## Verification command and tests/regression/mcp_dashboard_ux_parity.py."
+    "Root cause is the environment, not the diff. The Check worktree .clutch/state/worktrees/mcp-dashboard-ux-parity has no node_modules, so dev.build_ui_bundle in dev.py:46 cannot find node_modules/.bin/esbuild and tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle fails. The other 17",
+    "The engine's worktree setup never makes the host's JS dev dependencies (esbuild) available in ticket worktrees. A human should fix that provisioning, or let the gate resolve esbuild from the main checkout, in clutch's workspace or git setup code. That code is outside this ticket's fence.",
+    "Implement passed only because it temporarily symlinked the main checkout's node_modules and then ran unlink before committing. Do not commit node_modules or edit dev.py: both are outside the fence and would not fix the cause.",
+    "test_dashboard_bundle and dev.build_ui_bundle exist on the base, so any ticket that runs this test in a fresh worktree will fail the same way. After the environment is fixed, rerun Check on the existing branch (commit 20eff574f) without changing the code."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0
+  ],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
