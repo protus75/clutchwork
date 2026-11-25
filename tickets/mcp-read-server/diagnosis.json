@@ -1,21 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b10a805e106e76c60dd56172950fdef25b5921c6",
+  "produced_at_sha": "47c9d060ca9e9bf7730d90b0e89689b8c93c11d7",
   "stem": "mcp-read-server",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
-  "stage": "check",
+  "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Gate failure is caused by the implementer's own new file. tests/integration/test_git_fake_adoption.py flags tests/unit/test_mcp_tools.py because it builds its own Git stand-in. Its PATTERN matches `git = SimpleNamespace(`, NS, Mock, MagicMock or AsyncMock, a `class FakeGit`/`Git`, `spec=Git`, and",
-    "In tests/unit/test_mcp_tools.py, replace every hand-built Git stand-in with `from tests.git_fake import GitFake`. Pass per-method overrides, such as `GitFake(_run=...)` for the stats checks.json `git show`, or a callable or exception for other methods. Also rename any `fake_git` identifier.",
-    "Before committing, run `./dev.py test tests/integration/test_git_fake_adoption.py` and the ticket's `## Verification` command. Both must exit 0. Keep test_mcp_tools.py coverage of the mcp.py, stats.py and context.py lines unchanged."
+    "README.md near line 85: under `# Observing`, delete the added inner ```sh opening line and its closing fence. Put `uv run clutch mcp serve  # run the stdio MCP server` as a plain line inside the existing ```sh block so the view and Decisions commands stay in that block.",
+    "clutch/mcp.py clutch_stats (~line 159): call `stats.window_start(events, now, window)` alone inside `except ValueError` that maps to Refusal code=\"invalid_window\", as `handle_stats` does. Then call `stats.collect_stats(...)` outside that handler.",
+    "Leave other collect_stats failures, such as a pydantic ValidationError from a corrupt checks.json, to the general tools/call error mapping. Never report them as invalid_window. Add a test in tests/unit/test_mcp_tools.py that pins this.",
+    "Start from the failed branch rebased onto main. Change only the two files above plus tests/unit/test_mcp_tools.py, then rerun the full ## Verification command and confirm it exits 0."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    0
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
