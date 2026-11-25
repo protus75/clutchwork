@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "47ab226fc9bfacb377cc621f98f6e3fcd5f557ab",
+  "stem": "roadmap-align-pypi-versions",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: docs/roadmap.md has six release sections (### 0.3.0, 0.4.0, 0.5.0, 0.6.0 at line 494, 0.7.0 (conditional) at 518, 0.8.0 at 548), not the five the ticket's Scope in and acceptance criterion 3 assume. Commit de9d662aa added the 0.6.0 Antigravity slot.",
+    "Before authoring again, a human must decide the slot for each of the six phases. A +1 shift sends the document-agent 0.8.0 section to 0.9.0. The gate set {0.4.0..0.8.0} in tests/integration/test_roadmap_start_gates.py then becomes {0.4.0..0.9.0}.",
+    "The rewritten ticket must list every start-block tag: line 497 `--since v0.6.0`, line 521 `--since v0.7.0`, line 551 `--since v0.8.0`. The current Scope in names only v0.3.0, v0.4.0, v0.6.0 and v0.7.0, and says nothing about v0.8.0.",
+    "Rename row 200 to match the shifted conditional section. Its prose says 'recurred in 0.7.0', so after the shift it may need to say release-audit-080/0.8.0 instead of release-audit-070. Map the plan-doc slot references (0.6.0->0.7.0, 0.7.0->0.8.0, 0.8.0->0.9.0) to match.",
+    "The current_release change (major.minor+1.0) and the test_roadmap_release_boundary.py updates are sound. Keep them as they are in the rewritten ticket. Only the docs/roadmap.md renumbering and the gate-set premise need rewriting."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
