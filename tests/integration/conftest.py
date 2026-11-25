@@ -4,8 +4,8 @@
 # purpose: Integration pytest setup: wraps each test phase in the I/O guard unless the file is in REAL_IO_TESTS, registers and skips tests marked disk_io_skip, and runs every test in its own empty working directory
 # relates: [tests/integration/test_disk_io_skip_list.py, docs/how-clutch-works.md]
 # owner: engine
-# verified: 4fded5bb
-# hash: 1ad03cdc711af83dfd03389047d12961878ac1bf1ed4606c5835c7afd8b95081
+# verified: 0b912e0d
+# hash: 8913ee4b4df53ccb4467199918a66a04404023ca85d9be87b93b95c43ec98eff
 import pytest
 
 from clutch.ioguard import guard
@@ -21,6 +21,7 @@ REAL_IO_TESTS = (
     "test_journal_incremental.py",
     "test_journal_roll.py",
     "test_lockfile.py",
+    "test_mcp_app_dashboard.py",
     "test_step_icons.py",
     "test_step_view_unknown_kind.py",
     "test_ui_shared_renderers.py",
