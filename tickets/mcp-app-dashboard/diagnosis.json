@@ -1,21 +1,27 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "18185e410d293870ecef5043d6d55b00ad256601",
+  "produced_at_sha": "8e1f8b22c023662c08ed2595fb06f79db1536e07",
   "stem": "mcp-app-dashboard",
-  "attempt": 4,
-  "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "retry",
+  "attempt": 6,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "split",
   "lessons": [
-    "Check failed only on diff_budget: 31037 inserted lines against a 1500 limit. 30228 of them are the generated clutch/ui/dashboard.html. The other 18 files add about 800 lines, which fits. Tests, ruff and Verification all passed, so keep that work and shrink only the bundle.",
-    "In dev.py build_ui_bundle, add --minify to the esbuild argv and keep --bundle --format=iife --platform=browser --global-name=ClutchDashboardApp. The global name survives minification, so ClutchDashboardApp.createDashboardApp still resolves for tests/mcp_app_dashboard.js.",
-    "Write the inlined JS, view.css, dashboard.css and ticket-lifecycle.svg into clutch/ui/dashboard.html as a few long lines, not pretty-printed. Run ./dev.py ui-bundle again and recommit. Confirm with git diff --stat main that total insertions are under 1500.",
-    "Update tests/unit/test_mcp_app_dashboard.py so its fake run_cmd expects the --minify flag. Keep the </script> escaping and missing-source refusal checks. Rerun the full Verification command before committing, including tests/integration/test_mcp_app_dashboard.py.",
-    "Do not hand-trim pnpm-lock.yaml (403 lines). It comes from pnpm add -D for @modelcontextprotocol/ext-apps, esbuild and zod. Only the dashboard.html line count needs to drop."
+    "Attempt 6 also ended incomplete at implement with an empty diff. It stopped before the Node harness, full verification and commit. The ticket has 4 boundaries (mcp.py, the clutch/ui bundle, dev.py ui-bundle, docs and rules) plus a six-surface JS app, which is too much for one attempt. Split along",
+    "Split 1: clutch/mcp.py resources capability, resources/list and resources/read, ui_html_path, and clutch_open_dashboard, clutch_app_snapshot and clutch_app_stats. Include tests/unit/test_mcp_app_dashboard.py and the expected-set updates in test_mcp_protocol.py, test_mcp_tools.py and",
+    "Split 2: dev.py build_ui_bundle and the ui-bundle subcommand, package.json and pnpm-lock.yaml devDependencies, the .gitignore entry for clutch/ui/dashboard.html, and a minimal clutch/ui/app.js and dashboard.css. Add the unit bundle test with a fake run_cmd for criterion 4. The unit test written in",
+    "Split 3: the full clutch/ui/app.js surfaces (six tabs, toggle-aux-pane, sendMessage, updateModelContext, admission-gated actions) plus tests/mcp_app_dashboard.js, tests/integration/test_mcp_app_dashboard.py, and the REAL_IO_TESTS entry in tests/integration/conftest.py. Covers criterion 5. Depends",
+    "Split 4: docs and rules for criterion 7. That means mcp serve help in clutch/__main__.py, the mcp serve rows in clutch/docs/host-running.md and docs/how-clutch-works.md (§2.1), the ui-bundle row in §2.2, the clutch/ui/ Pure Python exception in both CLAUDE.md and AGENTS.md, and ui-bundle in"
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
