@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "47c9d060ca9e9bf7730d90b0e89689b8c93c11d7",
+  "produced_at_sha": "5f27c6bffbcbcb9b985009e4d26ba2a1ace8ccba",
   "stem": "mcp-read-server",
   "passed": true,
   "changed_files": [
@@ -19,7 +19,7 @@
     "tests/unit/test_mcp_protocol.py",
     "tests/unit/test_mcp_tools.py"
   ],
-  "inserted_lines": 942,
+  "inserted_lines": 945,
   "bypassed": [],
   "reports": [
     {
@@ -88,24 +88,24 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 19.392731,
+        "seconds": 17.184367,
         "passed": 2329,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.9623489910154603,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.5014125219895504,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.346029995009303,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0069673709804192
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.58939924108563,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2671144919586368,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2174014070187695,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.0807419689372182
         }
       },
       "coverage": {
-        "percent": 77.98810620654996,
+        "percent": 77.98994974874371,
         "files": {
           "clutch/__main__.py": 81.08776266996291,
           "clutch/ask.py": 95.1923076923077,
           "clutch/context.py": 98.26086956521739,
-          "clutch/mcp.py": 93.47181008902078,
+          "clutch/mcp.py": 93.51032448377582,
           "clutch/runner.py": 69.81865284974093,
           "clutch/stats.py": 81.13207547169812
         }
@@ -117,15 +117,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 12.265757,
+        "seconds": 12.286926,
         "passed": 312,
         "failed": 0,
         "skipped": 3290,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9395392169826664,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1720522660762072,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0878942720009945,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043760580592789
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.025295064027887,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.125863733002916,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0495751770213246,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0036158869042993
         }
       }
     },
@@ -168,7 +168,7 @@
       "rc": 0,
       "tail": "$ uv run pytest -q tests/unit/test_mcp_protocol.py tests/unit/test_mcp_tools.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_context_suggest_verb.py tests/unit/test_context_suggest_require.py tests/unit/test_tickets_tolerant_reader.py tests/unit/test_main_prompt_host.py tests/unit/test_ask_host_prompts.py tests/unit/test_stale_running.py tests/unit/test_status_overdue.py tests/unit/test_main_view_group.py tests/integration/test_mcp_read_server.py tests/integration/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 88%]\n.........                                                                [100%]\n81 passed in 2.46s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.547687
+      "seconds": 6.394457
     }
   ]
 }
