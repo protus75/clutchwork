@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The UI state response now includes savedOpen to distinguish persisted section preferences from defaults.
+The existing saved-open signal was named savedOpen; the ticket specifies saved, so its producer and consumers were updated together.
 
 ## Dead ends
 
-none
+Confirmed the polling test fails when dirty-input protection is removed, then restored the implementation.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 20 minutes; completed within that budget.
 
