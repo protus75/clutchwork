@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6b1f5125449e3850281f4712cf20c0da88018a73",
+  "produced_at_sha": "0977043c0f3f51219d5dac72a4cc716e3d168ba5",
   "stem": "mcp-dashboard-vscode-parity",
   "passed": true,
   "changed_files": [
@@ -10,7 +10,7 @@
     "tests/integration/test_mcp_app_dashboard.py",
     "tests/mcp_app_dashboard.js"
   ],
-  "inserted_lines": 166,
+  "inserted_lines": 171,
   "bypassed": [],
   "reports": [
     {
@@ -79,18 +79,20 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 20.38002,
+        "seconds": 20.794054,
         "passed": 2434,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8813438640208915,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4832975499448366,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.4228320930269547,
-          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.3487191569874994,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.166743058944121,
-          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.1073778720456176,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.1010605490300804
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.007686215976719,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.8659862820641138,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.5855601620278321,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4532517469488084,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.3921904260059819,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1828009619493969,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.1316372589790262,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0921442569815554,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.0471951949875802
         }
       },
       "coverage": {
@@ -102,20 +104,7 @@
       "code": "integration",
       "verdict": "pass",
       "findings": [],
-      "autofix_applied": false,
-      "timing": {
-        "seconds": 14.300136,
-        "passed": 324,
-        "failed": 0,
-        "skipped": 3294,
-        "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.236385310010519,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.3699628110625781,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.2635257569490932,
-          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.1017511230311356,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0038305969792418
-        }
-      }
+      "autofix_applied": false
     },
     {
       "code": "lint",
@@ -140,10 +129,10 @@
         "tests/unit/test_dev_ui_bundle.py",
         "tests/unit/test_mcp_app_dashboard.py"
       ],
-      "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/unit/test_dev_ui_bundle.py tests/unit/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.54s\n",
-      "base_red": false,
-      "seconds": 5.896873
+      "rc": 1,
+      "tail": "-dashboard-vscode-parity/tests/integration/test_mcp_app_dashboard.py:23: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nroot = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-vscode-parity')\nout = PosixPath('/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-vscode-parity/.test-tmp/3132817/pytest/popen-gw0/test_dashboard_bundle0/dashboard.html')\nrun_cmd = <function run at 0x7925dc552f00>\n\n    def build_ui_bundle(root=ROOT, out=None, run_cmd=subprocess.run) -> Path:\n        out = Path(out) if out is not None else root / \"clutch/ui/dashboard.html\"\n        paths = [root / \"vscode-clutchwork/media/view.css\", root / \"clutch/ui/dashboard.css\", root / \"vscode-clutchwork/media/ticket-lifecycle.svg\", root / \"clutch/ui/app.js\"]\n        try:\n            shared_css, dashboard_css, svg, _ = [path.read_text() for path in paths]\n            result = run_cmd(\n                [str(root / \"node_modules/.bin/esbuild\"), str(paths[3]), \"--bundle\", \"--format=iife\", \"--platform=browser\", \"--global-name=ClutchDashboardApp\", \"--minify\"],\n                cwd=root,\n                capture_output=True,\n                text=True,\n                check=False,\n            )\n        except OSError as error:\n>           raise RuntimeError(f\"ui-bundle: missing source or esbuild: {error}\") from error\nE           RuntimeError: ui-bundle: missing source or esbuild: [Errno 2] No such file or directory: '/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-vscode-parity/node_modules/.bin/esbuild'\n\n/home/djp/source/clutch/.clutch/state/worktrees/mcp-dashboard-vscode-parity/dev.py:46: RuntimeError\n=========================== short test summary info ============================\nFAILED tests/integration/test_mcp_app_dashboard.py::test_dashboard_bundle - R...\n1 failed, 8 passed in 1.39s\ndev: `uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/unit/test_dev_ui_bundle.py tests/unit/test_mcp_app_dashboard.py` failed\n",
+      "base_red": true,
+      "seconds": 5.906611
     }
   ]
 }
