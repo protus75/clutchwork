@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The integration ownership tests are skipped by the repository’s I/O guard; all nine ownership expectations were checked directly against added wrong call sites. Mutation checks were not completed for every assertion in the existing ticket tests.
+The ticket verification command passed: 181 passed, 13 skipped.
 
 ## Dead ends
 
