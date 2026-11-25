@@ -1,10 +1,10 @@
 ## Outcome
 
-ok
+incomplete
 
 ## Surprises / judgment calls
 
-The existing implementation was preserved; the verification command passed 102 tests, and the engine text check passed. Removing the minify flag made its new test assertion fail as intended.
+The MCP resource and initial dashboard bundle are implemented, and 53 targeted unit tests passed, but the dashboard interactions and required mutation checks remain unverified.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 25 minutes; actual elapsed time was not recorded.
 
