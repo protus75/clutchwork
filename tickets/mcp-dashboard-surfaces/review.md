@@ -1,11 +1,11 @@
 # Review: snag
 
-The dashboard wires all six surfaces and the host adapter correctly, but Help & Lifecycle drops every help link that is file-based (`{label, path, line}`) instead of URL-based.
+The earlier help-link findings are fixed: path-based help links now open through openFile in both the Help tab and openHelp. The new engine play/stop controls are not gated by engine liveness, so criterion 1's admission-gated `clutch_engine_start` / `clutch_engine_control` requirement is unmet.
 
 ## Findings
 
-- [logic] clutch/ui/app.js:93 The Help & Lifecycle tab sets `link.href = entry.link.url` for every `snap.help` entry. `clutch/help.py` `help_map` (lines 234 and 240) builds links for topics whose doc is a shipped guide (`host-running.md` verb rows, `host-contract.md` command entries) as `{label, path, line}` with no `url`. Those topics therefore render as anchors with an undefined href that do nothing when clicked. The ticket requires `snap.help` topics and links to work. (do instead: Render a path-based link as a button or anchor whose click handler calls `openFile(entry.link.path)`. Keep `href`/`target=_blank` only for entries that have `link.url`. Add a path-only help entry to `tests/mcp_app_dashboard.js` and assert that clicking it sends a `toggle-aux-pane` request.)
-- [logic] clutch/ui/app.js:52 `host.openHelp` only handles `snap.help[topic].link.url`. When `detail.js` calls `host.openHelp(topic)` (line 40) for a topic whose link is path-based (shipped `host-*.md` guide), nothing happens and no notice is shown. That help link is dead in the Details view. (do instead: In `openHelp`, call `openFile(link.path)` when the link has `path` and no `url`. Fall back to `window.open(link.url)` only for URL links. Cover both cases in the Node harness.)
+- [acceptance] clutch/ui/app.js:89 `refresh` always shows the `Start drain` and `Start serve` buttons, even when it has just found the engine running (`ping.engine && snap.engine`). Criterion 1 requires `clutch_engine_start` calls to be admission-gated. The canonical surface gates them on liveness: `vscode-clutchwork/package.json` lines 561/566 show the play actions only when `!clutch.engineRunning`, set from `snap.engine` in `extension.js:122`. The app lets a second start fire against a running engine. The harness at `tests/mcp_app_dashboard.js:36` clicks `Start drain` while its fake ping returns `engine: true`, so it pins the ungated behavior. (do instead: Append the `Start drain` / `Start serve` buttons only when the computed liveness is false, reusing the same `ping.engine && snap.engine` value. In the harness, assert that the start buttons are absent while the engine is running, then make the fake ping/snapshot report the engine stopped, refresh, and click `Start drain`.)
+- [acceptance] clutch/ui/app.js:90 `refresh` always shows the `Stop` button, even when liveness says the engine is stopped. Criterion 1 requires `clutch_engine_control` calls to be admission-gated. The canonical stop action is shown only when `clutch.engineRunning` is true (`vscode-clutchwork/package.json:571`). The harness never checks that `Stop` is hidden while the engine is stopped. (do instead: Append `Stop` only when the computed liveness is true. Add a harness assertion that `Stop` is absent after a refresh where the fake ping reports `engine: false`, and present and calling `clutch_engine_control` with `action: "stop"` when it reports `engine: true`.)
 
 ## Record
 
@@ -13,26 +13,26 @@ The dashboard wires all six surfaces and the host adapter correctly, but Help & 
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "4010677b82195017cca7d36448e02daa6c63fb57",
+  "produced_at_sha": "0bbe775b9d2bbc5cc680d378af2ad6ec30164c0f",
   "stem": "mcp-dashboard-surfaces",
-  "reviewed_sha": "4010677b82195017cca7d36448e02daa6c63fb57",
-  "summary": "The dashboard wires all six surfaces and the host adapter correctly, but Help & Lifecycle drops every help link that is file-based (`{label, path, line}`) instead of URL-based.",
+  "reviewed_sha": "0bbe775b9d2bbc5cc680d378af2ad6ec30164c0f",
+  "summary": "The earlier help-link findings are fixed: path-based help links now open through openFile in both the Help tab and openHelp. The new engine play/stop controls are not gated by engine liveness, so criterion 1's admission-gated `clutch_engine_start` / `clutch_engine_control` requirement is unmet.",
   "findings": [
     {
-      "code": "logic",
+      "code": "acceptance",
       "path": "clutch/ui/app.js",
-      "line": 93,
-      "message": "The Help & Lifecycle tab sets `link.href = entry.link.url` for every `snap.help` entry. `clutch/help.py` `help_map` (lines 234 and 240) builds links for topics whose doc is a shipped guide (`host-running.md` verb rows, `host-contract.md` command entries) as `{label, path, line}` with no `url`. Those topics therefore render as anchors with an undefined href that do nothing when clicked. The ticket requires `snap.help` topics and links to work.",
-      "paved_road": "Render a path-based link as a button or anchor whose click handler calls `openFile(entry.link.path)`. Keep `href`/`target=_blank` only for entries that have `link.url`. Add a path-only help entry to `tests/mcp_app_dashboard.js` and assert that clicking it sends a `toggle-aux-pane` request.",
+      "line": 89,
+      "message": "`refresh` always shows the `Start drain` and `Start serve` buttons, even when it has just found the engine running (`ping.engine && snap.engine`). Criterion 1 requires `clutch_engine_start` calls to be admission-gated. The canonical surface gates them on liveness: `vscode-clutchwork/package.json` lines 561/566 show the play actions only when `!clutch.engineRunning`, set from `snap.engine` in `extension.js:122`. The app lets a second start fire against a running engine. The harness at `tests/mcp_app_dashboard.js:36` clicks `Start drain` while its fake ping returns `engine: true`, so it pins the ungated behavior.",
+      "paved_road": "Append the `Start drain` / `Start serve` buttons only when the computed liveness is false, reusing the same `ping.engine && snap.engine` value. In the harness, assert that the start buttons are absent while the engine is running, then make the fake ping/snapshot report the engine stopped, refresh, and click `Start drain`.",
       "kind": null,
       "unit": null
     },
     {
-      "code": "logic",
+      "code": "acceptance",
       "path": "clutch/ui/app.js",
-      "line": 52,
-      "message": "`host.openHelp` only handles `snap.help[topic].link.url`. When `detail.js` calls `host.openHelp(topic)` (line 40) for a topic whose link is path-based (shipped `host-*.md` guide), nothing happens and no notice is shown. That help link is dead in the Details view.",
-      "paved_road": "In `openHelp`, call `openFile(link.path)` when the link has `path` and no `url`. Fall back to `window.open(link.url)` only for URL links. Cover both cases in the Node harness.",
+      "line": 90,
+      "message": "`refresh` always shows the `Stop` button, even when liveness says the engine is stopped. Criterion 1 requires `clutch_engine_control` calls to be admission-gated. The canonical stop action is shown only when `clutch.engineRunning` is true (`vscode-clutchwork/package.json:571`). The harness never checks that `Stop` is hidden while the engine is stopped.",
+      "paved_road": "Append `Stop` only when the computed liveness is true. Add a harness assertion that `Stop` is absent after a refresh where the fake ping reports `engine: false`, and present and calling `clutch_engine_control` with `action: \"stop\"` when it reports `engine: true`.",
       "kind": null,
       "unit": null
     }
