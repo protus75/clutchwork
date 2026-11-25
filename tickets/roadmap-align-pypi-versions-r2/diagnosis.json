@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "295de552b69caed5a95eb06bf43c87029c14f209",
+  "stem": "roadmap-align-pypi-versions-r2",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Criterion 2 and the Scope-in edit to test_callers_pass_the_current_release are contradictory. They require pyproject 1.9.0 to select 2.0.0, but the ticket's own formula f\"{parts[0]}.{int(parts[1]) + 1}.0\" gives 1.10.0. No version maps to any <major>.0.0.",
+    "Fix the ticket: in tests/unit/test_roadmap_release_boundary.py, rename the fixture heading `### 2.0.0` (line 22) to `### 2.1.0`, keep pyproject version \"2.0.0\" (line 60), and assert `next: n-nine`. Update criterion 2 and Scope-in to match.",
+    "Keep the rest of criterion 2: pyproject \"1.0.0\" passes \"1.1.0\" to choose(). In that test, change `calls == [\"1.0.0\"]` (line 78) to `[\"1.1.0\"]`. Check that the test_current_release cases (0.3.0, 0.3.1 -> 0.4.0; 0.6.1 -> 0.7.0; 2.10.4 -> 2.11.0) agree with the formula. They do.",
+    "Lines 33-34 of that file also pass \"2.0.0\" directly to choose() with the 1.0.0/2.0.0 fixture. Those cases never call current_release, so they can stay. List them in Context so the fixture heading rename keeps them consistent, or rename their release argument along with the heading.",
+    "Before resubmitting, run `uv run clutch ticket lint roadmap-align-pypi-versions-r2` and `uv run clutch ticket review roadmap-align-pypi-versions-r2`. Recheck every version example in the ticket against the formula, since minor+1 never rolls over to the next major."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
