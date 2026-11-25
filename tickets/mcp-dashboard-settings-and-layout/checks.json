@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
+  "produced_at_sha": "fda1aedddc96016667722bd172e72575ad3d548f",
   "stem": "mcp-dashboard-settings-and-layout",
   "passed": true,
   "changed_files": [
@@ -14,7 +14,7 @@
     "tests/unit/test_mcp_tools.py",
     "tests/unit/test_mcp_ui_state_and_config.py"
   ],
-  "inserted_lines": 270,
+  "inserted_lines": 280,
   "bypassed": [],
   "reports": [
     {
@@ -83,22 +83,22 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 21.566718,
+        "seconds": 20.987355,
         "passed": 2448,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.2168688499950804,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3595227969926782,
-          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.1542479710187763,
-          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0261182939866558,
-          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.0250262059853412
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.002519264991861,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.2130851459223777,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.0360262029571459,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0333642880432308,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0164427370182239
         }
       },
       "coverage": {
-        "percent": 78.8938411669368,
+        "percent": 78.89577510430591,
         "files": {
-          "clutch/mcp.py": 96.24413145539906
+          "clutch/mcp.py": 96.13003095975232
         }
       }
     },
@@ -108,16 +108,16 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 15.183888,
+        "seconds": 14.540425,
         "passed": 324,
         "failed": 0,
         "skipped": 3294,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.1754783060168847,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.4719375629792921,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.4159319670288824,
-          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.144426031038165,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0049739620299079
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0669563260744326,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.3628245030413382,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.2636200670385733,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.0662493030540645,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0034111189306714
         }
       }
     },
@@ -148,9 +148,9 @@
         "tests/integration/test_mcp_app_dashboard.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_mcp_ui_state_and_config.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_control_and_tickets.py tests/integration/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n.......................................................                  [100%]\n55 passed in 1.88s\n",
+      "tail": "$ uv run pytest -q tests/unit/test_mcp_ui_state_and_config.py tests/unit/test_mcp_app_dashboard.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_repo_resolution.py tests/unit/test_mcp_control_and_tickets.py tests/integration/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n.......................................................                  [100%]\n55 passed in 1.79s\n",
       "base_red": false,
-      "seconds": 6.482803
+      "seconds": 6.095524
     }
   ]
 }
