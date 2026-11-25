@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The existing help test requires the original first view topic to remain first, so the new topics follow the existing views; the final verification passed all 29 tests.
+Existing help topics remain first because an unchanged test expects the details topic to report a missing documentation heading.
 
 ## Dead ends
 
-none
+An initial adapter validation test could pass because unrelated elements were missing; supplying those elements made the test check the intended failure.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Ticket budget: 15 minutes expected; actual time not recorded.
 
