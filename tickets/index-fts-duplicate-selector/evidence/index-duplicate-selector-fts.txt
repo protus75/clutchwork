@@ -1,0 +1,7 @@
+$ .venv/bin/clutch index query "providers" --limit 5
+clutch index query: index_unreadable: Invalid Input Error: More than one row returned by a subquery used as an expression - scalar subqueries can only return a single row.
+
+Use "SET scalar_subquery_error_on_multiple_rows=false" to revert to previous behavior of returning a random row. -- retry after refresh or run clutch index build
+
+$ duplicate selectors in .clutch/state/index.duckdb:
+[('docs/gemini-graphics-refactor-plan.md#Current state', 2), ('docs/gemini-graphics-refactor-plan.md#Target design', 2), ('AGENTS.md#Engine conduct', 2)]
