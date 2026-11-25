@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Snapshot and drafts retain the ticket’s permitted derived journal-cache writes; changed Python files also passed Ruff, and targeted mutations exposed and strengthened two weak assertions.
+The Git fake adoption check passed (3 tests), and the final ticket verification passed (81 tests).
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 25 minutes; implementation and verification took approximately 8 minutes.
+none
 
