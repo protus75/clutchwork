@@ -1,20 +1,24 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "73e1083bfc8b6eb9f96921e2d6e81b7e463e4fc3",
+  "produced_at_sha": "3d622c64a0afd521224e21972625648b43261b56",
   "stem": "mcp-app-dashboard",
-  "attempt": 2,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 3,
+  "terminal": "infra_error",
+  "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Check failed in tests/integration/test_engine_text_verbs.py::test_no_engine_text_names_dev_py because the diff added the text `dev.py` at clutch/mcp.py:367. Remove every `dev.py` mention from clutch/mcp.py, including error messages, docstrings and comments.",
-    "The test scans engine code and clutch/docs/ for the literal `dev.py`. Make the dashboard_unavailable DomainError message say the dashboard bundle is missing or empty, without naming the repo build command. `./dev.py` exists only in this repo.",
-    "Keep `ui-bundle` mentions only in dev.py itself, docs/how-clutch-works.md section 2.2, CLAUDE.md, and tests. Do not add it to clutch/__main__.py help or clutch/docs/host-running.md, because the same test scans those.",
-    "Before committing, run `./dev.py test tests/integration/test_engine_text_verbs.py` together with the ticket's Verification command. The Verification list passed but does not include this test, so it missed the failure. Leave everything else in the diff unchanged."
+    "Cause: codex hit an external provider rate limit (429 Too Many Requests, retries exhausted) after the agent reported outcome ok. This is not a ticket or code defect. Wait for codex to recover, then rerun at the same capability.",
+    "This attempt restarts from main, so redo the full fenced work: clutch/mcp.py (resources capability, resources/list and resources/read for ui://clutch/dashboard.html, clutch_open_dashboard, and app-only clutch_app_snapshot and clutch_app_stats), clutch/ui/app.js, dashboard.css, and the generated",
+    "Add dev.py build_ui_bundle(root, run_cmd) and the ui-bundle subcommand. Add the package.json and pnpm-lock.yaml devDeps (@modelcontextprotocol/ext-apps, esbuild, zod). Add tests/unit/test_mcp_app_dashboard.py, tests/integration/test_mcp_app_dashboard.py and tests/mcp_app_dashboard.js, and add the",
+    "Update only the expected sets in test_mcp_protocol.py, test_mcp_tools.py (25 tools) and test_mcp_control_and_tickets.py. Update the mcp serve help and doc rows, the clutch/ui/ Pure Python exception in both CLAUDE.md and AGENTS.md, and the ui-bundle entry in CLAUDE.md's Command surface rule.",
+    "Keep the clutch_open_dashboard ready:False message free of repo-only commands (the prior retry fixed this). Run the ## Verification command and commit before finishing, keeping clutch/mcp.py at or above its 90% unit coverage floor."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1,
+    2
+  ],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
