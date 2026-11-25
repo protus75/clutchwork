@@ -58,7 +58,7 @@ Scope in:
 - `docs/how-clutch-works.md`: update the `What it does` cell of the `| \`view events\` | no | ... |` row in section 2.1 to document `--once`, `--cursor`, and `--timeout` and the JSON output; keep column 1 exact so `tests/integration/test_ask_view_events.py` remains satisfied.
 - `README.md`: add `uv run clutch view events --once --timeout 300  # wait once for changes as JSON` under `# Observing` while keeping the existing `uv run clutch view events` line intact.
 - `tests/unit/test_main_view_events.py`: replace the old `["view", "events", "--once"]` `SystemExit(2)` check (lines 20-22) with checking `parser.parse_args(["view", "events"])` defaults `(once, cursor, timeout) == (False, None, None)` and `["view", "events", "--unknown"]` raising `SystemExit(2)` (keeping the `pytest` import used).
-- New unit test files `tests/unit/test_events_once_cursor.py` and `tests/unit/test_main_view_events_once.py`, each with valid `# clutch:meta` headers (`kind: test`, `owner: clutch/events.py` and `owner: clutch/__main__.py`) and `tmp_path`/fake seams only.
+- New unit test files `tests/unit/test_events_once_cursor.py` and `tests/unit/test_main_view_events_once.py`, using `tmp_path`/fake seams only.
 
 Scope out:
 - Editing `clutch/specs/ask/*.md` (`ask-specs-mcp-supervision` updates supervising prompts later).
@@ -85,12 +85,11 @@ Merge note with confirmed unmerged `roadmap-align-pypi-versions`: that ticket ed
 4. `tests/unit/test_events_once_cursor.py`: `wait_once` raises `ValueError` for `timeout=-1.0`, `timeout=float("nan")`, `timeout=float("inf")`, and `interval=0.0` before sleeping. Verified by `./dev.py test tests/unit/test_events_once_cursor.py`.
 5. `tests/unit/test_main_view_events_once.py`: `_parser().parse_args(["view", "events", "--once", "--cursor", "tok", "--timeout", "15"])` sets `(once, cursor, timeout) == (True, "tok", 15.0)`; `main(["view", "events", "--once"], ...)` calls `events.wait_once` with `cursor=None, timeout=300.0`, prints single-line JSON `{"cursor": ..., "events": [...], "timed_out": false}` to stdout with empty stderr and exit 0; `main(["view", "events", "--cursor", "tok"], ...)` and `main(["view", "events", "--timeout", "10"], ...)` without `--once` exit 2 with `"clutch view: "` refusal on stderr; invalid `--cursor` or negative `--timeout` with `--once` exits 2 with `"clutch view: "` refusal on stderr (never an uncaught traceback); `KeyboardInterrupt` inside `wait_once` returns 0 with empty stderr. Verified by `./dev.py test tests/unit/test_main_view_events_once.py`.
 6. `tests/unit/test_main_view_events.py` passes with updated default-option and unknown-flag checks alongside existing streaming interrupt behavior; `./dev.py test tests/unit/test_main_view_events.py tests/unit/test_view_events.py tests/unit/test_events_gate_repeat.py tests/unit/test_events_upgrade_pending.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_main_view_group.py` exits 0.
-7. `clutch/docs/host-running.md`, `docs/how-clutch-works.md` section 2.1, and `README.md` document `--once`, `--cursor`, and `--timeout` on `view events` while preserving `| \`view events\` |` row prefixes and `uv run clutch view events`, verified by `./dev.py test tests/integration/test_ask_view_events.py tests/unit/test_host_running.py tests/unit/test_readme.py` and `uv run clutch meta check tests/unit/test_events_once_cursor.py tests/unit/test_main_view_events_once.py`.
+7. `clutch/docs/host-running.md`, `docs/how-clutch-works.md` section 2.1, and `README.md` document `--once`, `--cursor`, and `--timeout` on `view events` while preserving `| \`view events\` |` row prefixes and `uv run clutch view events`, verified by `./dev.py test tests/integration/test_ask_view_events.py tests/unit/test_host_running.py tests/unit/test_readme.py`.
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_events_once_cursor.py tests/unit/test_main_view_events_once.py tests/unit/test_main_view_events.py tests/unit/test_view_events.py tests/unit/test_events_gate_repeat.py tests/unit/test_events_upgrade_pending.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_main_view_group.py tests/integration/test_ask_view_events.py
-uv run clutch meta check tests/unit/test_events_once_cursor.py tests/unit/test_main_view_events_once.py
 ```
 
 ## Definition of rejected
