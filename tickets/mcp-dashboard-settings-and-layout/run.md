@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The existing saved-open signal was named savedOpen; the ticket specifies saved, so its producer and consumers were updated together.
+Kept the prior implementation and changed only the test named by review.
 
 ## Dead ends
 
-Confirmed the polling test fails when dirty-input protection is removed, then restored the implementation.
+Both temporary timer mutations failed the intended assertions and were restored before verification.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.29
 
 ## Predicted vs actual
 
-Expected 20 minutes; completed within that budget.
+Expected 20 minutes; completed in approximately 4 minutes.
 
