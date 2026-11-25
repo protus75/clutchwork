@@ -1,0 +1,2 @@
+$ .venv/bin/clutch index query "providers" --limit 5 (sandboxed, read-only HOME)
+clutch index query: fts unavailable: IO Error: Failed to create directory "/home/djp/.duckdb": Read-only file system -- run clutch index build with full-text search available
