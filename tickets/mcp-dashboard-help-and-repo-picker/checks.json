@@ -1,0 +1,151 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e365a5f26eee5fbd433f9b0d166000eca18310a1",
+  "stem": "mcp-dashboard-help-and-repo-picker",
+  "passed": true,
+  "changed_files": [
+    "clutch/mcp.py",
+    "clutch/ui/app.js",
+    "clutch/ui/dashboard.css",
+    "tests/mcp_app_dashboard.js",
+    "tests/unit/test_mcp_recent_repos.py"
+  ],
+  "inserted_lines": 122,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 21.487051,
+        "passed": 2449,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.10664872295456,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3958755180356093,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.154637133993674,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.06416912592249,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[spawn]": 1.0338657859829254
+        }
+      },
+      "coverage": {
+        "percent": 78.91500465229176,
+        "files": {
+          "clutch/mcp.py": 96.01769911504425
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 15.069652,
+        "passed": 324,
+        "failed": 0,
+        "skipped": 3294,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.267609752016142,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.4726738030440174,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.3394405599683523,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.1063049740623683,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0059507930418476
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_mcp_recent_repos.py",
+        "tests/unit/test_mcp_ui_state_and_config.py",
+        "tests/unit/test_mcp_repo_resolution.py",
+        "tests/integration/test_mcp_app_dashboard.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_mcp_recent_repos.py tests/unit/test_mcp_ui_state_and_config.py tests/unit/test_mcp_repo_resolution.py tests/integration/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n.....                                                                    [100%]\n5 passed in 1.72s\n",
+      "base_red": false,
+      "seconds": 6.191147
+    }
+  ]
+}
