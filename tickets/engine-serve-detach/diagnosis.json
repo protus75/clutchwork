@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "94fa0888b9e781f7a91d2e5ba31c3a5d30001e5f",
+  "stem": "engine-serve-detach",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket contradicts clutch/specs/implement.md:47, which forbids Implement from running `clutch meta refresh`, `clutch meta fill` or `clutch meta check` because Check writes the headers. Verification and criterion 5 require `uv run clutch meta check` on the two new test files.",
+    "Fix the ticket: delete the `uv run clutch meta check ...` line from `## Verification` and the meta-check clause from criterion 5. Keep the docs checks for host-running.md, how-clutch-works.md and README.md.",
+    "Also remove '(with `uv run clutch meta refresh` + non-empty `# purpose:` headers)' from Scope in. Keep the bullet that says Check's meta step writes the `# clutch:meta` headers on new files under tests/.",
+    "The approach worked: the codex attempt implemented detached serve, and the ticket's ./dev.py test command passed (61 tests). The next attempt starts from main, so redo the same work: seams.child_exit, serve.wait_detached_startup with its helpers, the __main__ --detach flag and handle_detach, the",
+    "Prevent the whole class: the authoring guide (clutch/docs/host-authoring.md) or ticket lint in clutch/tickets.py should reject `clutch meta` commands in a ticket's Verification or criteria. This belongs in clutch, so name it to the owner rather than patching the ticket by hand."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    3
+  ],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
