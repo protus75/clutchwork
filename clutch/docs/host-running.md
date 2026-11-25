@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 13ffeebe
-hash: 798d9e14d39b01917dcecf59347ab93dc2f7c0758e8ebc9f99aef12ec8e21e7b
+verified: 8b0df903
+hash: c04e16fbb41c8f7e571619a569904a526f8a331a90461b47f2cec0e4b4bc2871
 -->
 # Running ClutchWork on a host
 
@@ -48,6 +48,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submits nothing. |
 | `context suggest` | Yes | Suggest files and sections for a ticket from the index; `--require` exits 1 when none are suggested. |
 | `index build` | No | Build or refresh the project index under the writer lock. |
+| `index query` | Yes | Search indexed repository chunks read-only without a lock. |
 | `meta refresh` | Yes | Insert or refresh configured file metadata under the commit lock. |
 | `meta check` | Yes | Report metadata findings without writing. |
 | `meta fill` | No | Fill metadata using a read-only model under the writer lock. |

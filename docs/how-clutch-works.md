@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: cd9fb2dc
-hash: a2cb97e6279e19926064bf216e2ef2b8501397259ea518e6f722c8c9ef9363de
+verified: 8b0df903
+hash: 4acf54805d297d0994bfc2d1b182c184279f9f22cdf2871a62364a8b08507410
 -->
 # How ClutchWork works
 
@@ -50,6 +50,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 |---|---|---|
 | `context suggest <stem>` | no | Suggest ticket context from the index. |
 | `index build` | yes | Build or refresh the project index. |
+| `index query <text> [--limit N]` | no | Search indexed repository chunks. |
 | `meta refresh [paths]` | commit only | Insert or refresh metadata blocks under configured roots; refuse a named path selecting no tracked file under a configured root. |
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks; refuse a named path selecting no tracked file under a configured root. |
 | `meta fill [paths]` | yes | Fill metadata using a read-only model; refuse a named path selecting no tracked file under a configured root. |
@@ -932,5 +933,7 @@ The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never re
 | `refused` | 2 | Config is invalid or the writer lock is held. |
 
 Findings `git_failed`, `embed_failed`, `call_unreadable`, `box_unreadable`, `vss unavailable`, and `fts unavailable` exit 1; `db_open_failed` exits 2.
+
+`clutch index query <text> [--limit N]` searches repository chunks read-only without a lock, using embeddings when available and full-text search otherwise. It prints `index query: found` and selector lines with metadata, or `index query: none`; both exit 0. Invalid input, a missing or unreadable index, or unavailable full-text search exits 2 with a remedy. The limit defaults to 10 and accepts 1 through 50.
 
 `clutch context suggest <stem>` reads a draft and the index without a lock, returning up to five co-changed files and five matching sections. It prints `context suggest: suggested` and lines `- <selector>  # <reason>`, or `context suggest: none` when empty (both exit 0 by default; `--require` makes an empty result exit 1). Invalid input or config is `refused`; a missing index is `no_index` (run `clutch index build`); an unreadable index is `index_unreadable` (retry after the running refresh finishes, or run `clutch index build` if a table is missing). These refusals exit 2 on stderr. Remove the reason tail before pasting a selector into Context.

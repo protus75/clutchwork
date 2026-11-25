@@ -17,7 +17,7 @@ uv sync
 
 Install the provider CLIs you route with `uv run clutch provider install claude codex` (pnpm dev dependencies under `node_modules/.bin`; a CLI already on `PATH` works without it).
 
-Run its verbs as `uv run clutch <verb>`. Use `clutch meta refresh` to update configured file metadata, `clutch meta check` to report missing, empty or drifted blocks, and `clutch meta fill` to fill missing or empty blocks using a read-only model and refresh drifted blocks without the model. Use `clutch index build` to build the project index and `clutch context suggest <stem>` to suggest context for a ticket. Your host also needs `config.yaml`; start with the [copyable configuration](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md), or create one with `uv run clutch config init --write` from the CLIs you installed.
+Run its verbs as `uv run clutch <verb>`. Use `clutch meta refresh` to update configured file metadata, `clutch meta check` to report missing, empty or drifted blocks, and `clutch meta fill` to fill missing or empty blocks using a read-only model and refresh drifted blocks without the model. Use `clutch index build` to build the project index, `clutch index query <text>` to search it read-only without a lock, and `clutch context suggest <stem>` to suggest context for a ticket. Your host also needs `config.yaml`; start with the [copyable configuration](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md), or create one with `uv run clutch config init --write` from the CLIs you installed.
 
 ## Set up a host
 

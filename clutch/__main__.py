@@ -640,9 +640,9 @@ def _parser() -> argparse.ArgumentParser:
     context_suggest.add_argument("--require", action="store_true", help="Exit 1 when no selectors are suggested.")
     index_parser = sub.add_parser(
         "index",
-        help="build the project index",
-        description="Build the project index. Subcommands: build.",
-        epilog="Examples:\nclutch index build\n  Build the project index.",
+        help="build and query the project index",
+        description="Build and query the project index. Subcommands: build, query.",
+        epilog="Examples:\nclutch index build\n  Build the project index.\nclutch index query topic\n  Search the project index.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     index_sub = index_parser.add_subparsers(dest="index_verb", required=True)
@@ -657,6 +657,19 @@ def _parser() -> argparse.ArgumentParser:
         exits="0 built; 1 built with findings; 2 not built or refused.",
         examples=["clutch index build"],
     )
+    index_query = _command(
+        index_sub,
+        "query",
+        summary="search the project index",
+        does="Search indexed repository chunks by topic.",
+        reads="<state_dir>/index.duckdb and index.embed command output.",
+        writes="Nothing to the index; prints matches.",
+        lock="None; read-only, works while serve runs.",
+        exits="0 found or none; 2 invalid_input, no_index, index_unreadable or fulltext_unavailable.",
+        examples=["clutch index query topic", "clutch index query topic --limit 5"],
+    )
+    index_query.add_argument("text")
+    index_query.add_argument("--limit", type=int, default=10)
     meta_parser = sub.add_parser(
         "meta",
         help="maintain file metadata",
@@ -1191,6 +1204,24 @@ def _run_context_suggest(config, root, stem, *, fs, connect=duckdb.connect, requ
     return 1 if require and not lines else 0
 
 
+async def _run_index_query(config, root, text, *, fs, exec_, env, creator, limit=10, query=index.query):
+    result = await query(config, root, text, fs=fs, exec_=exec_, env=child_env(env, config, serving=None), creator=creator, limit=limit)
+    if result.outcome in ("found", "no_match"):
+        print("index query: found" if result.hits else "index query: none")
+        for hit in result.hits:
+            details = [f"[{hit.kind}]" if hit.kind else "", hit.purpose, f"owner: {hit.owner}" if hit.owner else "", f"relates: {', '.join(hit.relates)}" if hit.relates else ""]
+            print(f"- {hit.selector}  # {', '.join(part for part in details if part)}")
+        return 0
+    remedies = {
+        "invalid_input": "provide non-blank text and a limit from 1 to 50",
+        "no_index": "run clutch index build",
+        "index_unreadable": "retry after refresh or run clutch index build",
+        "fulltext_unavailable": "run clutch index build with full-text search available",
+    }
+    message = result.findings[-1] if result.findings else result.outcome
+    return _fail("index query", f"{message} -- {remedies[result.outcome]}")
+
+
 async def _run_index(config, root, *, fs, git, exec_, env, store, creator, build=index.build):
     try:
         findings = await build(config, root, fs=fs, git=git, exec_=exec_, env=child_env(env, config, serving=None), store=store, creator=creator)
@@ -1604,6 +1635,9 @@ def main(
 
     # Lock holders
     def handle_index():
+        if args.index_verb == "query":
+            return asyncio.run(_run_index_query(config, repo, args.text, fs=checkout.fs, exec_=exec_, env=env, creator=index.default_creator, limit=args.limit))
+
         from clutch.evidence.store import EvidenceStore
 
         async def run():

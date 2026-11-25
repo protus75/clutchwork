@@ -266,6 +266,106 @@ async def neighbors(config, root, text, *, fs, exec_, env, creator, limit=5, kin
         conn.close()
 
 
+@dataclass(frozen=True)
+class QueryHit:
+    path: str
+    kind: str
+    selector: str
+    purpose: str
+    relates: tuple[str, ...]
+    owner: str
+    score: float
+
+
+@dataclass(frozen=True)
+class QueryResult:
+    outcome: str
+    mode: str = ""
+    hits: tuple[QueryHit, ...] = ()
+    findings: tuple[str, ...] = ()
+
+
+async def query(config, root, text, *, fs, exec_, env, creator, limit=10, connect=duckdb.connect):
+    """Search indexed repository chunks without a writer lock."""
+    if not isinstance(text, str) or not text.strip() or len(text) > 8000:
+        return QueryResult("invalid_input", findings=("invalid_input: text must be non-blank and at most 8000 characters",))
+    if type(limit) is not int or not 1 <= limit <= 50:
+        return QueryResult("invalid_input", findings=("invalid_input: limit must be an integer in 1..50",))
+    path = config.state_dir / "index.duckdb"
+    try:
+        fs.size(path)
+    except FileNotFoundError:
+        return QueryResult("no_index")
+    except OSError as exc:
+        return QueryResult("index_unreadable", findings=(f"index_unreadable: {exc}",))
+    try:
+        conn = connect(str(path), read_only=True)
+    except (OSError, duckdb.Error) as exc:
+        return QueryResult("index_unreadable", findings=(f"index_unreadable: {exc}",))
+    try:
+        try:
+            conn.execute("SELECT path, kind, purpose, relates, owner FROM files LIMIT 0")
+            conn.execute("SELECT path, selector, text FROM chunks LIMIT 0")
+            findings = []
+            mode = "fulltext"
+            if config.index.embed:
+                try:
+                    loaded = creator.load(conn, "vss")
+                    if loaded:
+                        reason = loaded[0]
+                    elif not _exists(conn, "embeddings"):
+                        reason = "embeddings table missing"
+                    else:
+                        typename = conn.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'embeddings' AND column_name = 'vec'").fetchone()[0]
+                        length = int(re.search(r"\[(\d+)\]$", typename).group(1))
+                        vector, reason = await _embed_vector(config, root, fs, exec_, env, text.strip(), length)
+                except Exception as exc:
+                    reason = str(exc)
+                if reason:
+                    findings.append(f"embed_failed: {reason}")
+                else:
+                    mode = "embedding"
+            if mode == "fulltext":
+                try:
+                    loaded = creator.load(conn, "fts")
+                    available = not loaded and conn.execute("SELECT count(*) FROM information_schema.schemata WHERE schema_name = 'fts_main_chunks'").fetchone()[0]
+                except (OSError, duckdb.Error) as exc:
+                    loaded, available = [f"fts unavailable: {exc}"], False
+                if not available:
+                    return QueryResult("fulltext_unavailable", findings=tuple(findings + (list(loaded) or ["fts unavailable: index missing"])))
+                score = "fts_main_chunks.match_bm25(c.selector, ?)"
+                join = ""
+                params = [text.strip()]
+            else:
+                score = f"1 - array_cosine_distance(e.vec, CAST(? AS FLOAT[{length}]))"
+                join = " JOIN embeddings e ON c.path = e.path AND c.selector = e.selector"
+                params = [vector]
+            sql = (
+                "SELECT c.path, f.kind, c.selector, f.purpose, f.relates, f.owner, "
+                + score
+                + " FROM chunks c JOIN files f ON c.path = f.path"
+                + join
+                + " WHERE NOT c.path LIKE 'box:%' AND NOT c.path LIKE 'tickets/%'"
+            )
+            hits = []
+            for path, kind, selector, purpose, relates, owner, value in conn.execute(sql, params).fetchall():
+                if value is None or not math.isfinite(value):
+                    continue
+                try:
+                    parsed = json.loads(relates)
+                    parsed = tuple(x for x in parsed if isinstance(x, str)) if isinstance(parsed, list) else ()
+                except TypeError, ValueError:
+                    parsed = ()
+                hits.append(QueryHit(path, kind, selector, purpose, parsed, owner, float(value)))
+            hits.sort(key=lambda hit: (-hit.score, hit.selector))
+            hits = tuple(hits[:limit])
+            return QueryResult("found" if hits else "no_match", mode, hits, tuple(findings))
+        except (OSError, duckdb.Error) as exc:
+            return QueryResult("index_unreadable", findings=(f"index_unreadable: {exc}",))
+    finally:
+        conn.close()
+
+
 async def build(config, root, *, fs, git, exec_, env, store, creator, connect=duckdb.connect):
     """Build the index and return closed-outcome findings."""
     try:
