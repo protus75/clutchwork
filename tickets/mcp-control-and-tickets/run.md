@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Omitted reject reasons remain valid; supplied blank reasons are refused. Shared lint preserves CLI output order, protected by the MCP stdout guard; all 88 mutation checks passed.
+Preserved minimal CLI validation fakes by defaulting their omitted runs_before field to empty; production validation retains the actual value.
 
 ## Dead ends
 
-Replaced an import-cycle-producing triage import with runtime callback resolution; invalidated bytecode caches during mutation checks.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; completed in approximately 15 minutes.
+Expected 25 minutes; retry completed in approximately 6 minutes, including mutation checks for all 73 new-test assertions and exception checks.
 
