@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification passed all 73 tests, the regression reproducer passed, and Git fake adoption passed; the index-query retry test still fails because it expects metadata to be absent.
+The existing branch already contained the implementation and shared Git fake corrections; the remaining stale assertion was the only change needed.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket allowed 20 minutes; the retry was completed in less time.
 
