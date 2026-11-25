@@ -1,5 +1,5 @@
 ---
-state: draft
+state: rejected
 source: box:suggestion
 priority: P0
 kind: chore
