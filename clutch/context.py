@@ -12,6 +12,7 @@ from clutch.tickets import context_path, in_fence
 def suggest(conn, stem, fence, context, goal) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
     files = {row[0] for row in conn.execute("SELECT path FROM files").fetchall()}
     chunks = conn.execute("SELECT path, selector, text FROM chunks").fetchall()
+    chunk_selectors = {selector for _, selector, _ in chunks}
     touches = conn.execute("SELECT ticket, path FROM touches WHERE ticket != ?", [stem]).fetchall()
     by_ticket = defaultdict(set)
     for ticket, path in touches:
@@ -38,6 +39,9 @@ def suggest(conn, stem, fence, context, goal) -> tuple[list[tuple[str, str]], li
     matches = []
     for path, selector, text in chunks:
         if path not in files or path.startswith(("tickets/", "box:")) or selector in context:
+            continue
+        match = re.match(r"^(.+#.+) \(\d+\)$", selector)
+        if match and match.group(1) in chunk_selectors:
             continue
         found = sorted(term for term in terms if term in text.lower())
         if len(found) >= 2:

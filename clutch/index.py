@@ -91,9 +91,16 @@ def _extract(path, data):
                 title = re.sub(r"[ \t]+#+[ \t]*$", "", heading.group(1)).strip()
                 headings.append((offset, title))
             offset += len(line)
+        used = set()
         for i, (start, title) in enumerate(headings):
             chunk = text[start : headings[i + 1][0] if i + 1 < len(headings) else len(text)]
-            chunks.append((path, f"{path}#{title}", chunk, len(chunk.split())))
+            candidate = f"{path}#{title}"
+            n = 2
+            while candidate in used:
+                candidate = f"{path}#{title} ({n})"
+                n += 1
+            used.add(candidate)
+            chunks.append((path, candidate, chunk, len(chunk.split())))
     elif tree is not None:
         for node in tree.body:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -399,6 +406,7 @@ async def build(config, root, *, fs, git, exec_, env, store, creator, connect=du
                 conn.execute("DROP TABLE IF EXISTS embeddings")
             paths = sorted(p for p in paths if Path(p).suffix in (".md", ".py") and (not p.startswith("tickets/") or (Path(p).parent == Path("tickets/decisions") and Path(p).suffix == ".md")))
             old = dict(conn.execute("SELECT path, hash FROM files").fetchall())
+            dup_paths = {row[0] for row in conn.execute("SELECT path FROM chunks GROUP BY path, selector HAVING COUNT(*) > 1").fetchall()}
             has_embeddings = vss and _exists(conn, "embeddings")
             try:
                 messages = {f"box:{message.id}": message for message in Box(config.state_dir / BOX_DIR, fs).messages()}
@@ -413,7 +421,7 @@ async def build(config, root, *, fs, git, exec_, env, store, creator, connect=du
             for path in paths:
                 data = fs.read_bytes(root / path)
                 digest = hashlib.sha256(data).hexdigest()
-                if old.get(path) == digest:
+                if old.get(path) == digest and path not in dup_paths:
                     continue
                 if Path(path).parent == Path("tickets/decisions"):
                     kind, purpose, relates, owner, chunks = "decision", "", [], "", []
