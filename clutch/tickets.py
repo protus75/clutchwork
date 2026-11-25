@@ -746,6 +746,10 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
         if re.search(r"\bgit[ \t]+diff\b[^\n]*--name-only\b[^\n]*(?<![\w./-])main(?![\w/-]|\.\.\.)", text):
             findings.append(_f(f"`## {section}` compares changed files against main", "compare with the merge base: `git diff --name-only main...HEAD`", path))
     for command in ticket.verification:
+        for index in range(len(command) - 2):
+            if Path(command[index]).name == "clutch" and command[index + 1] == "meta" and command[index + 2] in {"check", "refresh", "fill"}:
+                findings.append(_f(f"`## Verification` runs meta {command[index + 2]}", "Check owns meta headers; drop the meta verb from Verification and criteria", path))
+                break
         if Path(command[0]).name in {"rg", "grep", "egrep", "fgrep", "ripgrep"}:
             findings.append(
                 _f(
@@ -754,6 +758,9 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
                     path,
                 )
             )
+    for criterion in _criteria(ticket.sections["Acceptance criteria"]):
+        if match := re.search(r"`[^`\n]*\bclutch[ \t]+meta[ \t]+(check|refresh|fill)\b[^`\n]*`", criterion):
+            findings.append(_f(f"`## Acceptance criteria` runs meta {match.group(1)}", "Check owns meta headers; drop the meta verb from Verification and criteria", path))
     expected, stuck = ticket.expected_minutes, ticket.stuck_minutes
     if expected > 60:
         findings.append(_f(f"`## Time budget` expected {expected}m exceeds 60m", "split into more tickets, each its own stem; never raise the budget instead", path))
