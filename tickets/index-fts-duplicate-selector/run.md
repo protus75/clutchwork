@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification passed 29 tests; the regression reproducer reported pass on the branch and defect on the merge base. Mutation checks rejected the tested wrong implementations.
+The existing collision-safe selector logic provides class-level prevention; retaining the prior implementation was the smallest change needed.
 
 ## Dead ends
 
-A simpler extraction-only fix would leave existing duplicate rows unchanged, so the build also refreshes affected paths.
+none
 
 ## Second problems filed
 
