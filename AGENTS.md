@@ -62,7 +62,7 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
 - **One authoring process.** Ticket content rules live only in `clutch/docs/host-authoring.md`, and ticket format only in `clutch/tickets.py`. Every authoring surface (a chat session, the Author stage, any future one) reads those, and a prompt spec embeds the guide and skeletons rather than restating them. A fix to authoring changes that one source.
   Why: the 2026-11-13 box-000428 decline and 10 of 22 Author declines since 2026-11-11 exposed the drifting process.
 
-- **Pure Python.** No shell scripts, no `shell=True`, no string-assembled commands. External binaries only via argv-list wrapper modules; run only in the clutch venv. Exception: `vscode-clutchwork/` is an operator-only VS Code extension in JavaScript; the engine never imports or runs it.
+- **Pure Python.** No shell scripts, no `shell=True`, no string-assembled commands. External binaries only via argv-list wrapper modules; run only in the clutch venv. Exception: `vscode-clutchwork/` and `clutch/ui/` are operator-only JavaScript clients; the engine never imports or runs them.
   Why: shell glue is the orchestration failure this design bans. (D1)
 - **The extension is a thin wrapper; clutch owns the logic.** For any edit to `vscode-clutchwork/` or the code that feeds it (the snapshot builder, `clutch/graph.py`):
   - JavaScript may only draw snapshot fields (DOM, SVG from given lane indexes), map a closed snapshot value to a CSS variable or ThemeIcon through a lookup table, wire VS Code APIs (views, menus, watchers, settings), keep UI state (hover, pin), and run argv that the snapshot or a setting supplies.

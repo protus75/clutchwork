@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 8b0df903
-hash: 4acf54805d297d0994bfc2d1b182c184279f9f22cdf2871a62364a8b08507410
+verified: f58e6dd7
+hash: f16755910dd5d8b1a0e50b10ad17b3c7fc3d35298d6b6ff6f3587d31e8e87d63
 -->
 # How ClutchWork works
 
@@ -116,7 +116,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 
 ### 2.2 `./dev.py`
 
-The repo's one dev command; standard library only, every task through `uv`.
+The repo's one dev command; implemented with the standard library.
 `./dev.py test` runs the suite in parallel on the available cores by default.
 Each test has a 120-second hard limit.
 Test temporary files go to the gitignored `.test-tmp/` folder in the checkout, never `/tmp`.
@@ -129,6 +129,7 @@ A unit test file may share its name with an integration test file.
 |---|---|
 | (none) | `uv run pytest -q -p clutch.testguard tests/unit`, then `uv run pytest -q tests/integration`; a unit failure stops before integration |
 | `test [args]` | With no args, the same as (none); otherwise pytest with those args, adding `-p clutch.testguard` when at least one test path is named and every test path is under `tests/unit` |
+| `ui-bundle` | bundles the MCP dashboard into `clutch/ui/dashboard.html` using local esbuild |
 | `visual-baseline` | runs `uv run python -m eval.visual_harness run` to score the visual judge and record its verdict |
 | `vscode-package` | packages the current manifest version into `dist/vscode-clutchwork-<version>.vsix` with the clutch `Built for` stamp inside the VSIX, restores the README, and prints the Marketplace upload page; an existing file is kept without rebuilding; under WSL also prints the Windows path |
 | `vscode` | bumps the patch version in `vscode-clutchwork/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |

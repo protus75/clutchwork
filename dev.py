@@ -3,6 +3,7 @@
 
     ./dev.py                  the full suite (unit under clutch.testguard)
     ./dev.py test [args]      the suite, or named tests (unit under clutch.testguard)
+    ./dev.py ui-bundle        build the self-contained MCP dashboard
     ./dev.py visual-baseline  score the visual judge against panel labels
     ./dev.py vscode           package and install the vscode-clutchwork extension
     ./dev.py vscode-package   build a VSIX for Marketplace upload
@@ -29,6 +30,29 @@ def run(argv: list[str]) -> None:
         sys.exit(f"dev: `{' '.join(argv)}` failed")
 
 
+def build_ui_bundle(root=ROOT, out=None, run_cmd=subprocess.run) -> Path:
+    out = Path(out) if out is not None else root / "clutch/ui/dashboard.html"
+    paths = [root / "vscode-clutchwork/media/view.css", root / "clutch/ui/dashboard.css", root / "vscode-clutchwork/media/ticket-lifecycle.svg", root / "clutch/ui/app.js"]
+    try:
+        shared_css, dashboard_css, svg, _ = [path.read_text() for path in paths]
+        result = run_cmd(
+            [str(root / "node_modules/.bin/esbuild"), str(paths[3]), "--bundle", "--format=iife", "--platform=browser", "--global-name=ClutchDashboardApp", "--minify"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as error:
+        raise RuntimeError(f"ui-bundle: missing source or esbuild: {error}") from error
+    if result.returncode:
+        raise RuntimeError(f"ui-bundle: esbuild failed: {result.stderr}")
+    javascript = re.sub(r"</script", lambda _: r"<\/script", result.stdout, flags=re.IGNORECASE)
+    html = f'<!doctype html>\n<html><head><meta charset="utf-8"><style>{shared_css}\n{dashboard_css}</style></head><body><main id="dashboard"></main><div hidden>{svg}</div><script>{javascript}</script></body></html>\n'
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html)
+    return out
+
+
 def main() -> None:
     if sys.argv[1:2] == ["test"] and sys.argv[2:]:
         test_args = sys.argv[2:]
@@ -45,11 +69,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="./dev.py", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="task")
     sub.add_parser("test", help="the suite, or the named tests")
+    sub.add_parser("ui-bundle", help="build the self-contained MCP dashboard")
     sub.add_parser("visual-baseline", help="score the visual judge against panel labels")
     sub.add_parser("vscode", help="package and install the vscode-clutchwork extension")
     sub.add_parser("vscode-package", help="build a VSIX for Marketplace upload")
     args = parser.parse_args()
-    if args.task == "visual-baseline":
+    if args.task == "ui-bundle":
+        try:
+            print(f"dev: built {build_ui_bundle()}")
+        except RuntimeError as error:
+            sys.exit(str(error))
+    elif args.task == "visual-baseline":
         argv = ["uv", "run", "python", "-m", "eval.visual_harness", "run"]
         print("$", " ".join(argv), flush=True)
         sys.exit(subprocess.run(argv, cwd=ROOT, check=False).returncode)

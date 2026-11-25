@@ -1,0 +1,10 @@
+body {
+  background: var(--color-background-primary, #fff);
+  color: var(--color-text-primary, #222);
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+#dashboard {
+  flex: 1;
+  border-color: var(--color-border-primary, #ccc);
+}
