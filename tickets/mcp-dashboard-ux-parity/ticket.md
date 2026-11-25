@@ -18,6 +18,7 @@ none
 - tests/mcp_app_dashboard.js
 - tests/integration/test_mcp_app_dashboard.py
 - tests/unit/test_mcp_app_dashboard.py
+- tests/unit/test_mcp_protocol.py
 - tests/unit/test_mcp_tools.py
 
 ## Goal / Why
@@ -113,15 +114,24 @@ Fix seven owner-reported UX parity bugs in the Antigravity MCP App dashboard so 
   - Style `.context-menu` (`background: var(--color-background-secondary, #252526); border-radius: 6px; padding: 4px 0; font-size: 13px;`), `.context-menu button` (`padding: 5px 14px; width: 100%; border-radius: 0;`), and `.menu-sep { border: 0; border-top: 1px solid var(--color-border-primary, #454545); margin: 4px 0; }`.
   - Style `.section-body` (`overflow: auto; min-height: 60px;`), `.section-resizer` (`height: 6px; cursor: ns-resize;`), and `.section-controls` / move buttons inside `.sidebar-section > summary`.
   - Style `.top-bar` (`gap: 6px`, button `padding: 4px 8px`, visible distinct button surface/border), `.agent-actions` (vertical column layout `display: flex; flex-direction: column; gap: 4px; padding: 6px 4px;` with full-width left-aligned buttons `padding: 5px 8px`), and `.toolbar` (`gap: 6px; padding: 4px 0;` and `padding: 4px 10px` on buttons).
-- `tests/unit/test_mcp_repo_resolution.py` (new): unit tests using `tmp_path` only covering `roots/list` handshake on `initialized` and `notifications/roots/list_changed`, response parsing, `roots` -> `cwd` -> `last_repo` precedence, `last_repo_path` persistence, and fallback when no valid checkout exists.
+- `tests/unit/test_mcp_repo_resolution.py` (new): unit tests using `tmp_path` only covering:
+  - `roots/list` emission after `notifications/initialized` and on `notifications/roots/list_changed` when `capabilities.roots` is advertised, and no emission when absent;
+  - `file://` root URI parsing including `urllib.parse.unquote` of percent-encoded paths (e.g. `file:///.../my%20repo`) and ignoring non-`file://` URIs (e.g. `https://example.com/repo`) without error;
+  - `roots` -> `cwd` -> `last_repo` precedence and fallback to `ready: False` / `invalid_repo` when no candidate contains `tickets/`;
+  - `last_repo_path` persistence on successful `checkout()` and swallowing `OSError` on both `last_repo_path` read and write (e.g. unreadable/unwritable path never fails `checkout()` or `clutch_open_dashboard`).
+- `tests/unit/test_mcp_protocol.py` (read-only verification): existing requests neither advertise `capabilities.roots` nor send JSON-RPC responses, so it remains unchanged and un-fenced while verifying backward compatibility of the stdio loop.
 - `tests/unit/test_mcp_app_dashboard.py` and `tests/unit/test_mcp_tools.py`: pass `last_repo_path=tmp_path / "last-repo"` in `test_dashboard_tools` and `test_prompt_domain_and_validation` so existing unit tests never read or clobber a developer's `$HOME/.config/clutch/last-repo`.
 - `tests/mcp_app_dashboard.js` and `tests/integration/test_mcp_app_dashboard.py`:
   - Update top-bar button lookups for the new icon-only `title`/`aria-label` buttons (`Refresh`, `Open config.yaml`, `Switch repository: ...`) and concise `Drain`/`Serve`/`Stop` labels, update ticket context menu assertions for the new grouped items (`Open ticket.md`, collapsible `Run before...`/`Set priority...`, `Lint`, `Confirm (keep)`, `Reject (kill)`, `Ask Agent: diagnose`/`review`/`drafts`, `<hr class="menu-sep">`, and absence of unconditional `Open run.md`/`Open review.md`/`Open diagnosis.json`), and update the ticket `updateModelContext` assertion to click a ticket row instead of relying on right-click pinning.
-  - Add assertions verifying: exact VS Code hex values in `dashboard.css` (and absence of `--color-text-success`/`--color-text-warning` mappings for merged/blocked), `ontoolresult` repo sync without setting `explicitRepo` (so subsequent `refresh()` leaves `repo` omitted and follows server root switches), `mouseenter` updating Details without calling `updateModelContext` and `mouseleave` restoring `snap.runningStem`, `Escape` unpinning, section reordering via move buttons and drag-and-drop, `.section-resizer` height resizing (clamped `>= 60px`), `.view-header` class on headers, and `.agent-actions` / `.context-menu` / `.menu-sep` CSS rules.
-- `tests/regression/mcp_dashboard_ux_parity.py` (new): regression reproducer speaking the `regression_result` JSON protocol.
+  - Add assertions verifying: exact VS Code hex values in `dashboard.css` (and absence of `--color-text-success`/`--color-text-warning` mappings for merged/blocked), `ontoolresult` repo sync without setting `explicitRepo` (so subsequent `refresh()` leaves `repo` omitted and follows server root switches), `mouseenter` updating Details without calling `updateModelContext` and `mouseleave` restoring `snap.runningStem`, `Escape` unpinning, section reordering via move buttons and drag-and-drop, `.section-resizer` height resizing including clamping at `>= 60px` (dragging above the minimum clamps to `60px`, never `< 60px` or negative), `.view-header` class on headers, and `.agent-actions` / `.context-menu` / `.menu-sep` CSS rules.
+- `tests/regression/mcp_dashboard_ux_parity.py` (new): deterministic, pure-Python reproducer speaking the `regression_result` JSON protocol using only base-compatible APIs (never passing new kwargs like `last_repo_path` and never touching gitignored `clutch/ui/dashboard.html`):
+  - Resolves `repo_root = Path(__file__).resolve().parents[2]` and verifies prerequisites (`clutch/mcp.py`, `clutch/ui/dashboard.css`, `repo_root / "tickets"`, `repo_root / "config.yaml"` exist); if any prerequisite is missing, prints `{"regression_result": "error"}` to stdout (diagnostics to stderr) and exits 2.
+  - Checks `clutch/ui/dashboard.css` defines `--vscode-clutchwork-merged: #B180D7` and does NOT map `--vscode-clutchwork-merged` to `--color-text-success`.
+  - Runs `serve_stdio(stdin=..., stdout=..., default_cwd=tmp_without_tickets, env={"XDG_CONFIG_HOME": str(tmp / "xdg")})` with `initialize` (`capabilities: {"roots": {}}`), `notifications/initialized`, a `roots/list` JSON-RPC response (`id: "roots-1"`, `result: {"roots": [{"uri": repo_root.as_uri()}]}`), and `tools/call` `clutch_open_dashboard` `{}`: verifies `serve_stdio` emits the `roots/list` request, does not reject the response with `-32600`, and returns `structuredContent["ready"] is True` with `structuredContent["repo"] == str(repo_root)`.
+  - Prints ONLY one JSON object to stdout (`{"regression_result": "pass"}` with exit 0 if all checks pass, or `{"regression_result": "defect"}` with exit 1 if any check fails; no extra keys, diagnostics to stderr).
 
 **Scope out:**
-- No edits to `vscode-clutchwork/` or any of the 7 hot test files.
+- No edits to `vscode-clutchwork/` or any of the 7 hot test files (`tests/integration/test_daemon_composition.py`, `tests/integration/test_drain.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_stages.py`, `tests/integration/test_cli.py`, `tests/integration/test_watch.py`, `tests/integration/serve_rig.py`).
 - No edits to `clutch/docs/` or `docs/`.
 - No committing of gitignored `clutch/ui/dashboard.html`.
 
@@ -155,7 +165,7 @@ Fix seven owner-reported UX parity bugs in the Antigravity MCP App dashboard so 
 - Any `clutch/ui/dashboard.css` rule maps `--vscode-clutchwork-merged` to `--color-text-success` or `--vscode-clutchwork-blocked` to `--color-text-warning`, or drops Antigravity `--color-*` chrome bindings.
 - Any unit test reads or writes `$HOME/.config/clutch/last-repo` instead of using `tmp_path` via `last_repo_path`.
 - Hovering (`mouseenter`) a ticket or box row calls `app.updateModelContext`.
-- Any edit occurs outside the declared `## Scope fence` or modifies any of the 7 hot test files.
+- Any edit occurs outside the declared `## Scope fence` or modifies any of the 7 hot test files (`tests/integration/test_daemon_composition.py`, `tests/integration/test_drain.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_stages.py`, `tests/integration/test_cli.py`, `tests/integration/test_watch.py`, `tests/integration/serve_rig.py`).
 
 ## Time budget
 - expected: 25m
