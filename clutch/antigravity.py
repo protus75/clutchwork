@@ -19,6 +19,7 @@ MCP_SERVER_NAME = "clutchwork"
 MCP_ARGS = ("-m", "clutch", "mcp", "serve")
 PORTABLE_MCP_COMMAND = "uvx"
 PORTABLE_MCP_ARGS = ("--from", "clutchwork", "clutch", "mcp", "serve")
+VALID_MCP_ARGS = frozenset({MCP_ARGS, PORTABLE_MCP_ARGS})
 DEFAULT_LOGO_PATH = Path(__file__).parent / "assets" / "logo.png"
 SUGGESTED_PROMPTS = ["Open the ClutchWork dashboard", "Supervise the Clutch queue (drain-loop)", "Run docs/roadmap.md unattended with serve"]
 
@@ -112,7 +113,7 @@ def doctor_finding(plugin_dir: Path | None, *, fs: FileSystem | None = None, dir
         config = json.loads(fs.read_bytes(plugin_dir / "mcp_config.json"))
         server = config["mcpServers"][MCP_SERVER_NAME]
         command = server["command"]
-        if isinstance(command, str) and command.strip() and server["args"] == list(MCP_ARGS) and (executable_exists or _executable_exists)(command):
+        if isinstance(command, str) and command.strip() and isinstance(server["args"], list) and tuple(server["args"]) in VALID_MCP_ARGS and (executable_exists or _executable_exists)(command):
             return None
     except OSError, ValueError, UnicodeDecodeError, KeyError, TypeError:
         pass

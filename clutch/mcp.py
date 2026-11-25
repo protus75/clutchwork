@@ -1,11 +1,13 @@
 """MCP server using the stdio JSON-RPC transport."""
 
 import asyncio
+import concurrent.futures
 import dataclasses
 import json
 import os
 import re
 import sys
+import threading
 import time
 from contextlib import redirect_stdout
 from datetime import UTC, datetime
@@ -137,36 +139,56 @@ class EngineControl(Repo):
     action: Literal["ping", "pause", "resume", "stop", "kill"]
 
 
-TOOLS = {
-    "clutch_open_dashboard": Dashboard,
-    "clutch_app_ui_state": UiState,
-    "clutch_app_config": AppConfig,
-    "clutch_app_snapshot": Snapshot,
-    "clutch_app_stats": Stats,
-    "clutch_snapshot": Snapshot,
-    "clutch_status": Status,
-    "clutch_stats": Stats,
-    "clutch_roadmap_status": Repo,
-    "clutch_wait_event": Wait,
-    "clutch_evidence_captures": Captures,
-    "clutch_evidence_show": Show,
-    "clutch_context_suggest": Suggest,
-    "clutch_index_query": IndexQuery,
-    "clutch_prompt": Prompt,
-    "clutch_ticket_new": TicketNew,
-    "clutch_ticket_lint": TicketLint,
-    "clutch_ticket_order": TicketOrder,
-    "clutch_ticket_confirm": Suggest,
-    "clutch_ticket_reject": TicketReject,
-    "clutch_app_ticket_confirm": Suggest,
-    "clutch_app_ticket_reject": TicketReject,
-    "clutch_box_suggest": BoxSuggest,
-    "clutch_box_triage": BoxTriage,
-    "clutch_box_dismiss": BoxDismiss,
-    "clutch_engine_start": EngineStart,
-    "clutch_engine_control": EngineControl,
-    "clutch_engine_retro": Repo,
+@dataclasses.dataclass(frozen=True)
+class ToolSpec:
+    model: type[BaseModel]
+    visibility: tuple[Literal["model", "app"], ...]
+    blocking: Literal["fast", "wait", "submit_only"] = "fast"
+
+
+HOST_PROMPT_DESCRIPTION = "Render a host-defined prompt from prompts_dir."
+
+
+TOOLS: dict[str, ToolSpec] = {
+    "clutch_open_dashboard": ToolSpec(Dashboard, ("model", "app")),
+    "clutch_app_ui_state": ToolSpec(UiState, ("app",)),
+    "clutch_app_config": ToolSpec(AppConfig, ("app",)),
+    "clutch_app_snapshot": ToolSpec(Snapshot, ("app",)),
+    "clutch_app_stats": ToolSpec(Stats, ("app",)),
+    "clutch_snapshot": ToolSpec(Snapshot, ("model", "app")),
+    "clutch_status": ToolSpec(Status, ("model", "app")),
+    "clutch_stats": ToolSpec(Stats, ("model", "app")),
+    "clutch_roadmap_status": ToolSpec(Repo, ("model", "app")),
+    "clutch_wait_event": ToolSpec(Wait, ("model",), "wait"),
+    "clutch_evidence_captures": ToolSpec(Captures, ("model", "app")),
+    "clutch_evidence_show": ToolSpec(Show, ("model", "app")),
+    "clutch_context_suggest": ToolSpec(Suggest, ("model", "app")),
+    "clutch_index_query": ToolSpec(IndexQuery, ("model", "app")),
+    "clutch_prompt": ToolSpec(Prompt, ("model", "app")),
+    "clutch_ticket_new": ToolSpec(TicketNew, ("model", "app")),
+    "clutch_ticket_lint": ToolSpec(TicketLint, ("model", "app")),
+    "clutch_ticket_order": ToolSpec(TicketOrder, ("model", "app")),
+    "clutch_ticket_confirm": ToolSpec(Suggest, ("model", "app")),
+    "clutch_ticket_reject": ToolSpec(TicketReject, ("model", "app")),
+    "clutch_app_ticket_confirm": ToolSpec(Suggest, ("app",)),
+    "clutch_app_ticket_reject": ToolSpec(TicketReject, ("app",)),
+    "clutch_box_suggest": ToolSpec(BoxSuggest, ("model", "app")),
+    "clutch_box_triage": ToolSpec(BoxTriage, ("model", "app"), "submit_only"),
+    "clutch_box_dismiss": ToolSpec(BoxDismiss, ("model", "app")),
+    "clutch_engine_start": ToolSpec(EngineStart, ("model", "app")),
+    "clutch_engine_control": ToolSpec(EngineControl, ("model", "app")),
+    "clutch_engine_retro": ToolSpec(Repo, ("model", "app"), "submit_only"),
 }
+
+
+async def _submit_only(checkout, verb, *, ids=None):
+    try:
+        async with runner._locked(checkout.config.state_dir, verb, instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock):
+            pass
+    except LockHeld as exc:
+        request = await runner.submit_engine(checkout, exc, verb, **({"ids": ids} if verb == "triage" else {}))
+        return {"submitted": True, "request_id": request.request_id}
+    raise runner.Refusal("engine is not running", "start the engine with clutch_engine_start or run clutch box triage / clutch engine retro from the CLI", code="engine_not_running")
 
 
 def _json(value):
@@ -215,6 +237,18 @@ def _read_ui_state(path):
         return value if isinstance(value, dict) else {}
     except OSError, ValueError, UnicodeError, TypeError:
         return {}
+
+
+def _validate_tool(params):
+    name = params.get("name")
+    if not isinstance(name, str) or name not in TOOLS:
+        raise InvalidParams("unknown tool")
+    try:
+        return TOOLS[name].model.model_validate(params.get("arguments", {}))
+    except ValidationError as exc:
+        if name == "clutch_app_config" and isinstance(params.get("arguments"), dict) and "updates" in params["arguments"]:
+            return None
+        raise InvalidParams(str(exc)) from None
 
 
 class ClutchMCPServer:
@@ -482,29 +516,14 @@ class ClutchMCPServer:
         elif name == "clutch_box_dismiss":
             value = {"lines": asyncio.run(runner.dismiss_boxes(checkout, args.ids, lock_ctx_factory=runner._locked))}
         elif name == "clutch_box_triage":
-            from clutch.__main__ import _preflighted_llm, build_control
-
-            value = asyncio.run(runner.triage_or_submit(checkout, args.ids, lock_ctx_factory=runner._locked, build_control_fn=build_control, preflighted_llm_fn=_preflighted_llm))
+            value = asyncio.run(_submit_only(checkout, "triage", ids=args.ids))
         elif name == "clutch_engine_start":
             pid, output = serve.start_detached(checkout.repo, cfg.state_dir, args.mode, config_path=self.config_path if checkout.repo == self.cwd else None, env=self.env, spawn=self.spawn)
             value = {"pid": pid, "output": output}
         elif name == "clutch_engine_control":
             value = observe.ping_engine(cfg.state_dir) if args.action == "ping" else asyncio.run(runner.control_engine(checkout, args.action))
         elif name == "clutch_engine_retro":
-            from clutch.__main__ import _config_reloader, build_control
-
-            value = {
-                "outcome": asyncio.run(
-                    runner.run_or_submit_retro(
-                        checkout,
-                        runner.pipeline,
-                        config_path=self.config_path if checkout.repo == self.cwd else None,
-                        lock_ctx_factory=runner._locked,
-                        build_control_fn=build_control,
-                        config_reloader_fn=_config_reloader,
-                    )
-                )
-            }
+            value = asyncio.run(_submit_only(checkout, "retro"))
         else:
             text, catalog = self.prompt(checkout, ctx, args.kind, args.stems, args.name)
             value = catalog if catalog is not None else {"text": text}
@@ -547,21 +566,17 @@ class ClutchMCPServer:
                     {
                         "name": name,
                         "description": name.replace("_", " "),
-                        "inputSchema": model.model_json_schema(),
-                        **(
-                            {
-                                "_meta": {
-                                    "ui": {"resourceUri": DASHBOARD_URI},
-                                    "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]},
-                                }
-                            }
-                            if name == "clutch_open_dashboard"
-                            else {"_meta": {"ui": {"visibility": ["app"]}}}
-                            if name.startswith("clutch_app_")
-                            else {}
-                        ),
+                        "inputSchema": spec.model.model_json_schema(),
+                        "_meta": {
+                            "ui": {"visibility": list(spec.visibility), **({"resourceUri": DASHBOARD_URI} if name == "clutch_open_dashboard" else {})},
+                            **(
+                                {"com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]}}
+                                if name == "clutch_open_dashboard"
+                                else {}
+                            ),
+                        },
                     }
-                    for name, model in TOOLS.items()
+                    for name, spec in TOOLS.items()
                 ]
             }
         if method == "prompts/list":
@@ -571,13 +586,14 @@ class ClutchMCPServer:
                 if ask.TAKES[kind] != "none":
                     arguments.append({"name": "ids" if kind == "box" else "stem", "required": True})
                 result.append({"name": kind, "description": ask.DESCRIPTIONS[kind], "arguments": arguments})
+            result.append({"name": "host", "description": HOST_PROMPT_DESCRIPTION, "arguments": [{"name": "repo", "required": False}, {"name": "name", "required": False}]})
             return {"prompts": result}
         if method == "tools/call":
             name = params.get("name")
             if not isinstance(name, str) or name not in TOOLS:
                 raise InvalidParams("unknown tool")
             try:
-                args = TOOLS[name].model_validate(params.get("arguments", {}))
+                args = TOOLS[name].model.model_validate(params.get("arguments", {}))
             except ValidationError as exc:
                 if name == "clutch_app_config" and isinstance(params.get("arguments"), dict) and "updates" in params["arguments"]:
                     value = _error(runner.Refusal(str(exc), "supply valid retro or scheduler.parallel settings", code="invalid_config"))
@@ -604,8 +620,18 @@ class ClutchMCPServer:
                 return {"isError": True, "content": [{"type": "text", "text": value["message"]}], "structuredContent": value}
         if method == "prompts/get":
             kind = params.get("name")
-            if not isinstance(kind, str) or kind not in ask.KINDS:
+            if not isinstance(kind, str) or (kind not in ask.KINDS and kind != "host"):
                 raise InvalidParams("unknown prompt")
+            args = params.get("arguments", {})
+            if kind == "host":
+                if not isinstance(args, dict) or set(args) - {"repo", "name"} or any(not isinstance(value, str) for value in args.values()):
+                    raise InvalidParams("invalid prompt arguments")
+                try:
+                    checkout, ctx = self.checkout(args.get("repo"))
+                    text, catalog = self.prompt(checkout, ctx, "host", [], name=args.get("name"))
+                    return {"description": HOST_PROMPT_DESCRIPTION, "messages": [{"role": "user", "content": {"type": "text", "text": text or json.dumps(catalog)}}]}
+                except (runner.Refusal, ConfigError, JournalCorruption, GitError, UnknownBoxId) as exc:
+                    raise DomainError(_error(exc)) from None
             args = params.get("arguments", {})
             if not isinstance(args, dict) or set(args) - {"repo", "stem" if ask.TAKES[kind] == "stem" else "ids" if kind == "box" else "repo"}:
                 raise InvalidParams("invalid prompt arguments")
@@ -667,64 +693,78 @@ def check_server(server: ClutchMCPServer) -> dict[str, object]:
 
 def serve_stdio(*, stdin=None, stdout=None, **kwargs):
     stdin = stdin if stdin is not None else sys.stdin
-    stdout = stdout if stdout is not None else sys.stdout
+    out = stdout if stdout is not None else sys.stdout
     server = ClutchMCPServer(**kwargs)
     roots_counter = 0
     pending_roots = set()
-    for line in stdin:
-        if not line.strip():
-            continue
-        id_ = None
+    write_lock = threading.Lock()
+
+    def write(value):
+        with write_lock:
+            out.write(json.dumps(value) + "\n")
+            out.flush()
+
+    def respond(id_, method, params):
         try:
-            try:
-                request = json.loads(line)
-            except json.JSONDecodeError:
-                raise RPCError(-32700, "Parse error") from None
-            if isinstance(request, dict) and request.get("jsonrpc") == "2.0" and "method" not in request and "result" in request:
-                if request.get("id") in pending_roots:
-                    pending_roots.remove(request["id"])
-                    result = request["result"]
-                    if isinstance(result, dict) and isinstance(result.get("roots"), list):
-                        server.roots = [
-                            Path(unquote(uri.path))
-                            for item in result["roots"]
-                            if isinstance(item, dict) and isinstance(item.get("uri"), str)
-                            for uri in [urlparse(item["uri"])]
-                            if uri.scheme == "file"
-                        ]
-                continue
-            if not isinstance(request, dict) or request.get("jsonrpc") != "2.0" or not isinstance(request.get("method"), str):
-                raise RPCError(-32600, "Invalid Request")
-            id_ = request.get("id")
-            if "id" not in request:
-                if server.client_supports_roots and request["method"] in {"notifications/initialized", "notifications/roots/list_changed"}:
-                    roots_counter += 1
-                    root_id = f"roots-{roots_counter}"
-                    pending_roots.add(root_id)
-                    stdout.write(json.dumps({"jsonrpc": "2.0", "id": root_id, "method": "roots/list"}) + "\n")
-                    stdout.flush()
-                continue
-            try:
-                if not isinstance(request.get("params", {}), dict):
-                    raise InvalidParams("params must be an object")
-                with redirect_stdout(sys.stderr):
-                    result = server.dispatch(request["method"], request.get("params", {}))
-            except InvalidParams as exc:
-                raise RPCError(-32602, str(exc)) from None
-            except UnknownMethod:
-                raise RPCError(-32601, "Method not found") from None
-            except DomainError as exc:
-                raise RPCError(-32000, "Domain refusal", exc.args[0]) from None
+            result = server.dispatch(method, params)
             response = {"jsonrpc": "2.0", "id": id_, "result": result}
-        except RPCError as exc:
-            error = {"code": exc.code, "message": str(exc)}
-            if exc.data is not None:
-                error["data"] = exc.data
-            response = {"jsonrpc": "2.0", "id": id_, "error": error}
+        except InvalidParams as exc:
+            response = {"jsonrpc": "2.0", "id": id_, "error": {"code": -32602, "message": str(exc)}}
+        except UnknownMethod:
+            response = {"jsonrpc": "2.0", "id": id_, "error": {"code": -32601, "message": "Method not found"}}
+        except DomainError as exc:
+            response = {"jsonrpc": "2.0", "id": id_, "error": {"code": -32000, "message": "Domain refusal", "data": exc.args[0]}}
         except Exception:
             response = {"jsonrpc": "2.0", "id": id_, "error": {"code": -32603, "message": "Internal error"}}
-        stdout.write(json.dumps(response) + "\n")
-        stdout.flush()
+        write(response)
+
+    with redirect_stdout(sys.stderr), concurrent.futures.ThreadPoolExecutor() as pool:
+        for line in stdin:
+            if not line.strip():
+                continue
+            id_ = None
+            try:
+                try:
+                    request = json.loads(line)
+                except json.JSONDecodeError:
+                    raise RPCError(-32700, "Parse error") from None
+                if isinstance(request, dict) and request.get("jsonrpc") == "2.0" and "method" not in request and "result" in request:
+                    if request.get("id") in pending_roots:
+                        pending_roots.remove(request["id"])
+                        result = request["result"]
+                        if isinstance(result, dict) and isinstance(result.get("roots"), list):
+                            server.roots = [
+                                Path(unquote(uri.path))
+                                for item in result["roots"]
+                                if isinstance(item, dict) and isinstance(item.get("uri"), str)
+                                for uri in [urlparse(item["uri"])]
+                                if uri.scheme == "file"
+                            ]
+                    continue
+                if not isinstance(request, dict) or request.get("jsonrpc") != "2.0" or not isinstance(request.get("method"), str):
+                    raise RPCError(-32600, "Invalid Request")
+                id_ = request.get("id")
+                if "id" not in request:
+                    if server.client_supports_roots and request["method"] in {"notifications/initialized", "notifications/roots/list_changed"}:
+                        roots_counter += 1
+                        root_id = f"roots-{roots_counter}"
+                        pending_roots.add(root_id)
+                        write({"jsonrpc": "2.0", "id": root_id, "method": "roots/list"})
+                    continue
+                params = request.get("params", {})
+                if not isinstance(params, dict):
+                    raise InvalidParams("params must be an object")
+                if request["method"] == "tools/call":
+                    _validate_tool(params)
+                    pool.submit(respond, id_, request["method"], params)
+                else:
+                    respond(id_, request["method"], params)
+            except InvalidParams as exc:
+                write({"jsonrpc": "2.0", "id": id_, "error": {"code": -32602, "message": str(exc)}})
+            except RPCError as exc:
+                write({"jsonrpc": "2.0", "id": id_, "error": {"code": exc.code, "message": str(exc)}})
+            except Exception:
+                write({"jsonrpc": "2.0", "id": id_, "error": {"code": -32603, "message": "Internal error"}})
 
 
 class RPCError(Exception):

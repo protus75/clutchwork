@@ -5,8 +5,8 @@
 # purpose: Unit tests for the MCP server's mutation tools: ticket authoring, lint, ordering, verdicts, the suggestion box, triage, engine start and control, retro, and domain-error projection. They use fake process, lock, and provider seams.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/control.py, clutch/hostfiles.py, clutch/journal.py, clutch/lockfile.py]
 # owner: engine
-# verified: 66bcb385
-# hash: 108bf3891135d89df3a3c0a1251b8667a5af5379565e13da24ecd6df66b83445
+# verified: 13fb8abf
+# hash: e10401c40473e234eba036afa165716cb16186d5630f5e1ce80fad0ba2d58f66
 
 import asyncio
 import io
@@ -68,9 +68,12 @@ def test_catalog_and_actor_schema(rig):
     assert {t["name"]: t.get("_meta") for t in catalog} == {
         name: {"ui": {"visibility": ["app"]}}
         if name.startswith("clutch_app_")
-        else {"ui": {"resourceUri": mcp.DASHBOARD_URI}, "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]}}
+        else {
+            "ui": {"resourceUri": mcp.DASHBOARD_URI, "visibility": ["model", "app"]},
+            "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]},
+        }
         if name == "clutch_open_dashboard"
-        else None
+        else {"ui": {"visibility": ["model"] if name == "clutch_wait_event" else ["model", "app"]}}
         for name in mcp.TOOLS
     }
     for name in ("ticket_confirm", "ticket_reject"):
@@ -233,26 +236,13 @@ def test_box_suggest_and_dismiss(rig, monkeypatch):
 def test_box_triage_idle_and_busy(rig, monkeypatch):
     server, checkout = rig
     monkeypatch.setattr(runner, "_locked", unlocked)
-    monkeypatch.setattr(runner, "reap", AsyncMock())
-    session = SimpleNamespace(close=AsyncMock())
-    monkeypatch.setattr(entry, "build_control", lambda c: SimpleNamespace(providers=session))
-    monkeypatch.setattr(entry, "_preflighted_llm", AsyncMock(return_value="llm"))
-    target = AsyncMock(return_value=[("box-named", "triaged named")])
-
-    async def route(c, ids, **kwargs):
-        return await original(c, ids, **kwargs, triage_pass_fn=target)
-
     original = runner.triage_or_submit
-    monkeypatch.setattr(runner, "triage_or_submit", route)
-    id_ = call(server, "box_suggest", summary="triage me")["structuredContent"]["id"]
-    # Wrong: Triage result dropped.
-    assert call(server, "box_triage", ids=[id_])["structuredContent"] == {"submitted": False, "lines": [["box-named", "triaged named"]]}
-    # Wrong: Triage uses wrong provider.
-    target.assert_awaited_once_with(checkout, "llm", frozenset([id_]))
-    # Wrong: Triage provider session leaked.
-    session.close.assert_awaited_once()
-    # Wrong: Unknown triage IDs not checked.
-    assert call(server, "box_triage", ids=["unknown"])["isError"]
+    inline = AsyncMock()
+    monkeypatch.setattr(runner, "triage_or_submit", inline)
+    id_ = "box-named"
+    result = call(server, "box_triage", ids=[id_])
+    assert result["isError"] and result["structuredContent"]["code"] == "engine_not_running"
+    inline.assert_not_awaited()
     for verb in ("serve", "drain"):
         monkeypatch.setattr(runner, "_locked", held(verb))
         result = asyncio.run(
@@ -361,21 +351,15 @@ def test_control_idle_and_submission(rig, monkeypatch, action):
 def test_retro_idle_and_busy(rig, monkeypatch):
     server, checkout = rig
     monkeypatch.setattr(runner, "_locked", unlocked)
-    monkeypatch.setattr(runner, "reap", AsyncMock())
-    session = SimpleNamespace(close=AsyncMock())
-    monkeypatch.setattr(entry, "build_control", lambda c: SimpleNamespace(providers=session))
-    monkeypatch.setattr(runner, "pipeline", lambda c: "pipeline")
-    target = AsyncMock(return_value=None)
-    monkeypatch.setattr(retro, "Retro", lambda c, dispatch: target)
-    # Wrong: MCP retro outcome missing.
-    assert call(server, "engine_retro")["structuredContent"] == {"outcome": 0}
-    # Wrong: Manual retro obeys automatic due thresholds.
-    target.assert_awaited_once_with(forced=True)
-    # Wrong: Retro provider session leaked.
-    session.close.assert_awaited_once()
+    inline = AsyncMock()
+    original = runner.run_or_submit_retro
+    monkeypatch.setattr(runner, "run_or_submit_retro", inline)
+    result = call(server, "engine_retro")
+    assert result["isError"] and result["structuredContent"]["code"] == "engine_not_running"
+    inline.assert_not_awaited()
     submit = AsyncMock(return_value=SimpleNamespace(request_id="retro-request"))
     # Wrong: Queued retro reported failed.
-    assert asyncio.run(runner.run_or_submit_retro(checkout, Mock(), lock_ctx_factory=held("drain"), build_control_fn=Mock(), config_reloader_fn=Mock(), submit_fn=submit)) == 0
+    assert asyncio.run(original(checkout, Mock(), lock_ctx_factory=held("drain"), build_control_fn=Mock(), config_reloader_fn=Mock(), submit_fn=submit)) == 0
     # Wrong: Retro enqueues stop instead.
     assert submit.await_args.args[2] == "retro"
 
@@ -413,11 +397,11 @@ def test_stdio_domain_noise_and_extension_rejection(tmp_path, monkeypatch, capsy
     ]
     output = io.StringIO()
     mcp.serve_stdio(stdin=io.StringIO("\n".join(json.dumps(r) for r in requests)), stdout=output, default_cwd=tmp_path)
-    replies = [json.loads(line) for line in output.getvalue().splitlines()]
+    replies = {r["id"]: r for r in (json.loads(line) for line in output.getvalue().splitlines())}
     # Wrong: domain prints corrupt the transport or extension becomes model-settable.
-    assert replies[0] == {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "specific"}], "structuredContent": {"receipt": "specific"}}}
+    assert replies[1] == {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "specific"}], "structuredContent": {"receipt": "specific"}}}
     # Wrong: Extension silently accepted.
-    assert replies[1]["error"]["code"] == -32602
+    assert replies[2]["error"]["code"] == -32602
     # Wrong: Domain noise leaks onto stdout.
     assert capsys.readouterr().err == "domain chatter\n"
 

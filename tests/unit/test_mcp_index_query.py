@@ -4,8 +4,8 @@
 # purpose: Unit tests for the clutch_index_query MCP tool: its input schema and validation, read-only lock-free routing to index.query with filtered secrets, how hits are serialized, and refusal codes with their paved-road remedies.
 # relates: [clutch/index.py, clutch/mcp.py]
 # owner: engine
-# verified: f065d98a
-# hash: aaad2e5ebe93fef3faf8c250d6d8a856e3989e6c991731da3329b1c004b4a9a7
+# verified: 7926699a
+# hash: 3ea94d22b5a5a5b8b57871d4a73a18eda0ef4cf6a8d4aa4252e9eab120fd9fca
 import fcntl
 import json
 from types import SimpleNamespace
@@ -33,7 +33,7 @@ def test_schema_and_validation(tmp_path):
     tool = next(t for t in server.dispatch("tools/list", {})["tools"] if t["name"] == "clutch_index_query")
     schema = tool["inputSchema"]
     # Wrong: hide from models, allow extra arguments, or require optional parameters.
-    assert "_meta" not in tool and schema["additionalProperties"] is False
+    assert tool["_meta"]["ui"]["visibility"] == ["model", "app"] and schema["additionalProperties"] is False
     assert schema["required"] == ["text"] and schema["properties"]["limit"]["default"] == 10
     assert schema["properties"]["repo"]["default"] is None
     for args in ({}, {"text": "query", "unknown": 1}):

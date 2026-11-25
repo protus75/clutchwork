@@ -4,8 +4,8 @@
 # purpose: Unit tests of the MCP server's tool and prompt catalog, tool routing to shared clutch functions (snapshot, status, stats, roadmap, wait_event, evidence, context_suggest, prompt), repo routing, error mapping, and shared prompt resolution.
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/context.py, clutch/journal.py, clutch/mcp.py, clutch/observe.py, clutch/runner.py]
 # owner: engine
-# verified: 7baeb8ce
-# hash: 167f40da5fbf024ef7fd5f80f269eeb04edbbf7647ebf888bbea7212daf7c502
+# verified: 13fb8abf
+# hash: 71b6ce32e72d05bc4c82d9c8b35915d47f5a44a98bbe9dab963dc6c462a9029c
 from types import SimpleNamespace
 
 import pytest
@@ -47,7 +47,7 @@ def test_schemas_and_prompts(tmp_path, monkeypatch):
         "clutch_engine_retro",
     }
     prompts = server.dispatch("prompts/list", {})["prompts"]
-    assert {p["name"] for p in prompts} == set(ask.KINDS)
+    assert {p["name"] for p in prompts} == set(ask.KINDS) | {"host"}
     assert next(p for p in prompts if p["name"] == "author")["arguments"][-1] == {"name": "stem", "required": True}
     seen = []
     monkeypatch.setattr(server, "checkout", lambda repo: (SimpleNamespace(), None))
@@ -377,4 +377,4 @@ def test_prompt_argument_catalog(tmp_path):
         kind: [{"name": "repo", "required": False}]
         + ([{"name": "stem", "required": True}] if kind in {"diagnose", "running", "review", "author"} else [{"name": "ids", "required": True}] if kind == "box" else [])
         for kind in ("diagnose", "running", "review", "author", "box", "drafts", "drain-loop", "plan-ticket-drain", "plan-ticket-serve", "roadmap")
-    }
+    } | {"host": [{"name": "repo", "required": False}, {"name": "name", "required": False}]}
