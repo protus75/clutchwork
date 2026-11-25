@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The required metadata check was not run because the implementer instructions explicitly prohibit it; Check owns metadata headers. Class prevention: focused cursor validation and polling tests cover corrupt cursors and missed events. A simpler stateless wait would miss events between turns.
+The test command passed with 49 passed and 1 skipped; the metadata verification command was not run because the task explicitly prohibits it.
 
 ## Dead ends
 
-A refusal mutation caused the streaming command to wait indefinitely; the mutation was interrupted and the code restored.
+Inspected the metadata generator: the test's two related files cause its generated owner to default to engine.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 10 minutes expected, 20 minutes stuck; actual time not measured.
+none
 
