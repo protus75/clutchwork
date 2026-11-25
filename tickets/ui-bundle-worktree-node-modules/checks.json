@@ -1,0 +1,178 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e75f07a34671ad33e68f14b080af1199f310707a",
+  "stem": "ui-bundle-worktree-node-modules",
+  "passed": true,
+  "changed_files": [
+    "dev.py",
+    "tests/regression/ui_bundle_worktree_node_modules.py",
+    "tests/unit/test_dev_ui_bundle_worktree.py"
+  ],
+  "inserted_lines": 182,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/regression/ui_bundle_worktree_node_modules.py"
+        ],
+        "head_sha": "e75f07a34671ad33e68f14b080af1199f310707a",
+        "base_sha": "8ad6944451e18471d8b2aabd564d937e085bc393",
+        "overlay_paths": [
+          "tests/regression/ui_bundle_worktree_node_modules.py"
+        ],
+        "evidence_paths": [
+          "tickets/ui-bundle-worktree-node-modules/evidence/worktree-esbuild-missing.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/ui-bundle-worktree-node-modules\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/ui-bundle-worktree-node-modules\nInstalled 31 packages in 24ms\nui-bundle: missing source or esbuild: /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/ui-bundle-worktree-node-modules/.clutch/scratch/tmph62ejfst/wt/node_modules/.bin/esbuild\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 22.383966,
+        "passed": 2445,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.0950919370516203,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.6164093689876609,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.3941646170569584,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1793695670785382,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[spawn]": 1.1379243609844707,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.1247311769984663,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.054694905935321,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.0381936320336536,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.0251354979118332,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0161078439559788,
+          "tests/unit/test_tickets_tolerant_reader.py::test_never_raises": 1.0080055760336109
+        }
+      },
+      "coverage": {
+        "percent": 78.79306829765545,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.90097,
+        "passed": 324,
+        "failed": 0,
+        "skipped": 3294,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.1797096980153583,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.3716092280228622,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.2735446789301932,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.0235918219550513,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0042740509379655
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_dev_ui_bundle.py",
+        "tests/unit/test_dev_ui_bundle_worktree.py",
+        "tests/integration/test_mcp_app_dashboard.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_dev_ui_bundle.py tests/unit/test_dev_ui_bundle_worktree.py tests/integration/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n..................                                                       [100%]\n18 passed in 1.64s\n",
+      "base_red": false,
+      "seconds": 6.117836
+    }
+  ]
+}
