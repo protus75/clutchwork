@@ -27,6 +27,14 @@ def spawn_detached(argv: Sequence[str], *, cwd: Path, env: Mapping[str, str], ou
     return child.pid
 
 
+def child_exit(pid: int) -> int | None:
+    try:
+        waited, status = os.waitpid(pid, os.WNOHANG)
+    except ChildProcessError:
+        return None
+    return os.waitstatus_to_exitcode(status) if waited else None
+
+
 @runtime_checkable
 class ProcessExec(Protocol):
     async def run(

@@ -2,9 +2,12 @@
 
 import asyncio
 import hashlib
+import json
+import math
 import os
 import re
 import sys
+import time
 from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager
 from dataclasses import replace
@@ -24,13 +27,73 @@ from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
 from clutch.retro import Retro
-from clutch.seams import ExecutableNotFound, SubprocessExec
+from clutch.seams import ExecutableNotFound, SubprocessExec, child_exit
 from clutch.status import CLOSED, last_states
 from clutch.storm import StormLedger
 from clutch.supervise_idle import supervise_idle
 from clutch.tickets import IntakeRefused, Ticket, TicketInvalid, _pending, _porcelain, intake, parse_ticket, ticket_path
 
 SERVE_POLL_S = 0.1
+
+SERVE_STARTUP_TIMEOUT_S = 5.0
+SERVE_STARTUP_POLL_S = 0.05
+
+
+def capture_startup_baseline(state_dir, output) -> tuple[int, str | None]:
+    try:
+        size = output.stat().st_size
+    except FileNotFoundError:
+        size = 0
+    try:
+        active = json.loads((state_dir / "control/active.json").read_bytes())
+        lifecycle = active.get("lifecycle_id") if isinstance(active, dict) else None
+    except OSError, ValueError, UnicodeError:
+        lifecycle = None
+    return size, lifecycle
+
+
+def startup_confirmed(state_dir, pid, prior_lifecycle) -> bool:
+    try:
+        lock = json.loads((state_dir / "clutch.lock").read_bytes())
+        active = json.loads((state_dir / "control/active.json").read_bytes())
+    except OSError, ValueError, UnicodeError:
+        return False
+    if not isinstance(lock, dict) or not isinstance(active, dict):
+        return False
+    lifecycle = active.get("lifecycle_id")
+    return lock.get("pid") == pid and lock.get("verb") == "serve" and isinstance(lifecycle, str) and bool(lifecycle) and lifecycle != prior_lifecycle
+
+
+def _read_startup_tail(output, prior_size) -> str:
+    try:
+        with output.open("rb") as stream:
+            stream.seek(prior_size)
+            return stream.read().decode(errors="replace")
+    except OSError:
+        return ""
+
+
+def wait_detached_startup(
+    state_dir, pid, output, *, prior_size=0, prior_lifecycle=None, poll_child=child_exit, sleep=time.sleep, clock=time.monotonic, timeout=SERVE_STARTUP_TIMEOUT_S, interval=SERVE_STARTUP_POLL_S
+) -> bool:
+    if not math.isfinite(timeout) or timeout < 0 or not math.isfinite(interval) or interval <= 0:
+        raise ValueError("timeout must be finite and nonnegative and interval finite and positive")
+    deadline = clock() + timeout
+    while True:
+        if startup_confirmed(state_dir, pid, prior_lifecycle):
+            return True
+        code = poll_child(pid)
+        if code is not None:
+            tail = _read_startup_tail(output, prior_size)
+            line = next((line.removeprefix("clutch engine: ") for line in tail.splitlines() if line.startswith("clutch engine: ") and " -- " in line), None)
+            if line:
+                message, road = line.split(" -- ", 1)
+                raise runner.Refusal(message, road)
+            raise runner.Refusal(f"detached serve exited {code}", f"inspect {output} and start serve again")
+        remaining = deadline - clock()
+        if remaining <= 0:
+            return False
+        sleep(min(interval, remaining))
 
 
 class Responsiveness:

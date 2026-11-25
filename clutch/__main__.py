@@ -1061,17 +1061,18 @@ def _parser() -> argparse.ArgumentParser:
     dr.add_argument("--parked", action="append", default=[], metavar="STEM", help="a stem the handing-off parent drain parked (set by the self-upgrade re-exec)")
     dr.add_argument("--deadline", type=datetime.fromisoformat, default=None, help="deadline set by the self-upgrade re-exec")
     dr.add_argument("--stop-lifecycle", help=argparse.SUPPRESS)
-    _command(
+    sv = _command(
         engine_sub,
         "serve",
         summary="run the continuous daemon",
         does="Run the continuous daemon until engine kill, engine stop or a signal.",
         reads="Config, tickets and journal.",
-        writes="Ticket commits, journal events and engine state.",
-        lock="Writer lock.",
-        exits="0 after kill, stop or a signal; 1 when a component fails; 2 on refusal.",
-        examples=["clutch engine serve"],
+        writes="Ticket commits, journal events and engine state; --detach appends to <state_dir>/serve.out in its own session.",
+        lock="Writer lock; the child takes it with --detach.",
+        exits="0 after kill, stop or a signal, or confirmed detached startup; 1 when a component fails; 2 on refusal or startup timeout.",
+        examples=["clutch engine serve", "clutch engine serve --detach"],
     )
+    sv.add_argument("--detach", action="store_true", help="run in its own session and append to <state_dir>/serve.out")
     run = _command(
         engine_sub,
         "run",
@@ -1856,9 +1857,14 @@ def main(
         return asyncio.run(_retro(checkout, pipeline, config_path=args.config))
 
     def handle_detach():
-        output = config.state_dir / "drain.out"
-        pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "engine", "drain"], cwd=repo, env=env, output=output)
-        print(f"drain: pid {pid}, output {output}")
+        verb = args.engine_verb
+        output = config.state_dir / f"{verb}.out"
+        if verb == "serve":
+            prior_size, prior_lifecycle = serve.capture_startup_baseline(config.state_dir, output)
+        pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "engine", verb], cwd=repo, env=env, output=output)
+        if verb == "serve" and not serve.wait_detached_startup(config.state_dir, pid, output, prior_size=prior_size, prior_lifecycle=prior_lifecycle):
+            raise runner.Refusal("detached serve startup timed out", f"inspect {output} and check the engine status")
+        print(f"{verb}: pid {pid}, output {output}")
         return 0
 
     def handle_pipeline():
@@ -2085,7 +2091,7 @@ def main(
         ):
             return handlers[args.verb]()
         config = load_config(args.config, cwd=repo)
-        if args.verb == "engine" and args.engine_verb == "drain" and args.detach:
+        if args.verb == "engine" and args.engine_verb in {"drain", "serve"} and args.detach:
             return handle_detach()
         if args.verb in {"config", "provider", "host", "prompt"}:
             return handlers[args.verb]()

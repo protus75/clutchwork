@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: bdb23dbf
-hash: d373e2fce20e27e8b0f08e409fee43560849478b1192329cb268d0a9e1ed4df6
+verified: 135c51d4
+hash: 147852a3b7c67dabf57a96c1266709693125d4c2a6817cf8e632395ee0b9e0e7
 -->
 # Running ClutchWork on a host
 
@@ -72,7 +72,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. Submission is not applied completion; serve applies ticket verdicts during active Check or model work. |
 | `ticket reject` | Yes | Intake the named ticket, then apply or publish a reject verdict with an optional `--reason` after interactive confirmation; other pending tickets are left untouched. Submission is not applied completion; serve applies ticket verdicts during active Check or model work. |
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
-| `engine serve` | No | Run the continuous daemon. |
+| `engine serve` | No | Run the continuous daemon. `--detach` runs in its own session, surviving terminal or editor closing, appends output to `<state_dir>/serve.out`, and briefly checks startup or reports an immediate refusal. |
 
 Stop serve before `evidence prune`, `index build`, `roadmap author`, `box dismiss`, `release bump`, `release publish`, `release ship`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 

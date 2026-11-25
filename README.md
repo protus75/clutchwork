@@ -53,6 +53,7 @@ uv run clutch box issue    # link to report a critical clutch bug or process gap
 # Running
 uv run clutch engine drain    # run eligible tickets to quiescence
 uv run clutch engine serve    # run the continuous daemon
+uv run clutch engine serve --detach  # run the continuous daemon detached
 uv run clutch engine run      # run one ticket through the pipeline
 uv run clutch engine stop     # finish active work and exit
 uv run clutch engine kill     # stop the engine at a safe point

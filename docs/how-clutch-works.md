@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: bdb23dbf
-hash: 1dcc42e1c1f783aa7ae99091d1a67c7a877448c1b1b2a355d8907a6eba4492a9
+verified: 135c51d4
+hash: b342bdbf9a464d154fa4ae274c2572b842af087f19195f6f4ccac9dcbbdf7a1a
 -->
 # How ClutchWork works
 
@@ -84,7 +84,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `ticket review <stem>` | commit only | Only the named ticket's pending changes are committed through intake first; other pending tickets are left untouched. Reviews the committed ticket against merged code and journals its verdict and ticket blob SHA. A ticket with an unmerged dependency gets a provisional review that is printed but not journaled, so the drain reviews it again before its first run. Refuses missing, intake-failed, settled, or rejected tickets without a model call. Prints findings and exits 0 on approve, 1 on snag or rma. |
 | `engine run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
 | `engine drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
-| `engine serve` | yes | Runs the continuous daemon until `engine kill`, `engine stop`, or a signal (section 7.2). |
+| `engine serve [--detach]` | yes | Runs the continuous daemon until `engine kill`, `engine stop`, or a signal (section 7.2). `--detach` appends to `<state_dir>/serve.out` and checks startup briefly. |
 | `engine retro` | try | Runs a retro report only when invoked, now or queued on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
 | `engine calibrate` | no | Runs only when invoked. Reads the last `calibration.every` completed Implement calls from the journal, measuring minutes from each `effect_intent` to `effect_completion` and taking provider and model from completion `cost`. Reads expected minutes from each `tickets/<stem>/ticket.md`; calls without a readable estimate are left out. Journals one `estimate_calibration` signal and prints rows with the run count, median estimate, and median and 90th-percentile actual minutes per provider and model. |
 | `box suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
@@ -774,6 +774,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver except for resolve and review inside merge admission and visual review and meta fill inside Check; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
 | `dist/` | Wheel and sdist last built by `clutch release publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `engine drain --detach`. |
+| `serve.out` | Output appended by `engine serve --detach`. |
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, `Runs before` hints, and idle free-slot reasons (`waiting`, `hold`) shown as row status in watch and the extension. |
 | `scratch/` | Graphics render directories and retro window files read by agents by path, distinct from `evidence/scratch/`. |
