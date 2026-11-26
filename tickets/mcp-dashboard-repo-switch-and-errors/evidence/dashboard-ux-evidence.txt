@@ -1,0 +1,14 @@
+Observed in Antigravity ClutchWork MCP dashboard (2026-11-26):
+
+1. Repo selector stuck on stale repo for ~60s:
+   - User was viewing `fungo` repo, then selected `clutch` in the top-bar repo dropdown.
+   - The dropdown showed `clutch`, while Recent Steps, Tickets, and Suggestion Box continued displaying `fungo` data (`fit-pa-validation-replay-accept`, `uv run --offline fungo transform`), even after clicking the Refresh button.
+   - Display only updated to `clutch` ~1 minute later on a subsequent background poll.
+   - Code cause in clutch/ui/app.js:
+     - `refresh()` starts with `if (refreshing) return;` and holds `refreshing = true` across `clutch_app_snapshot` + `clutch_app_config` + `loadStats()` (4.56s even while Stats is collapsed).
+     - Explicit repo switches (`repoSelect` change / `repoButton` click) and manual Refresh clicks are silently dropped while a poll is in flight.
+     - No old-view blanking or loading indicator on repo switch; when the in-flight `fungo` refresh finishes, it renders `fungo` rows while setting `repoSelect.value = explicitRepo` (`clutch`).
+
+2. Error display in clutch/ui/app.js + clutch/ui/dashboard.css:
+   - `callTool` (app.js:22) ignores `result.structuredContent?.paved_road` returned by `clutch/mcp.py:_error`.
+   - `showError` renders into bare `.notice { color: var(--color-text-danger, #a22); }` with no banner styling, padding, wrap, or dismiss control, and passive refreshes clear `notice.textContent = ""`.
