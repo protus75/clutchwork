@@ -11,12 +11,11 @@ kind: feature
 ## Context
 - clutch/config.py::Provider
 - clutch/providers.py::CliAdapter
-- clutch/providers.py::GeminiAdapter
 - clutch/providers.py::ADAPTERS
 - clutch/providers.py::suggest_config
 - clutch/providers.py::cli_status
 - clutch/providers.py::ProviderLLM.preflight
-- clutch/evidence/gemini.py
+- clutch/evidence/codex.py
 - clutch/evidence/views.py
 - clutch/evidence/schema.py::Event
 - clutch/training.py::_trajectory
@@ -192,7 +191,7 @@ Google's `gemini` CLI is superseded by Antigravity CLI (`agy`), which uses ambie
 
 ### Scope out
 - `clutch/antigravity.py` and `tests/unit/test_antigravity_plugin.py` (Antigravity IDE MCP plugin installer, unrelated to the `agy` CLI provider).
-- `package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml` (host pnpm workspace files; removing `@google/gemini-cli` from pnpm lockfile is an operator `pnpm remove` step).
+- `package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml` (workspace pnpm manifest and lockfile are outside this ticket's provider replacement).
 - Historical records, changelog, frozen bootstrap plan, roadmap, and design plan documents under `tickets/` and `docs/`, as well as `tests/integration/test_ask_plan_drain.py` and `tests/integration/test_live_call_source.py`.
 
 ## Scope fence
