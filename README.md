@@ -125,15 +125,78 @@ For a feature, ask the chat agent to plan it and turn the plan into tickets, the
 
 ## Antigravity plugin
 
-The portable plugin is a thin wrapper: `plugin.json`, `mcp_config.json`, `hooks.json`, `assets/logo.png`, and `skills/clutch-*/SKILL.md` point to engine logic, MCP tools, and the bundled dashboard in the `clutchwork` Python package. No per-host `clutchwork` dependency is required. Hooks automatically follow the active Antigravity project.
+The ClutchWork Antigravity plugin is a thin wrapper (`plugin.json`, `mcp_config.json`, `hooks.json`, `assets/logo.png`, and `skills/clutch-*/SKILL.md`) that exposes ClutchWork's MCP tools, live interactive dashboard, and supervising skills in Antigravity. No per-host `clutchwork` dependency is required, and `hooks.json` automatically tracks the active Antigravity workspace.
 
-For a local machine installation, run `uv run clutch host antigravity` to install the global ClutchWork plugin and configure its stdio MCP server and dashboard. Use `--plugin-dir PATH` to choose a location or `--workspace` to write workspace skills. After upgrading, toggle ClutchWork at `customization://clutchwork` to reload the server. `clutch host doctor` warns if the installed plugin configuration drifts or its executable cannot resolve.
+### Prerequisites and installation
 
-Alternatively, install the portable bundle directly with `agy plugin install https://github.com/protus75/clutchwork`. It runs the server using `uvx --from clutchwork clutch mcp serve`. After publishing the release to PyPI, run `agy plugin validate --strict .` from the repository root before submitting it to the Antigravity Marketplace.
+Install the Antigravity CLI (`agy`) and sign in (see [Antigravity provider setup](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-antigravity.md)), and configure a host repository with `config.yaml` and `clutch host core` (which installs the `AGENTS.md` conduct block Antigravity reads).
+
+- **Portable bundle (recommended)**: install directly from GitHub; the plugin runs its stdio MCP server in an isolated environment using `uvx --from clutchwork clutch mcp serve`:
+
+```sh
+agy plugin install https://github.com/protus75/clutchwork
+```
+
+- **Local machine installation**: install from an existing ClutchWork environment into `~/.gemini/config/plugins/clutchwork/`:
+
+```sh
+uv run clutch host antigravity
+```
+
+Use `--plugin-dir PATH` to choose a custom plugin directory, or `--workspace` to write workspace skills under `.agents/skills/`.
+
+### Usage
+
+In any configured workspace with the plugin enabled, ask Antigravity directly or invoke its bundled skills:
+
+- **Live dashboard**: ask `"Open the ClutchWork dashboard"` to open the interactive queue, ticket graph, Suggestion Box, and engine status view.
+- **Supervising skills**:
+  - `clutch-drain-loop`: supervise an active `engine drain` queue (for example, `"Supervise the Clutch queue (drain-loop)"`).
+  - `clutch-plan-drain`: turn a plan or roadmap into tickets and supervise a drain.
+  - `clutch-plan-serve`: plan tickets and run `docs/roadmap.md` unattended with `engine serve` (for example, `"Run docs/roadmap.md unattended with serve"`).
+- **MCP tools**: the `clutchwork` MCP server exposes tools for snapshots, status, stats, roadmap status, event waiting, evidence inspection, context/index queries, ticket authoring/linting/ordering/verdicts, Suggestion Box triage/dismissal, and engine start/control/retro.
+
+### Upgrading and troubleshooting
+
+After upgrading `clutchwork`, toggle ClutchWork at `customization://clutchwork` to reload the stdio MCP server. Run `clutch host doctor` to check for plugin configuration drift or an unresolvable server executable. After publishing a release to PyPI, maintainers can run `agy plugin validate --strict .` from the repository root before submitting to the Antigravity Marketplace.
 
 ## VS Code extension
 
-The [clutch tickets extension](https://marketplace.visualstudio.com/items?itemName=chunkydragon.vscode-clutchwork) (`chunkydragon.vscode-clutchwork`) shows the ticket graph, details, recent steps, Suggestion Box, and stats. Set `clutch.command` when the engine command differs from the default host `.venv/bin/clutch`.
+The [ClutchWork tickets extension](https://marketplace.visualstudio.com/items?itemName=chunkydragon.vscode-clutchwork) (`chunkydragon.vscode-clutchwork`) adds a ClutchWork view to the VS Code Activity Bar for inspecting and operating a host repository.
+
+### Prerequisites and installation
+
+Open a repository containing `tickets/` with ClutchWork installed (see the Install section above and the [host contract](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md#vs-code-extension)). Under WSL or Remote-SSH, install and run the extension on the remote side where the repository and `clutch` executable live.
+
+- **VS Code**: install **ClutchWork tickets** (`chunkydragon.vscode-clutchwork`) from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=chunkydragon.vscode-clutchwork), or run:
+
+```sh
+code --install-extension chunkydragon.vscode-clutchwork
+```
+
+- **Cursor / VSCodium**: use **Install from VSIX** with a packaged `vscode-clutchwork` `.vsix` file.
+
+### Usage
+
+Click the **ClutchWork** icon in the Activity Bar to open five views:
+
+- **Tickets**: SCM-style dependency graph of blocked, queued, running, and merged tickets. Use the title bar **Play** / **Stop** button or **Engine…** picker to start `drain` or `serve`, stop, kill, check status, or run a retro. Right-click a ticket to open `ticket.md`, lint, review, run now, confirm or reject, set priority, set `Runs before`, or ask Claude to diagnose, review, or assess drafts.
+- **Details**: shows the selected ticket (including shared scope fences) or Suggestion Box message, with `Next` action links.
+- **Recent Steps**: live engine activity log; clicking a step opens its ticket, message, or decision file.
+- **Suggestion Box**: lists box messages with multi-select support for manual triage, dismissal, or opening the linked ticket/record.
+- **Stats** (collapsed by default): health and efficiency figures for the configured window.
+
+Hover over extension surfaces for inline help, open the **Help** command from any view menu to browse all topics, or open **Ticket lifecycle** from the Tickets **More Actions** menu to view the state diagram.
+
+### Configuration and troubleshooting
+
+- `clutch.command` (default `[".venv/bin/clutch"]`): command and arguments used to run `clutch`, resolved relative to the workspace folder. Override this when `clutch` is installed globally (for example `["clutch"]` or `["uvx", "--from", "clutchwork", "clutch"]`) or on native Windows (`[".venv\\Scripts\\clutch.exe"]`). If a view reports `clutch command not found`, update this setting.
+- `clutch.playAction` (default `"drain"`): selects whether the Tickets play button starts `drain` or `serve`.
+- `clutch.statsWindow` (default `"7d"`): time or settled-ticket window for the Stats view (for example `24h`, `7d`, `50t`).
+- `clutch.refreshSeconds` (default `15`): timed refresh interval in seconds (`0` disables the timer while file-change refreshes continue).
+- `clutch.unavailableMenuItems` (default `"disable"`): whether unavailable ticket context-menu actions are disabled or hidden (`"hide"`).
+
+If a view reports `cannot draw the clutch snapshot`, the installed extension is older than the `clutch` version in the workspace; update the extension from the Marketplace and reload the window.
 
 ## Guides
 
