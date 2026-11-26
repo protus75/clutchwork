@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Final verification passed with 61 tests passed and 199 existing I/O-marked integration tests skipped; targeted mutation checks covered nine implementation changes, but not every assertion.
+The full test run passed with 3,292 integration tests skipped; the final targeted verification passed with 199 skipped. Both Ruff checks passed.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket budget was 20 minutes expected; this retry took less.
 
