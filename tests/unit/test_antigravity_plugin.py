@@ -5,8 +5,8 @@
 # purpose: Unit tests for the Antigravity plugin and workspace skill install, default paths, doctor drift findings, and the `clutch host antigravity` CLI dispatch.
 # relates: [clutch/__main__.py, clutch/antigravity.py, clutch/doctor.py, tests/fakes.py]
 # owner: engine
-# verified: 5e56ddef
-# hash: 6606b1eeb47683da725289d69abe0bc55c038f75bac9ddff49a04e02c0ab6fa2
+# verified: c07897c9
+# hash: 52bc14e85f3773ec814c303646bf53551258e8a3abf68871ce794f92067974cc
 
 import json
 from pathlib import Path
@@ -40,7 +40,8 @@ def test_bundle_and_skills(tmp_path):
     }
     assert json.loads(fs.files[target / "mcp_config.json"]) == {"mcpServers": {"clutchwork": {"command": "/venv/python", "args": ["-m", "clutch", "mcp", "serve"]}}}
     assert fs.files[target / "assets/logo.png"] == b"logo"
-    assert len(paths) == 6
+    assert json.loads(fs.files[target / "hooks.json"]) == ag.hooks_config("/venv/python")
+    assert len(paths) == 7
     for name, kind in [("clutch-drain-loop", "drain-loop"), ("clutch-plan-drain", "plan-ticket-drain"), ("clutch-plan-serve", "plan-ticket-serve")]:
         text = fs.files[target / "skills" / name / "SKILL.md"].decode()
         assert text.startswith("---\n")

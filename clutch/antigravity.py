@@ -2,6 +2,7 @@
 
 import json
 import os
+import shlex
 import shutil
 import sys
 from collections.abc import Callable, Mapping
@@ -9,6 +10,9 @@ from importlib.metadata import version
 from pathlib import Path
 
 from clutch.seams import FileSystem, LocalFileSystem
+
+HOOK_NAME = "clutch-active-repo"
+HOOK_TIMEOUT = 5
 
 PLUGIN_NAME = "clutchwork"
 DISPLAY_NAME = "ClutchWork"
@@ -69,10 +73,20 @@ def portable_mcp_config() -> dict[str, object]:
     return {"mcpServers": {MCP_SERVER_NAME: {"command": PORTABLE_MCP_COMMAND, "args": list(PORTABLE_MCP_ARGS)}}}
 
 
+def hooks_config(executable=None):
+    command = shlex.quote(str(executable or sys.executable)) + " -m clutch mcp hook-repo"
+    return {HOOK_NAME: {event: [{"type": "command", "command": command, "timeout": HOOK_TIMEOUT}] for event in ("SessionStart", "PreInvocation")}}
+
+
+def portable_hooks_config():
+    return {HOOK_NAME: {event: [{"type": "command", "command": "uvx --from clutchwork clutch mcp hook-repo", "timeout": HOOK_TIMEOUT}] for event in ("SessionStart", "PreInvocation")}}
+
+
 def portable_bundle_files(*, version_str: str | None = None, logo_bytes: bytes) -> dict[str, bytes]:
     return {
         "plugin.json": (json.dumps(plugin_manifest(version_str=version_str), indent=2) + "\n").encode(),
         "mcp_config.json": (json.dumps(portable_mcp_config(), indent=2) + "\n").encode(),
+        "hooks.json": (json.dumps(portable_hooks_config(), indent=2) + "\n").encode(),
         "assets/logo.png": logo_bytes,
         **{f"skills/{name}/SKILL.md": text.encode() for name, text in SKILLS.items()},
     }
@@ -84,6 +98,7 @@ def install_plugin(
     files = {
         plugin_dir / "plugin.json": (json.dumps(plugin_manifest(version_str), indent=2) + "\n").encode(),
         plugin_dir / "mcp_config.json": (json.dumps(mcp_config(executable), indent=2) + "\n").encode(),
+        plugin_dir / "hooks.json": (json.dumps(hooks_config(executable), indent=2) + "\n").encode(),
         plugin_dir / "assets/logo.png": fs.read_bytes(logo_path) if logo_bytes is None else logo_bytes,
         **{plugin_dir / "skills" / name / "SKILL.md": text.encode() for name, text in SKILLS.items()},
     }
@@ -136,6 +151,19 @@ def verify_plugin(plugin_dir: Path, *, fs: FileSystem, dir_exists=None, executab
             raise ValueError("invalid manifest")
     except OSError, ValueError, UnicodeDecodeError:
         findings.append("plugin.json is missing or invalid")
+    try:
+        hooks = json.loads(fs.read_bytes(plugin_dir / "hooks.json"))
+        handlers = hooks[HOOK_NAME]
+        for event in ("SessionStart", "PreInvocation"):
+            entries = handlers[event]
+            if (
+                not isinstance(entries, list)
+                or not entries
+                or not all(isinstance(h, dict) and h.get("type") == "command" and isinstance(h.get("command"), str) and "mcp hook-repo" in h["command"] for h in entries)
+            ):
+                raise ValueError("invalid handlers")
+    except OSError, ValueError, UnicodeDecodeError, KeyError, TypeError:
+        findings.append("hooks.json is missing or invalid")
     finding = doctor_finding(plugin_dir, fs=fs, dir_exists=dir_exists, executable_exists=executable_exists)
     if finding:
         findings.append(finding)

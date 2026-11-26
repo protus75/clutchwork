@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 69d790e1
-hash: fe890bd7d9e3398039cc08b2a89c91363f75fdee9a0a163dc86dbc17e42dd7c6
+verified: c07897c9
+hash: c7028db0ea509f75e1d8885c1338e58adf5125b61795fd3a12c9697d9329d46c
 -->
 # How ClutchWork works
 
@@ -55,6 +55,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks; refuse a named path selecting no tracked file under a configured root. |
 | `meta fill [paths]` | yes | Fill metadata using a read-only model; refuse a named path selecting no tracked file under a configured root. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
+| `mcp hook-repo` | no | Read Antigravity hook input and remember the active Clutch project; no config or lock required. |
 | `mcp serve` | no | Run the stdio MCP server with read tools including project index search, ticket, Suggestion Box, detached engine-control tools, app-only UI verdict tools, and MCP Prompts. It serves the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats. Supported mutations submit to the running engine's inbox when its lock is held. `--check` verifies the dashboard and tools without serving. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |

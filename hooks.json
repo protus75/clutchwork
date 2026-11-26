@@ -1,0 +1,18 @@
+{
+  "clutch-active-repo": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "uvx --from clutchwork clutch mcp hook-repo",
+        "timeout": 5
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "uvx --from clutchwork clutch mcp hook-repo",
+        "timeout": 5
+      }
+    ]
+  }
+}

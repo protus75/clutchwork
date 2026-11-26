@@ -36,6 +36,39 @@ MCP_APP_MIME = "text/html;profile=mcp-app"
 DEFAULT_DASHBOARD_HTML = Path(__file__).parent / "ui" / "dashboard.html"
 
 
+def default_last_repo_path(env=None) -> Path:
+    values = os.environ if env is None else env
+    base = Path(values["XDG_CONFIG_HOME"]) if values.get("XDG_CONFIG_HOME") else Path.home() / ".config"
+    return base / "clutch" / "last-repo"
+
+
+def record_active_repo_from_hook(stdin, *, last_repo_path=None, env=None, fs=None) -> dict[str, object]:
+    try:
+        data = json.load(stdin)
+        if not isinstance(data, dict):
+            return {}
+        paths = data.get("workspacePaths")
+        candidates = [p for p in paths if isinstance(p, str)] if isinstance(paths, list) else []
+        if isinstance(data.get("cwd"), str):
+            candidates.append(data["cwd"])
+        for candidate in candidates:
+            if not candidate.strip():
+                continue
+            root = Path(candidate).resolve()
+            if root.is_dir() and (root / "tickets").is_dir():
+                path = last_repo_path if last_repo_path is not None else default_last_repo_path(env)
+                try:
+                    remembered = path.read_text(encoding="utf-8").strip()
+                except OSError, UnicodeError:
+                    remembered = ""
+                if remembered != str(root):
+                    (fs if fs is not None else LocalFileSystem()).write(path, f"{root}\n".encode())
+                break
+    except OSError, ValueError, TypeError, UnicodeError, RecursionError:
+        pass
+    return {}
+
+
 class Repo(BaseModel):
     model_config = ConfigDict(extra="forbid")
     repo: str | None = None
@@ -276,27 +309,22 @@ class ClutchMCPServer:
         self.cwd = Path(default_cwd or Path.cwd()).resolve()
         self.config_path = config_path
         self.env = dict(os.environ if env is None else env)
-        self.last_repo_path = (
-            last_repo_path if last_repo_path is not None else (Path(self.env["XDG_CONFIG_HOME"]) if self.env.get("XDG_CONFIG_HOME") else Path.home() / ".config") / "clutch" / "last-repo"
-        )
+        self.last_repo_path = last_repo_path if last_repo_path is not None else default_last_repo_path(self.env)
         self.ui_state_path = (
             ui_state_path if ui_state_path is not None else (Path(self.env["XDG_CONFIG_HOME"]) if self.env.get("XDG_CONFIG_HOME") else Path.home() / ".config") / "clutch" / "dashboard-state.json"
         )
         self.client_supports_roots = False
         self.roots: list[Path] = []
-        self.last_repo: Path | None = None
         self.clock = clock or (lambda: datetime.now(UTC))
         self.sleep, self.monotonic = sleep, monotonic
         self.exec_factory, self.git_factory, self.connect = exec_factory, git_factory, connect
 
     def default_repo(self):
-        if self.last_repo is None:
-            try:
-                remembered = self.last_repo_path.read_text(encoding="utf-8").strip()
-                self.last_repo = Path(remembered) if remembered else None
-            except OSError:
-                pass
-        for root in [*self.roots, self.cwd, self.last_repo]:
+        try:
+            remembered = self.last_repo_path.read_text(encoding="utf-8").strip()
+        except OSError, UnicodeError:
+            remembered = ""
+        for root in [*self.roots, Path(remembered) if remembered else None, self.cwd]:
             if root is not None and root.is_dir() and (root / "tickets").is_dir():
                 return root
         return None
@@ -314,7 +342,6 @@ class ClutchMCPServer:
         git = self.git_factory(exec_, env={**child_env(self.env, cfg), "GIT_OPTIONAL_LOCKS": "0"}, timeout=30.0, commit_lock=CommitLock(cfg.state_dir, clock=self.clock, sleep=asyncio.sleep))
         checkout = runner.Checkout(root, cfg, self.env, exec_, git, Journal(cfg.state_dir, self.clock), fs, self.clock)
         ctx = observe.Context(root, cfg.state_dir, (path or root / "config.yaml"), exec_, git, {**child_env(self.env, cfg), "GIT_OPTIONAL_LOCKS": "0"})
-        self.last_repo = root
         try:
             self.last_repo_path.parent.mkdir(parents=True, exist_ok=True)
             self.last_repo_path.write_text(str(root), encoding="utf-8")

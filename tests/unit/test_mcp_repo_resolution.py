@@ -4,8 +4,8 @@
 # purpose: Unit tests for how the MCP server resolves its repo: client roots protocol, then cwd, then saved last repo, plus checkout refusal
 # relates: [clutch/mcp.py, clutch/runner.py, tests/config_helpers.py]
 # owner: clutch/mcp.py
-# verified: 7baeb8ce
-# hash: 1460b4d4182bcd7746b825c8fafe5234fdd32f90541c8c46e728353bce9ba2a7
+# verified: c07897c9
+# hash: 20d90814e59ba3dc7644bd3caf89abcdd5e494bda2bec18f85c352658d9dd070
 import io
 import json
 
@@ -66,12 +66,10 @@ def test_resolution_and_persistence(tmp_path):
     server.roots = [roots[0]]
     assert server.default_repo() == roots[0]
     server.roots = []
-    assert server.default_repo() == roots[1]
+    assert server.default_repo() == roots[2]
     server.cwd = tmp_path / "missing"
-    server.last_repo = None
     assert server.default_repo() == roots[2]
     path.unlink()
-    server.last_repo = None
     assert server.call_tool("clutch_open_dashboard", mcp.Dashboard())[0]["ready"] is False
     with pytest.raises(runner.Refusal, match="checkout"):
         server.checkout(None)

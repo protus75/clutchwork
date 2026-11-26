@@ -168,7 +168,7 @@ export async function createDashboardApp(options = {}) {
   async function refresh() {
     if (refreshing) return; refreshing = true;
     try {
-      const [data, ping] = await Promise.all([callTool("clutch_app_snapshot"), callTool("clutch_engine_control", { action: "ping" })]); snap = data;
+      const [data, ping] = await Promise.all([callTool("clutch_app_snapshot"), callTool("clutch_engine_control", { action: "ping" })]); const changedRoot = snap?.root && snap.root !== data.root; if (changedRoot) ticketsView.setPinned(undefined); snap = data;
       if (snap.root) recentRepos = [snap.root, ...recentRepos.filter(path => path !== snap.root)].slice(0, 10);
       const running = ping.engine && snap.engine;
       notice.textContent = ""; repoInput.value = explicitRepo || snap.root || "";
@@ -177,14 +177,15 @@ export async function createDashboardApp(options = {}) {
       if (running) toolbar.append(iconButton("Stop", "stop", async () => { await callTool("clutch_engine_control", { action: "stop" }); await refresh(); }));
       for (const [label, icon, action] of [["Refresh", "refresh", refresh], ["Open config.yaml", "gear", () => openFile(snap?.configPath)]]) { const control = iconButton("", icon, action); control.title = label; control.setAttribute("aria-label", label); toolbar.append(control); }
       const repoSelect = el("select", undefined, "repo-select"); repoSelect.setAttribute("aria-label", "Switch repository");
+      const auto = el("option", snap.root ? `Auto: ${snap.root.replace(/\/+$/, "").split("/").pop()}` : "Auto (active project)"); auto.value = ""; repoSelect.append(auto);
       for (const path of recentRepos) { const option = el("option", path.replace(/\/+$/, "").split("/").pop() || path); option.value = path; option.title = path; repoSelect.append(option); }
       const other = el("option", "Other path..."); other.value = "__other__"; repoSelect.append(other);
-      repoSelect.value = explicitRepo || snap.root || ""; repoSelect.title = explicitRepo || snap.root || "";
+      repoSelect.value = explicitRepo; repoSelect.title = explicitRepo || snap.root || "";
       repoSelect.addEventListener("change", () => { if (repoSelect.value === "__other__") { repoOpen = true; repoSwitcher.hidden = false; } else { explicitRepo = repoSelect.value; repoOpen = false; repoSwitcher.hidden = true; refresh(); } });
       toolbar.append(repoSelect);
       repoSwitcher.hidden = !!snap.root && !repoOpen;
       if (!boxInitialized) { sections.box.open = snap.boxCounts.pending > 0; boxInitialized = true; }
-      ticketsView.render(snap); boxView.render(snap); detailView.render(snap, focus); renderActions();
+      ticketsView.render(snap); boxView.render(snap); if (changedRoot) focus = undefined; detailView.render(snap, focus); renderActions();
       steps.replaceChildren(...snap.steps.map(stepRow));
       help.replaceChildren();
       const svg = document.querySelector("body > div[hidden] svg"); if (svg) { const diagram = el("div", undefined, "lifecycle-diagram"); diagram.append(svg.cloneNode(true)); help.append(diagram); }

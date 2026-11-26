@@ -4,8 +4,8 @@ kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 69d790e1
-hash: aeebfb6d47a543b6fd64a2ca64c52b6b389b0d272aacaa9333c4e4867076a545
+verified: c07897c9
+hash: 42c2e27d93eb24ca371dce04a9ff5d091203fd41bd80b6134ba7c0f2a8f3fc7e
 -->
 # Host contract
 
@@ -74,7 +74,7 @@ The Help command lists help topics, and hover help explains extension surfaces.
 
 ## Antigravity plugin
 
-Run `clutch host antigravity [--plugin-dir PATH] [--workspace]` to install the global plugin at `~/.gemini/config/plugins/clutchwork/`, choose another plugin directory, or write workspace skills under `.agents/skills/`. Antigravity automatically loads conduct files installed by `clutch host core`. After upgrades toggle [ClutchWork](customization://clutchwork) to reload the stdio MCP server. `clutch host doctor` warns about plugin MCP configuration drift or an unresolvable executable.
+Run `clutch host antigravity [--plugin-dir PATH] [--workspace]` to install the global plugin at `~/.gemini/config/plugins/clutchwork/`, choose another plugin directory, or write workspace skills under `.agents/skills/`. The plugin tracks the active project automatically through `hooks.json`. Antigravity automatically loads conduct files installed by `clutch host core`. After upgrades toggle [ClutchWork](customization://clutchwork) to reload the stdio MCP server. `clutch host doctor` warns about plugin MCP configuration drift or an unresolvable executable.
 
 ## Python host test setup
 

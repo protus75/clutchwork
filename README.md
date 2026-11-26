@@ -125,7 +125,7 @@ For a feature, ask the chat agent to plan it and turn the plan into tickets, the
 
 ## Antigravity plugin
 
-The portable plugin is a thin wrapper: `plugin.json`, `mcp_config.json`, `assets/logo.png`, and `skills/clutch-*/SKILL.md` point to engine logic, MCP tools, and the bundled dashboard in the `clutchwork` Python package. No per-host `clutchwork` dependency is required.
+The portable plugin is a thin wrapper: `plugin.json`, `mcp_config.json`, `hooks.json`, `assets/logo.png`, and `skills/clutch-*/SKILL.md` point to engine logic, MCP tools, and the bundled dashboard in the `clutchwork` Python package. No per-host `clutchwork` dependency is required. Hooks automatically follow the active Antigravity project.
 
 For a local machine installation, run `uv run clutch host antigravity` to install the global ClutchWork plugin and configure its stdio MCP server and dashboard. Use `--plugin-dir PATH` to choose a location or `--workspace` to write workspace skills. After upgrading, toggle ClutchWork at `customization://clutchwork` to reload the server. `clutch host doctor` warns if the installed plugin configuration drifts or its executable cannot resolve.
 

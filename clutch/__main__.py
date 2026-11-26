@@ -294,8 +294,8 @@ def _parser() -> argparse.ArgumentParser:
     mcp_group = sub.add_parser(
         "mcp",
         help="run the MCP server",
-        description="Run MCP read, ticket, Suggestion Box, and detached engine-control tools; serve the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats.",
-        epilog="Examples:\nclutch mcp serve\n  Serve MCP over stdio.",
+        description="Subcommands: serve, hook-repo. Run MCP read, ticket, Suggestion Box, and detached engine-control tools; serve the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats.",
+        epilog="Examples:\nclutch mcp serve\n  Serve MCP over stdio.\nclutch mcp hook-repo\n  Record the active workspace from hook input.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     mcp_sub = mcp_group.add_subparsers(dest="mcp_verb", required=True)
@@ -311,6 +311,18 @@ def _parser() -> argparse.ArgumentParser:
         examples=["clutch mcp serve", "clutch mcp serve --check"],
     )
     mcp_serve.add_argument("--check", action="store_true")
+    _command(
+        mcp_sub,
+        "hook-repo",
+        summary="record the active workspace",
+        does="Read Antigravity hook input and remember its first Clutch workspace.",
+        reads="Hook JSON on stdin and the remembered repository; no config.",
+        writes="The remembered repository when changed and JSON to stdout.",
+        lock="None.",
+        exits="0, including invalid input or I/O errors.",
+        examples=["clutch mcp hook-repo"],
+    )
+
     view = sub.add_parser(
         "view",
         help="show read-only engine views",
@@ -1321,6 +1333,9 @@ def main(
     if args.verb == "mcp":
         from clutch import mcp
 
+        if args.mcp_verb == "hook-repo":
+            print(json.dumps(mcp.record_active_repo_from_hook(sys.stdin, env=env)))
+            return 0
         try:
             if args.check:
                 mcp.check_server(mcp.ClutchMCPServer(default_cwd=repo, config_path=args.config, env=env, clock=clock))
