@@ -15,6 +15,7 @@ none
 - tests/mcp_app_dashboard.js
 - tests/integration/test_mcp_app_dashboard.py
 - dev.py::build_ui_bundle
+- tickets/mcp-dashboard-repo-switch-and-errors/evidence/dashboard-ux-evidence.txt
 
 ## Goal / Why
 Fix three operator-blocking UX defects in the Antigravity ClutchWork MCP dashboard (`tickets/mcp-dashboard-repo-switch-and-errors/evidence/dashboard-ux-evidence.txt`):
@@ -46,8 +47,8 @@ In scope:
   - Style `.notice` as a high-contrast sticky alert banner (`position: sticky; top: 0; z-index: 20`, tinted danger background, strong left accent border, padding, border-radius, word-wrap, flex layout with dismiss button) so errors cannot be overlooked or scrolled away, and distinct `.notice-loading` styling for loading state.
 - In `tests/mcp_app_dashboard.js`:
   - Update the single stats-on-boot assertion (line 70) so it opens `section('stats')` before asserting `clutch_app_stats` was called, while keeping every other existing assertion intact.
-- Add `tests/mcp_app_dashboard_switch_errors.js` covering repo-switch blanking + stale-response discard, manual Refresh preempting a stuck poll, lazy stats loading, and error banner `paved_road` + dismiss behavior.
-- Update `tests/integration/test_mcp_app_dashboard.py` to run `tests/mcp_app_dashboard_switch_errors.js` against the built bundle in addition to `tests/mcp_app_dashboard.js`.
+- Add `tests/mcp_app_dashboard_switch_errors.js` accepting `process.argv[2]` as the path to the built `dashboard.html` bundle, covering: repo-switch blanking + stale-response discard, manual Refresh preempting a stuck poll (while back-to-back background polls coalesce), lazy stats loading + stale stats response discard on repo/window change, error banner `paved_road` + persist across passive poll + clear on Dismiss or explicit Refresh/repo switch, and CSS text check on `clutch/ui/dashboard.css` asserting `.notice` includes `position: sticky`, `top: 0`, and `z-index: 20`.
+- Update `tests/integration/test_mcp_app_dashboard.py` to invoke `subprocess.run(["node", str(ROOT / "tests/mcp_app_dashboard_switch_errors.js"), str(out)], check=True, timeout=20)` right after `tests/mcp_app_dashboard.js` against the built bundle.
 - Add `tests/regress_mcp_dashboard_switch_errors.py` speaking the `regression_result` JSON protocol.
 
 Out of scope:
@@ -66,8 +67,8 @@ Out of scope:
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_mcp_app_dashboard.py` passes `tests/mcp_app_dashboard_switch_errors.js`, proving that switching `repoSelect` while an earlier `clutch_app_snapshot` promise is still pending: (a) immediately clears the old repo's tickets/steps/details/box DOM text and shows a loading notice rather than leaving old repo rows visible; (b) issues a new `clutch_app_snapshot` for the newly selected repo rather than dropping the switch; and (c) discards the earlier repo's response when it resolves later so the newly selected repo stays rendered.
 2. `./dev.py test tests/integration/test_mcp_app_dashboard.py` proves that clicking the manual Refresh button while a background poll is in flight issues a fresh `clutch_app_snapshot` (not silently dropped), while two back-to-back background interval ticks still coalesce to one snapshot call.
-3. `./dev.py test tests/integration/test_mcp_app_dashboard.py` proves that `clutch_app_stats` is not called on initial boot when `sections.stats.open` is `false` (ruling out eager 4.6s stats fetches on collapsed sections) and is called once `sections.stats` toggles open.
-4. `./dev.py test tests/integration/test_mcp_app_dashboard.py` proves that a tool error returning `{code, message, paved_road}` renders a `role="alert"` `.notice` banner styled with `position: sticky` in `clutch/ui/dashboard.css` displaying the warning icon, `message`, `paved_road`, and a Dismiss button, that a subsequent passive background poll does not clear the error banner, and that clicking Dismiss hides `.notice` (ruling out a bare easily overlooked red line that vanishes on the next poll).
+3. `./dev.py test tests/integration/test_mcp_app_dashboard.py` runs `tests/mcp_app_dashboard_switch_errors.js` and proves that `clutch_app_stats` is not called on initial boot when `sections.stats.open` is `false` (ruling out eager 4.6s stats fetches on collapsed sections), is called once `sections.stats` toggles open, and discards a slow `clutch_app_stats` response that resolves after the repo or stats window has changed (ruling out stale stats overwriting the newer selection).
+4. `./dev.py test tests/integration/test_mcp_app_dashboard.py` runs `tests/mcp_app_dashboard_switch_errors.js` and proves that: (a) a tool error returning `{code, message, paved_road}` renders a `role="alert"` `.notice` banner displaying the warning icon, `message`, `paved_road`, and a Dismiss button; (b) reading `clutch/ui/dashboard.css` text confirms `.notice` declares `position: sticky`, `top: 0`, and `z-index: 20`; (c) a subsequent passive background poll does not clear the error banner; and (d) clicking Dismiss or running an explicit Refresh/repo switch clears/hides `.notice` (ruling out a bare easily overlooked red line that vanishes on the next poll).
 5. `uv run python tests/regress_mcp_dashboard_switch_errors.py` prints `{"regression_result": "pass"}` and exits 0 on the branch, and prints `{"regression_result": "defect"}` with non-zero exit on merge base.
 
 ## Verification
