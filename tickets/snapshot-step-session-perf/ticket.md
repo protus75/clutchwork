@@ -32,8 +32,8 @@ Restore `observe.snapshot` latency after `extension-step-copy-session-id` reintr
 ## Scope in / Scope out
 In scope:
 - Update `step_session` in `clutch/observe.py` so it filters candidate call directories by the URL-encoded key prefix `quote(f"llm/{stem}/{run_seq}/{surface}/{attempt}/", safe="")` (matching the canonical key layout `llm/<stem>/<run_seq>/<surface>/<attempt>/<call_seq>` in `clutch/llmeffect.py`) before reading any `start.json` file.
-- Accept an optional pre-indexed or pre-listed calls mapping/sequence (or index `(state / "evidence" / "calls")` once in `snapshot()`) so `snapshot()` scans `evidence/calls` at most once instead of once per step and once per running ticket.
-- Add unit tests in `tests/unit/test_observe_step_session_perf.py` (new file) covering prefix filtering, exact session attachment, tie-breaking, unreadable `start.json` tolerance, and bounded `start.json` read counts that do not scale with unrelated evidence calls.
+- Update `_open_calls` and `step_session` in `clutch/observe.py` to accept an optional pre-listed sequence/index of `evidence/calls` entries, and list `(state / "evidence" / "calls")` at most once inside `snapshot()`, passing those entries into both `_open_calls` and `step_session` so `snapshot()` never scans `evidence/calls` per step or per running ticket.
+- Add unit tests in `tests/unit/test_observe_step_session_perf.py` (new file) covering prefix filtering, exact session attachment, tie-breaking, unreadable `start.json` tolerance, bounded `start.json` read counts that do not scale with unrelated evidence calls, and a spy asserting `evidence/calls` is listed at most once per `snapshot()` with multiple running tickets and multiple recent steps.
 - Add regression reproducer `tests/regress_snapshot_step_session_perf.py` speaking the `regression_result` JSON protocol.
 
 Out of scope:
@@ -47,10 +47,11 @@ Out of scope:
 - tests/regress_snapshot_step_session_perf.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_observe_step_session_perf.py` passes and proves that with 100 unrelated evidence call directories and 5 recent steps, `observe.snapshot` opens zero `start.json` files for unrelated calls (ruling out an $O(\text{steps} \times \text{calls})$ full-directory scan) while attaching the exact latest `session` and `contextValue` for each matching step.
-2. `./dev.py test tests/unit/test_observe_step_session_perf.py` proves `step_session(evidence, stem, surface, attempt, run_seq)` called directly opens only `start.json` files whose directory name matches `llm/<stem>/<run_seq>/<surface>/<attempt>/`, not unrelated call directories, and returns `None` rather than raising when a matching `start.json` is malformed or lacks native IDs.
-3. `./dev.py test tests/unit/test_observe_step_session.py` passes unchanged, confirming existing session attachment and `clutchCopySession` menu behavior are preserved (not dropped or altered).
-4. `uv run python tests/regress_snapshot_step_session_perf.py` prints `{"regression_result": "pass"}` and exits 0 on the branch, and prints `{"regression_result": "defect"}` with non-zero exit on merge base.
+1. `./dev.py test tests/unit/test_observe_step_session_perf.py` passes and proves that with 100 unrelated evidence call directories, 2 running tickets, and 5 recent steps, `observe.snapshot` opens zero `start.json` files for unrelated calls (ruling out an $O(\text{steps} \times \text{calls})$ full-directory scan) while attaching the exact latest `session` and `contextValue` for each matching step.
+2. `./dev.py test tests/unit/test_observe_step_session_perf.py` spies on directory listing of `evidence / "calls"` (`Path.glob`, `Path.iterdir`, and `os.scandir` on that directory) and proves `observe.snapshot` lists `evidence/calls` at most once across 2 running tickets and 5 recent steps (ruling out per-step or per-running-ticket directory scans).
+3. `./dev.py test tests/unit/test_observe_step_session_perf.py` proves `step_session(evidence, stem, surface, attempt, run_seq)` called directly opens only `start.json` files whose directory name matches `llm/<stem>/<run_seq>/<surface>/<attempt>/`, not unrelated call directories, and returns `None` rather than raising when a matching `start.json` is malformed or lacks native IDs.
+4. `./dev.py test tests/unit/test_observe_step_session.py` passes unchanged, confirming existing session attachment and `clutchCopySession` menu behavior are preserved (not dropped or altered).
+5. `uv run python tests/regress_snapshot_step_session_perf.py` prints `{"regression_result": "pass"}` and exits 0 on the branch, and prints `{"regression_result": "defect"}` with non-zero exit on merge base.
 
 ## Verification
 ```
