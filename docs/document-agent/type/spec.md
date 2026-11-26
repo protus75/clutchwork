@@ -16,7 +16,16 @@ verified: d7719818
 hash: bb951deeb5ff2b939467bb0a47c057d6c09aa3f8eb1d7df63aaf8b2b4bd16787
 -->
 
-Produce specification-form Markdown for an implementer. Choose the structure according to the operation.
+Produce specification-form Markdown for an implementer. Annotate the document as a Spec/Contract (`kind: spec`) and never mix always-loaded AI behavioral rules into it. Choose the structure according to the operation.
+
+## Obligation keywords
+
+Use RFC 2119 keywords (`MUST`, `MUST NOT`, `SHOULD`, `MAY`) consistently so implementers and fidelity auditors have an unambiguous obligation scale:
+- `MUST` / `MUST NOT` for required invariants, contracts, and refusals.
+- `SHOULD` only with its override condition (when deviation is permitted and what it requires).
+- `MAY` for explicitly permitted behavior or optional extensions.
+
+Do not invent obligation force where the source is silent or contradictory: leave ambiguous passages unresolved and surface missing or conflicting `MUST`/`SHOULD`/`MAY` qualifications for owner resolution.
 
 ## Create from supplied requirements
 

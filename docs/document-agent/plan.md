@@ -53,10 +53,10 @@ Each dimension value is a **facet**: one Markdown file with frontmatter, kept un
 
 | Dimension | Initial values | Kind | Applies at |
 |---|---|---|---|
-| Type | `plan`, [roadmap](../../clutch/specs/doc/facets/type/roadmap.md), `seed`, `overview`, `architecture`, `api`, `spec`, `whitepaper`, `blog`, `release-notes` | prompt facet: required sections and their order, what each section is for | create, derive |
+| Type | `plan`, [roadmap](../../clutch/specs/doc/facets/type/roadmap.md), `seed`, `overview`, `architecture`, `api`, `spec`, `ai-rule`, `whitepaper`, `blog`, `release-notes` | prompt facet: required sections and their order, what each section is for | create, derive |
 | Audience | [technical](audience/technical.md), [non-technical](audience/non-technical.md), [ai](audience/ai.md), [user](audience/user.md), [developer](audience/developer.md), [student](audience/student.md) | prompt facet: assumed knowledge, vocabulary, what to explain, what to leave out | create, derive |
 | Tone | [default](tone/default.md), [examples](tone/examples.md) | prompt facet. `examples` takes example files as data: "match the voice, sentence length, and structure; never copy content" | create, derive |
-| Review | `scope`, `viability`, `buildability`, `automatable`, `compression` | lens facet (section 4): roles, run shape, prompts, output schema, verdict set | review |
+| Review | `scope`, `viability`, `buildability`, `automatable`, `compression`, `rules` | lens facet (section 4): roles, run shape, prompts, output schema, verdict set | review |
 | Format | [markdown](format/markdown.md), [html](format/html.md), [pdf](format/pdf.md) | render facet, mechanical, no model | render |
 | Theme | [light](theme/light.md), [dark](theme/dark.md) | render facet: a CSS token file, used by `html` and `pdf` only | render |
 
@@ -74,7 +74,8 @@ The first-pass Type prompts below are design examples. Their project references 
 | [Overview](type/overview.md) | Section 5 defines audience-change fidelity. The [running guide](../../clutch/docs/host-running.md) supplies operator actions and outcomes when explaining Clutch. |
 | [Architecture](type/architecture.md) | The [boundary-contract plan](../boundary-contract-plan.md) identifies owners and consumers. [How Clutch works](../how-clutch-works.md) distinguishes authoritative state, effects, diagnostics, and projections. |
 | [API](type/api.md) | The [boundary-contract plan](../boundary-contract-plan.md) defines the producer and consumer contract. A named phase gives the [Buildability dry run](review/BuildItReview.md) a scope for writing stubs from the reference alone. |
-| [Spec](type/spec.md) | [Compression and fidelity review](review/CompressionReview.md) preserves normative force, headings, protected regions, and unresolved differences. Section 5 defines promotion. |
+| [Spec](type/spec.md) | [Compression and fidelity review](review/CompressionReview.md) preserves RFC 2119 force (`MUST`/`SHOULD`/`MAY`), headings, protected regions, and unresolved differences, and suggests missing/conflicting obligation qualifications. Section 5 defines promotion. |
+| [AI rule](type/ai-rule.md) | Always-loaded agent rule files (`CLAUDE.md`, `AGENTS.md`, nested rules), separated from Specs/Contracts (`kind: rule` vs. `kind: spec`). Audited by [RuleReview.md](review/RuleReview.md) for `< 200 lines` / `< 8 KB` budget, `0.0`--`1.0` force ranking, gate redundancy, discoverability, peer parity, and scoping. |
 | [Whitepaper](type/whitepaper.md) | The [evidence trail](../evidence-trail-plan.md) and [training-data plan](../training-data-plan.md) distinguish captured observations, derived records, outcome labels, and proposed evaluations. |
 | [Blog](type/blog.md) | Section 5 governs fidelity when changing audience. For a run narrative, [How Clutch works](../how-clutch-works.md) identifies the artifacts that support claims about what happened. |
 | [Release notes](type/release-notes.md) | The [changelog](../../CHANGELOG.md) identifies release entries. [How Clutch works](../how-clutch-works.md) distinguishes a local release tag from publication. |
@@ -168,6 +169,7 @@ Reply gates (fail closed, with re-prompting as the driver does now):
 | `buildability` | [BuildItReview.md](review/BuildItReview.md) | `build-it` | What does an implementer have to invent, because the document does not decide it? | 3 isolated dry-run implementers for `<PHASE_SCOPE>` → 1 synthesis | SELF-CONTAINED / GAPS-FIXABLE / NOT SELF-CONTAINED |
 | `compression` | [CompressionReview.md](review/CompressionReview.md) | | Rewrite in specification form with nothing lost | 1 compressor (writes a draft) → 1 isolated fidelity auditor | LOSSLESS / LOSSY-MINOR / LOSSY |
 | `automatable` | [AutomatableReview.md](review/AutomatableReview.md) | | Could an AI pipeline carry the document to merged code with no human decisions? | 3 isolated dry-run *ticket authors* → mechanical lint → 1 synthesis | AUTOMATABLE / AUTOMATABLE-WITH-GATES / NOT AUTOMATABLE AS WRITTEN |
+| `rules` | [RuleReview.md](review/RuleReview.md) | `ai-rules` | Is this AI rule file within context budget, disciplined on `MUST`/`NEVER` flags, free of gate-covered/discoverable bloat, and aligned with peer rule files? | mechanical pre-check (lines/bytes, `clutch:meta`, extraction markers) → 3 isolated rule reviewers (with optional `<PEER_PATHS>`) → 1 synthesis | LEAN / TRIMMABLE / BLOATED-OR-DRIFTED |
 
 What every lens shares, taken from the prompts:
 
@@ -302,6 +304,16 @@ documents:
 ```
 
 A new `Documents` model in `clutch/config.py` with a default, so existing configs load unchanged. The block is `documents`, not `docs`, because `docs` is already a verb (`clutch/__main__.py:311`) and the `clutch/docs/` guide directory; `documents.review` sits beside the top-level `review` block and shares nothing with it.
+
+### 10. Plugin surface (evaluation)
+
+Whether packaging document-agent workflows as a plugin helps:
+
+- **Where a plugin helps:**
+  - **Portable interactive skills:** packaging guided drafting (`/doc-plan`) and review flows (`/doc-review`, `/rule-review`) as plugin skills lets Antigravity, Claude Code, and other plugin-capable CLIs discover them without duplicating per-editor menu wiring.
+  - **Review and fold-back UX:** an optional MCP tool + UI panel can show `docset.yaml` staleness, side-by-side canonical vs. derived diffs, `RuleReview` `0.0`–`1.0` force tables, and accept/reject controls for proposed edits.
+- **What stays in core `clutch`:** isolated calls (`isolated-readonly-call`), panel combiners, schema/accounting gates, `docset.yaml` state, and mechanical pre-checks stay engine-owned so headless CLI runs and plugin-driven runs share one implementation.
+- **Decision / timing:** Do not build a separate document-agent plugin ahead of v1 (`0.8.0` CLI verbs first). Once the `clutch doc` verbs and `docset.yaml` status land, expose them by extending the existing `clutchwork` plugin (skills + read-only MCP wrappers) rather than shipping a second standalone plugin.
 
 ## Where each piece lives
 
