@@ -1,0 +1,294 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d803ea3fa2e7583d569e3df4b06702d46be7449c",
+  "stem": "antigravity-cli-provider",
+  "passed": false,
+  "changed_files": [
+    "README.md",
+    "clutch/__main__.py",
+    "clutch/config.py",
+    "clutch/docs/host-antigravity.md",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-gemini.md",
+    "clutch/docs/host-running.md",
+    "clutch/evidence/antigravity.py",
+    "clutch/evidence/gemini.py",
+    "clutch/evidence/views.py",
+    "clutch/gemini-readonly.json",
+    "clutch/gemini-write.json",
+    "clutch/observe.py",
+    "clutch/providers.py",
+    "clutch/training.py",
+    "config.yaml",
+    "docs/how-clutch-works.md",
+    "tests/fixtures/evidence/antigravity/README.md",
+    "tests/fixtures/evidence/antigravity/stream.jsonl",
+    "tests/fixtures/evidence/gemini/README.md",
+    "tests/fixtures/evidence/gemini/stream.jsonl",
+    "tests/integration/test_antigravity_provider.py",
+    "tests/integration/test_cli.py",
+    "tests/integration/test_closed_sets.py",
+    "tests/integration/test_evidence_antigravity_fixture.py",
+    "tests/integration/test_evidence_gemini_fixture.py",
+    "tests/integration/test_gemini_provider.py",
+    "tests/integration/test_provider_parsed_fixtures.py",
+    "tests/unit/test_antigravity_adapter.py",
+    "tests/unit/test_callmeter_events.py",
+    "tests/unit/test_docs_verb.py",
+    "tests/unit/test_evidence_antigravity.py",
+    "tests/unit/test_evidence_gemini.py",
+    "tests/unit/test_evidence_views.py",
+    "tests/unit/test_gemini_adapter.py",
+    "tests/unit/test_init_config_verb.py",
+    "tests/unit/test_install_verb.py",
+    "tests/unit/test_main_host_group.py",
+    "tests/unit/test_main_provider_group.py",
+    "tests/unit/test_observe_extension_fields.py",
+    "tests/unit/test_observe_provider_installs.py",
+    "tests/unit/test_provider_parsed_events.py",
+    "tests/unit/test_training_export_conflict.py",
+    "tests/unit/test_training_ticket_kind.py",
+    "tests/unit/test_update_config_verb.py",
+    "tests/unit/test_watchdog_antigravity.py",
+    "tests/unit/test_watchdog_gemini.py"
+  ],
+  "inserted_lines": 536,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_preflight_once_per_session.py::test_failed_and_raising_preflight_retry failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 33.233094,
+        "passed": 2453,
+        "failed": 1,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 3.258672321040649,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 3.0405969450366683,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 2.784529833996203,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 2.027639497013297,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.9026499819592573,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.8528321249759756,
+          "tests/unit/test_index_build.py::test_incremental_and_deletion": 1.8014295650064014,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.688009925012011,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.6720682129380293,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.6394499550224282,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.4271761150448583,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.2889058170258068,
+          "tests/unit/test_tickets_tolerant_reader.py::test_never_raises": 1.267682765959762,
+          "tests/unit/test_provider_live_native_ids.py::test_no_id_stays_null": 1.2525730580091476,
+          "tests/unit/test_index_embeddings.py::test_failure_and_recovery[reply0-exit 2]": 1.245608581986744,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[nonzero]": 1.2409795759595,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[spawn]": 1.2369037209427916,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[negative]": 1.2084197609801777,
+          "tests/unit/test_images_checks.py::test_previews_are_png_and_do_not_write": 1.2054201120045036,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[timeout]": 1.2020066349650733,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.1937678990652785,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[True]": 1.1880402169772424,
+          "tests/unit/test_index_build.py::test_git_failures_and_calls": 1.1637117309728637,
+          "tests/unit/test_evidence_envelope.py::test_writing_call_records_trees_and_cleans_scratch": 1.1597988608991727,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.1494156669359654,
+          "tests/unit/test_index_embeddings.py::test_length_mismatch_new_and_existing": 1.1238371650106274,
+          "tests/unit/test_evidence_envelope.py::test_records_and_blobs_carry_no_secret": 1.1112829860066995,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.1060409299680032,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[cancel]": 1.1040684140170924,
+          "tests/unit/test_images_checks.py::test_no_inputs_and_blank": 1.0683715359773487,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.0626450879499316,
+          "tests/unit/test_runner_attempt_manifest.py::test_manifest_harvest[rejected]": 1.0450524999760091,
+          "tests/unit/test_runner_attempt_manifest.py::test_manifest_harvest[gate_failed]": 1.0445893059950322,
+          "tests/unit/test_runner_attempt_manifest.py::test_manifest_harvest[premise_failed]": 1.0444831859203987,
+          "tests/unit/test_index_build.py::test_rows_and_open": 1.0239826979814097
+        }
+      },
+      "coverage": {
+        "percent": 78.88101184242326,
+        "files": {
+          "clutch/__main__.py": 82.12290502793296,
+          "clutch/config.py": 78.78787878787878,
+          "clutch/evidence/antigravity.py": 92.22222222222223,
+          "clutch/evidence/views.py": 100.0,
+          "clutch/observe.py": 67.22513089005236,
+          "clutch/providers.py": 86.11422172452407,
+          "clutch/training.py": 93.07359307359307
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "integration",
+          "path": null,
+          "line": null,
+          "message": "tests/integration/test_git_fake_adoption.py::test_git_fake_adoption failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 16.451931,
+        "passed": 324,
+        "failed": 1,
+        "skipped": 3292,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.656191590067465,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.3426151679595932,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.3130260870675556,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.029336682986468,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043653130414896
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_antigravity_adapter.py",
+        "tests/unit/test_evidence_antigravity.py",
+        "tests/unit/test_watchdog_antigravity.py",
+        "tests/unit/test_callmeter_events.py",
+        "tests/unit/test_provider_parsed_events.py",
+        "tests/unit/test_evidence_views.py",
+        "tests/unit/test_install_verb.py",
+        "tests/unit/test_main_provider_group.py",
+        "tests/unit/test_init_config_verb.py",
+        "tests/unit/test_update_config_verb.py",
+        "tests/unit/test_docs_verb.py",
+        "tests/unit/test_main_host_group.py",
+        "tests/unit/test_observe_extension_fields.py",
+        "tests/unit/test_observe_provider_installs.py",
+        "tests/unit/test_training_export_conflict.py",
+        "tests/unit/test_training_ticket_kind.py",
+        "tests/integration/test_antigravity_provider.py",
+        "tests/integration/test_evidence_antigravity_fixture.py",
+        "tests/integration/test_provider_parsed_fixtures.py",
+        "tests/integration/test_closed_sets.py",
+        "tests/integration/test_providers.py",
+        "tests/integration/test_cli.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_antigravity_adapter.py tests/unit/test_evidence_antigravity.py tests/unit/test_watchdog_antigravity.py tests/unit/test_callmeter_events.py tests/unit/test_provider_parsed_events.py tests/unit/test_evidence_views.py tests/unit/test_install_verb.py tests/unit/test_main_provider_group.py tests/unit/test_init_config_verb.py tests/unit/test_update_config_verb.py tests/unit/test_docs_verb.py tests/unit/test_main_host_group.py tests/unit/test_observe_extension_fields.py tests/unit/test_observe_provider_installs.py tests/unit/test_training_export_conflict.py tests/unit/test_training_ticket_kind.py tests/integration/test_antigravity_provider.py tests/integration/test_evidence_antigravity_fixture.py tests/integration/test_provider_parsed_fixtures.py tests/integration/test_closed_sets.py tests/integration/test_providers.py tests/integration/test_cli.py\nbringing up nodes...\nbringing up nodes...\n\n.....................s...s..s....s.ss.s....s..s.ssss.ss.s..sssssssssssss [ 27%]\nsssssssssss.s..ssssss.ssssss..sssssssssssss.s.s..sssssssssssssss..ssssss [ 55%]\nsssssssssssssssssssssssssssssss.ssssss.ssssssssssssssssssssssss..sssss.s [ 83%]\nssssssssssssssssssssssssssssssssssssssssss.s                             [100%]\n61 passed, 199 skipped in 5.23s\n",
+      "base_red": false,
+      "seconds": 10.929596
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "ruff",
+        "check",
+        "."
+      ],
+      "rc": 0,
+      "tail": "All checks passed!\n",
+      "base_red": false,
+      "seconds": 9.615035
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ],
+      "rc": 0,
+      "tail": "917 files already formatted\n",
+      "base_red": false,
+      "seconds": 0.085834
+    }
+  ]
+}
