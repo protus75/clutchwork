@@ -1,0 +1,179 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "9c68fbbb55605851f2f23283ebbad1e42ee268fb",
+  "stem": "mcp-auto-switch-active-project",
+  "passed": true,
+  "changed_files": [
+    "README.md",
+    "clutch/__main__.py",
+    "clutch/antigravity.py",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-running.md",
+    "clutch/mcp.py",
+    "clutch/ui/app.js",
+    "docs/how-clutch-works.md",
+    "hooks.json",
+    "tests/mcp_app_dashboard.js",
+    "tests/unit/test_antigravity_bundle.py",
+    "tests/unit/test_antigravity_plugin.py",
+    "tests/unit/test_mcp_auto_project.py",
+    "tests/unit/test_mcp_repo_resolution.py"
+  ],
+  "inserted_lines": 223,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 23.672807,
+        "passed": 2457,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.5694131270283833,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.7512526999926195,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.4230129580246285,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.410247752966825,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.33416245598346,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.289698485052213,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.2876520300051197,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.2800074490369298,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.144701853976585,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1271365649881773,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.1213444189634174,
+          "tests/unit/test_tickets_tolerant_reader.py::test_never_raises": 1.1116156289936043,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[timeout]": 1.0893460350926034,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[nonzero]": 1.0845720789511688,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.01559033698868
+        }
+      },
+      "coverage": {
+        "percent": 78.92156862745098,
+        "files": {
+          "clutch/__main__.py": 82.19749652294854,
+          "clutch/antigravity.py": 98.36065573770492,
+          "clutch/mcp.py": 95.81151832460733
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 16.526039,
+        "passed": 325,
+        "failed": 0,
+        "skipped": 3292,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0792302089976147,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.3436132439528592,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.3366053409990855,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.1565256269532256,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043286040308885
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_mcp_auto_project.py",
+        "tests/unit/test_mcp_repo_resolution.py",
+        "tests/unit/test_antigravity_plugin.py",
+        "tests/unit/test_antigravity_bundle.py",
+        "tests/unit/test_main_help.py",
+        "tests/unit/test_main_mcp_serve.py",
+        "tests/unit/test_release_audit_070_gates.py",
+        "tests/unit/test_release_plugin_bundle.py",
+        "tests/integration/test_antigravity_bundle.py",
+        "tests/integration/test_antigravity_plugin.py",
+        "tests/integration/test_mcp_app_dashboard.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_mcp_auto_project.py tests/unit/test_mcp_repo_resolution.py tests/unit/test_antigravity_plugin.py tests/unit/test_antigravity_bundle.py tests/unit/test_main_help.py tests/unit/test_main_mcp_serve.py tests/unit/test_release_audit_070_gates.py tests/unit/test_release_plugin_bundle.py tests/integration/test_antigravity_bundle.py tests/integration/test_antigravity_plugin.py tests/integration/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n.................................................                        [100%]\n49 passed in 2.56s\n",
+      "base_red": false,
+      "seconds": 7.103809
+    }
+  ]
+}
