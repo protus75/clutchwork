@@ -11,8 +11,8 @@ plan change first (the owning section names the set), then a deliberate edit her
 # purpose: Pins every closed vocabulary, enumerated set and shipped engine constant by exact value, and checks the seams refuse values outside those sets
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/author.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/config.py]
 # owner: engine
-# verified: 06deb66c
-# hash: 24a6152262ed6ddaf11331478083cb8aa12847383a9eaabde49e277145fc66e3
+# verified: 69d790e1
+# hash: 55f790852bb08300ddada5a2915c509a1bf609b1fb5635342310ac2a0fa7a22b
 
 import typing
 from typing import get_args
@@ -275,7 +275,7 @@ def test_policy_closed_sets_and_constants():
 
 
 def test_providers_closed_sets_and_constants():
-    assert {k: ident(x) for k, x in providers.ADAPTERS.items()} == {"claude": "ClaudeAdapter", "codex": "CodexAdapter", "qwen": "QwenAdapter", "gemini": "GeminiAdapter"}
+    assert {k: ident(x) for k, x in providers.ADAPTERS.items()} == {"claude": "ClaudeAdapter", "codex": "CodexAdapter", "qwen": "QwenAdapter", "antigravity": "AntigravityAdapter"}
     assert providers.FAILURE_MARKERS == (
         ("quota_exhausted", ("quota exhausted", "usage limit reached", "out of extra usage", "exhausted your daily quota")),
         ("rate_limited", ("rate limit", "too many requests", "resource_exhausted")),
@@ -283,7 +283,7 @@ def test_providers_closed_sets_and_constants():
         ("model_error", ("model unavailable", "model not found", "model is not supported", "modelnotfounderror")),
     )
     assert set(get_args_deep(providers.FailureClass)) == {"auth_error", "model_error", "outage", "quota_exhausted", "rate_limited", "unclassified"}
-    assert {k: a.PACKAGE for k, a in providers.ADAPTERS.items()} == {"claude": "@anthropic-ai/claude-code", "codex": "@openai/codex", "qwen": "@qwen-code/qwen-code", "gemini": "@google/gemini-cli"}
+    assert {k: a.PACKAGE for k, a in providers.ADAPTERS.items()} == {"claude": "@anthropic-ai/claude-code", "codex": "@openai/codex", "qwen": "@qwen-code/qwen-code", "antigravity": None}
     assert providers.CLAUDE_ALIASES == ("haiku", "sonnet", "opus", "fable")
     assert providers.INSTALL_TIMEOUT_S == 600.0
     assert providers.PREFLIGHT_TIMEOUT_S == 120.0

@@ -86,6 +86,11 @@ class Provider(StrictModel):
     @model_validator(mode="after")
     def _cli_declares_its_package(self) -> "Provider":
         if self.kind == "cli" and not self.package:
+            from clutch.providers import ADAPTERS
+
+            adapter = ADAPTERS.get(self.name)
+            if adapter is not None and adapter.PACKAGE is None:
+                return self
             raise ValueError(f"cli provider {self.name!r} declares no `package`; name its pnpm package (provider preflight)")
         return self
 

@@ -509,11 +509,11 @@ def _parser() -> argparse.ArgumentParser:
         provider_sub,
         "install",
         summary="install provider CLIs into the host project as pnpm dev dependencies",
-        does="Install named provider CLIs as pnpm dev dependencies, then report their package, location and version; with no names, report every adapter.",
+        does="Install named provider CLIs as pnpm dev dependencies, then report their package, location and version; with no names, report every adapter, including providers installed outside pnpm.",
         reads="Provider CLI --version output from node_modules/.bin or PATH; no config.",
         writes="With names, package.json, pnpm-lock.yaml, pnpm-workspace.yaml and node_modules/ through pnpm; otherwise nothing.",
         lock="None.",
-        exits="0 when installed or reported; 2 on refusal (unknown provider, pnpm missing, pnpm add failed, or CLI printed no version after install).",
+        exits="0 when installed or reported; 2 on refusal (unknown or non-pnpm provider, pnpm missing, pnpm add failed, or CLI printed no version after install).",
         examples=["clutch provider install", "clutch provider install claude codex"],
     )
     install.add_argument("providers", nargs="*")
@@ -1340,7 +1340,7 @@ def main(
             ("running", "host operation"),
             ("contract", "host contract"),
             ("qwen", "local qwen provider setup"),
-            ("gemini", "gemini provider setup"),
+            ("antigravity", "antigravity provider setup"),
             ("training", "training data export and evaluation"),
         ):
             print(f"{Path(clutch.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
@@ -1354,7 +1354,7 @@ def main(
             try:
                 return suggest_config(statuses, listings)
             except ValueError:
-                raise runner.Refusal("no provider CLI found", f"run: clutch provider install {'|'.join(sorted(ADAPTERS))}") from None
+                raise runner.Refusal("no provider CLI found", f"run: clutch provider install {'|'.join(name for name in sorted(ADAPTERS) if ADAPTERS[name].PACKAGE is not None)}") from None
 
         text = asyncio.run(init_config())
         load_config_text(text, path=repo / "config.yaml", cwd=repo)
@@ -1371,6 +1371,10 @@ def main(
             if name not in ADAPTERS:
                 raise runner.Refusal(f"unknown provider {name!r}", f"name one of {', '.join(sorted(ADAPTERS))}")
 
+        for name in args.providers:
+            if ADAPTERS[name].PACKAGE is None:
+                raise runner.Refusal(f"{name} is not installed through pnpm", f"follow clutch/docs/host-{name}.md")
+
         async def install():
             exec_ = SubprocessExec()
             for name in args.providers or ADAPTERS:
@@ -1386,6 +1390,12 @@ def main(
                 status = await cli_status(name, exec_=exec_, env=env, cwd=repo)
                 if args.providers and status.version is None:
                     raise runner.Refusal(f"{name} CLI printed no version after install", f"rerun clutch provider install {name}; if this repeats, check that pnpm allowed the package's build script")
+                if status.package is None:
+                    print(
+                        f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, installed outside pnpm"
+                        + (f" -- follow clutch/docs/host-{name}.md" if status.where == "absent" else "")
+                    )
+                    continue
                 print(
                     f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}"
                     + (f" -- run: clutch provider install {name}" if status.where == "absent" else "")
@@ -1469,7 +1479,7 @@ def main(
                 try:
                     listing = await ADAPTERS[name].list_models(exec_=exec_, env=child_env(env, config, provider), cwd=repo)
                 except ExecutableNotFound as exc:
-                    raise runner.Refusal(str(exc), f"run: clutch provider install {name}") from None
+                    raise runner.Refusal(str(exc), f"follow clutch/docs/host-{name}.md" if ADAPTERS[name].PACKAGE is None else f"run: clutch provider install {name}") from None
                 print(name)
                 served = " ".join(f"{label}={model}" if label != model else model for label, model in listing.models.items())
                 print(f"  serves: {served or 'nothing listed'}")

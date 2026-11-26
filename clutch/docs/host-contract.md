@@ -2,10 +2,10 @@
 schema: clutch.meta/1.0
 kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
-relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
+relates: [clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 403faee1
-hash: e23e9a775597cbe91a28f4342a76971871c32465b85d230148be2f68bbe95f7b
+verified: 69d790e1
+hash: aeebfb6d47a543b6fd64a2ca64c52b6b389b0d272aacaa9333c4e4867076a545
 -->
 # Host contract
 
@@ -297,10 +297,9 @@ box_row: [failure_report, retro_finding, override_report, suggestion, bug_report
 
 `schema_version` must be the integer 1, not a boolean or string. `kind: api`
 is currently refused: use `cli`; Implement requires a CLI even when API support
-eventually ships. Every CLI requires a nonempty `package` despite its unset model
-default. Shipped runtime adapters are `claude`, `codex`, `qwen` (see [qwen setup](host-qwen.md)), and `gemini` (see [gemini setup](host-gemini.md)); the loader accepts
+eventually ships. Pnpm-installed CLIs require a nonempty `package`; non-pnpm adapters such as `antigravity` omit it. Shipped runtime adapters are `claude`, `codex`, `qwen` (see [qwen setup](host-qwen.md)), and `antigravity` (see [antigravity setup](host-antigravity.md)); the loader accepts
 other names but provider setup refuses names without an adapter. `auth` names an
-environment variable, never a literal secret. Codex, qwen, and gemini report no cost and require
+environment variable, never a literal secret. Codex, qwen, and antigravity report no cost and require
 `est_cost_per_call_usd` at adapter setup; Claude can report actual cost. `base_url` is required for qwen and refused for the other adapters. Estimates
 are nonnegative, count fields are integers at least 1, and retry must not exceed
 diagnosis. Providers, routing, route candidates, argv and strategy paths are

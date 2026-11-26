@@ -4,8 +4,8 @@
 # purpose: Tests ticket-kind export: latest author call selection, authored_by from source, skipping bad or missing calls, scrubbing, holdout, Gemini streams, and the report requiring a ticket count.
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: cb71e4f8
-# hash: 301852fa52d5659daed7bd7d933f5ca5f7c887007d3aaffb94071bfbf7706881
+# verified: 69d790e1
+# hash: cf51f186d17fb12ac11342e4a7022aa811fff7089d0d061b0c5a5d9e23d35279
 import asyncio
 import json
 from pathlib import Path
@@ -28,8 +28,8 @@ class Store:
     def add(self, key, reply, attempt=1, adapter="ClaudeAdapter", surface="author"):
         self.starts[key] = NS(run_seq=1, attempt=attempt, call=1, surface=surface, provider=NS(adapter=adapter), prompt=NS(blob="prompt"), engine=NS(version="v", spec="author", spec_version="1"))
         self.ends[key] = NS(raw=NS(stdout=key))
-        if adapter == "GeminiAdapter":
-            events = [{"type": "message", "role": "assistant", "content": part, "delta": True} for part in reply]
+        if adapter == "AntigravityAdapter":
+            events = [{"event": "step_update", "step_update": {"step_type": "agent_response", "text_delta": part}} for part in reply]
         else:
             events = [{"type": "assistant", "message": {"content": [{"type": "text", "text": part}]}} for part in reply]
         self.blobs[key] = "\n".join(json.dumps(event) for event in events).encode()
@@ -105,7 +105,7 @@ def test_surfaces_and_gemini():
     store.add("review", [reply()], surface="review")
     assert export(store)[0]["ticket.jsonl"] == b""
     assert "ticket.jsonl" not in export(store, kinds=("implement",))[0]
-    store.add("gemini", ['{"stem": "a-ticket", ', '"ticket": "draft"}'], adapter="GeminiAdapter")
+    store.add("gemini", ['{"stem": "a-ticket", ', '"ticket": "draft"}'], adapter="AntigravityAdapter")
     files, counts = export(store)
     assert json.loads(files["ticket.jsonl"])["call_keys"] == ["gemini"] and counts["skipped"] == 0
 

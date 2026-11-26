@@ -2,16 +2,16 @@
 # schema: clutch.meta/1.0
 # kind: test
 # purpose: test callmeter events
-# relates: [clutch/providers.py, clutch/watchdog.py, tests/unit/test_gemini_adapter.py]
+# relates: [clutch/providers.py, clutch/watchdog.py]
 # owner: engine
-# verified: 0a308920
-# hash: 28aa652f57eb7ef02c2459ddff14823190256dfaf76ec2a03a1ea33b9539ac87
+# verified: 69d790e1
+# hash: 13ceb3779e7c777a32122077b9d92dc61866aaca285c5d82c8a6d57e8bb5d2a1
 from datetime import UTC, datetime
 from unittest.mock import Mock
 
 from clutch.providers import Served
 from clutch.watchdog import Detector
-from tests.unit.test_gemini_adapter import provider
+from tests.unit.test_antigravity_adapter import provider
 
 
 def meter_for(name):

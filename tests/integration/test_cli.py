@@ -4,8 +4,8 @@
 # purpose: Integration tests for clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: clutch/__main__.py
-# verified: ff6ac88d
-# hash: 0b50076f561b1c4b6023c94b9f09776293ac9a840dae646713527c3e149650a5
+# verified: 69d790e1
+# hash: f8f167958c2aa6a2cdf1ee1207d1652d1d1badb57419fea9ddcf9e3f800a18d1
 import asyncio
 import os
 import subprocess
@@ -742,7 +742,7 @@ def test_docs_reports_installed_guides(root, capsys):
     lines = capsys.readouterr().out.splitlines()
     assert len(lines) == 6
     package = Path(clutch.__file__).parent
-    for line, name in zip(lines, ("authoring", "running", "contract", "qwen", "gemini", "training"), strict=True):
+    for line, name in zip(lines, ("authoring", "running", "contract", "qwen", "antigravity", "training"), strict=True):
         path_text, purpose = line.split("  ")
         path = Path(path_text)
         assert path == package / "docs" / f"host-{name}.md"

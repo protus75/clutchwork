@@ -4,8 +4,8 @@
 # purpose: test install verb
 # relates: [clutch/__main__.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 0a308920
-# hash: 92834df2ddb078cbb7d06110fcf3cfdb82d71703c7cf1988cc895338b77d9bab
+# verified: 69d790e1
+# hash: c96b99ce84b6b311f71ee63ad5aa3088d869884ae340201cc8d28a1dadf7db9d
 import asyncio
 from pathlib import Path
 from unittest.mock import Mock
@@ -28,7 +28,7 @@ class Exec:
             return self.pnpm
         if argv[0] == "qwen":
             raise ExecutableNotFound("qwen")
-        return 0, {"claude": "2.1.322 (Claude Code)\n", "codex": "codex-cli 0.167.1\n", "gemini": "0.49.0\n"}[argv[0]], ""
+        return 0, {"claude": "2.1.322 (Claude Code)\n", "codex": "codex-cli 0.167.1\n", "agy": "0.49.0\n"}[argv[0]], ""
 
 
 def test_tool_env_and_version():
@@ -69,7 +69,7 @@ def test_install(monkeypatch, capsys):
         "codex: system 0.167.1, package @openai/codex",
         "qwen: absent, package @qwen-code/qwen-code -- run: clutch provider install qwen",
         "ollama: not installed by clutch; follow clutch/docs/host-qwen.md",
-        "gemini: system 0.49.0, package @google/gemini-cli",
+        "antigravity: system 0.49.0, installed outside pnpm",
     ]
     assert all(call[0][0] != "pnpm" for call in exec_.calls)
     exec_.calls.clear()
@@ -80,7 +80,7 @@ def test_install(monkeypatch, capsys):
     assert kwargs == {"cwd": Path("/repo"), "env": {"PATH": "/repo/node_modules/.bin:/bin"}, "timeout": 600.0}
     exec_.calls.clear()
     assert main("codex", "llama") == 2
-    assert "claude, codex, gemini, qwen" in capsys.readouterr().err
+    assert "antigravity, claude, codex, qwen" in capsys.readouterr().err
     assert not exec_.calls
     exec_.pnpm = None
     assert main("codex") == 2
@@ -101,3 +101,11 @@ def test_install_refuses_broken_binary(monkeypatch, capsys):
     monkeypatch.setattr(Path, "is_file", lambda self: False)
     assert cli.main(["provider", "install", "claude"], cwd=Path("/repo"), env={"PATH": "/bin"}) == 2
     assert "claude" in capsys.readouterr().err
+
+
+def test_antigravity_install_refuses(monkeypatch, capsys):
+    exec_ = Exec()
+    monkeypatch.setattr(cli, "SubprocessExec", lambda: exec_)
+    assert cli.main(["provider", "install", "antigravity"], cwd=Path("/repo"), env={"PATH": "/bin"}) == 2
+    assert "follow clutch/docs/host-antigravity.md" in capsys.readouterr().err
+    assert exec_.calls == []

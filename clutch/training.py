@@ -12,7 +12,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from clutch.config import training_exclude
 from clutch.driver import unwrap_fence
-from clutch.evidence import claude, codex, gemini
+from clutch.evidence import antigravity, claude, codex
 from clutch.evidence.store import SKIP
 from clutch.git import GitError
 from clutch.llm import LLMRequest
@@ -89,7 +89,7 @@ def _safe(record, diffs, redactor, config):
 
 
 def _trajectory(store, key, start, config):
-    normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "GeminiAdapter": gemini.normalize}.get(start.provider.adapter)
+    normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "AntigravityAdapter": antigravity.normalize}.get(start.provider.adapter)
     if normalizer is None:
         return None
     try:
@@ -105,7 +105,7 @@ def _trajectory(store, key, start, config):
         if event.kind != "tool_call":
             continue
         paths = event.args or {}
-        values = [paths.get(k) for k in ("file_path", "path", "paths", "notebook_path")]
+        values = [paths.get(k) for k in ("file_path", "path", "paths", "notebook_path", "Path")]
         paths = [path for value in values for path in (value if isinstance(value, list) else [value]) if isinstance(path, str)]
         if any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for path in paths for glob in training_exclude(config)):
             continue
@@ -114,7 +114,7 @@ def _trajectory(store, key, start, config):
 
 
 def _reply_text(store, key, start):
-    normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "GeminiAdapter": gemini.normalize}[start.provider.adapter]
+    normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "AntigravityAdapter": antigravity.normalize}[start.provider.adapter]
     end = store.read_record(key, "end")
     if end is SKIP:
         raise ValueError("missing end")
@@ -127,7 +127,7 @@ def _reply_text(store, key, start):
 
     events = normalizer(store.get_blob(end.raw.stdout), times_ns=None, put_blob=capture)
     messages = [blobs[event.text_blob].decode() for event in events if event.kind == "message" and event.role == "assistant"]
-    return "".join(messages) if start.provider.adapter == "GeminiAdapter" else messages[-1]
+    return "".join(messages) if start.provider.adapter == "AntigravityAdapter" else messages[-1]
 
 
 def _calls(store, keys, surface="implement"):

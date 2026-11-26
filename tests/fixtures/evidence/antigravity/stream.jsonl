@@ -1,0 +1,10 @@
+{"event":"init","conversation_id":"session-1","init":{"model":"model-a"}}
+{"event":"step_update","step_update":{"step_type":"user_input","state":"DONE"}}
+{"event":"step_update","step_update":{"step_type":"tool","state":"ACTIVE","step_index":1,"tool_name":"read_file","tool_info":{"parameters":{"Path":"src/a.py"}}}}
+{"event":"step_update","step_update":{"step_type":"tool","state":"DONE","step_index":1,"tool_info":{"output":"contents"}}}
+{"event":"step_update","step_update":{"step_type":"tool","state":"ACTIVE","step_index":2,"tool_name":"run_command","tool_info":{"parameters":{"command":"pwd"}}}}
+{"event":"step_update","step_update":{"step_type":"tool","state":"DONE","step_index":2,"tool_info":{"output":"/repo"}}}
+{"event":"step_update","step_update":{"step_type":"agent_response","state":"ACTIVE","text_delta":"DO"}}
+{"event":"step_update","step_update":{"step_type":"agent_response","state":"ACTIVE","text_delta":"NE"}}
+{"event":"step_update","step_update":{"step_type":"agent_response","state":"DONE"}}
+{"event":"result","result":{"status":"SUCCESS","response":"DONE","usage":{"input_tokens":60,"cache_read_tokens":40,"output_tokens":7,"thinking_tokens":3}}}

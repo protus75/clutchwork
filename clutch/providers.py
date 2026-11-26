@@ -25,7 +25,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 
 from clutch.config import Config, ConfigSnapshot, Provider, snapshot_config
-from clutch.evidence import claude, codex, gemini
+from clutch.evidence import antigravity, claude, codex
 from clutch.evidence.schema import Event
 from clutch.evidence.store import EvidenceStore
 from clutch.git import Git
@@ -384,7 +384,7 @@ class CliAdapter:
     TIER_LABELS: dict[str, str] | None = None
     uses_base_url = False
     binary: str
-    PACKAGE: str
+    PACKAGE: str | None = None
     reports_cost: bool
     AUTH_MARKERS: tuple[str, ...]
     LOGIN_ROAD: str
@@ -493,6 +493,8 @@ class CliAdapter:
                     event = None
                 if isinstance(event, dict):
                     ids = {name: event.get(name) if isinstance(event.get(name), str) else None for name in ("session_id", "thread_id")}
+                    if not ids["session_id"] and isinstance(event.get("conversation_id"), str) and event["conversation_id"]:
+                        ids["session_id"] = event["conversation_id"]
                     if any(value is not None for value in ids.values()):
                         store.write_record(key, "start", {**start_data, "native_ids": ids}, replace=True)
                         native_id_saved = True
@@ -620,7 +622,7 @@ class CliAdapter:
                     def first(name):
                         return next((e[name] for e in events if isinstance(e.get(name), str)), None)
 
-                    served = first("model")
+                    served = first("model") or next((e["init"]["model"] for e in events if isinstance(e.get("init"), dict) and isinstance(e["init"].get("model"), str)), None)
                     status = (
                         ("ok" if rc == 0 else "nonzero" if rc > 0 else "killed")
                         if returned
@@ -653,7 +655,7 @@ class CliAdapter:
                             },
                             "repo": repo,
                             "model": {"served": served, "served_source": "stream" if served is not None else "none"},
-                            "native_ids": {"session_id": first("session_id"), "thread_id": first("thread_id")},
+                            "native_ids": {"session_id": first("session_id") or first("conversation_id"), "thread_id": first("thread_id")},
                             "parsed": {
                                 "text_chars": len(parsed.text) if parsed else 0,
                                 "input_tokens": parsed.input_tokens if parsed else None,
@@ -856,28 +858,30 @@ class QwenAdapter(ClaudeAdapter):
         return {**super().call_env(writes), "QWEN_CODE_SYSTEM_SETTINGS_PATH": str((Path(__file__).parent / "qwen-settings.json").resolve())}
 
 
-class GeminiAdapter(CliAdapter):
-    normalizer = staticmethod(gemini.normalize)
-    PACKAGE = "@google/gemini-cli"
-    binary = "gemini"
+class AntigravityAdapter(CliAdapter):
+    normalizer = staticmethod(antigravity.normalize)
+    PACKAGE = None
+    binary = "agy"
     reports_cost = False
-    AUTH_MARKERS = ("please set an auth method", "api key not valid")
-    AUTH_ENV = "GEMINI_API_KEY"
-    LOGIN_ROAD = "export GEMINI_API_KEY as clutch/docs/host-gemini.md describes, then `clutch engine drain`"
+    AUTH_ENV = None
+    AUTH_MARKERS = ("please sign in", "not signed in", "authentication required", "unauthenticated")
+    LOGIN_ROAD = "run agy interactively to sign in, then `clutch engine drain`"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
-        return ModelListing({}, ("gemini has no model-listing command; see clutch/docs/host-gemini.md and run clutch provider probe gemini",))
+        rc, out, err = await exec_.run([cls.binary, "models"], cwd=cwd, env=tool_env(env, cwd), timeout=PREFLIGHT_TIMEOUT_S)
+        if rc:
+            lines = [line.rsplit("\r", 1)[-1].strip() for line in (out + "\n" + err).split("\n")]
+            return ModelListing({}, (f"agy models: {next((line for line in reversed(lines) if line), '')}",))
+        lines = [line.rsplit("\r", 1)[-1].strip() for line in out.split("\n")]
+        models = {line.split()[0]: line.split()[0] for line in lines if line}
+        return ModelListing(models, () if models else ("agy models: no models listed",))
 
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
-        return ["gemini", "--skip-trust", "-m", model, "-o", "stream-json", "--approval-mode", "yolo" if writes else "default"]
-
-    def call_env(self, writes: bool) -> dict[str, str]:
-        name = "gemini-write.json" if writes else "gemini-readonly.json"
-        return {**super().call_env(writes), "GEMINI_CLI_SYSTEM_SETTINGS_PATH": str((Path(__file__).parent / name).resolve())}
+        return ["agy", "--output-format", "stream-json", "--input-format", "text", "--model", model, "--mode", *(["auto", "--dangerously-skip-permissions"] if writes else ["plan"])]
 
 
-ADAPTERS: dict[str, type[CliAdapter]] = {"claude": ClaudeAdapter, "codex": CodexAdapter, "qwen": QwenAdapter, "gemini": GeminiAdapter}
+ADAPTERS: dict[str, type[CliAdapter]] = {"claude": ClaudeAdapter, "codex": CodexAdapter, "qwen": QwenAdapter, "antigravity": AntigravityAdapter}
 
 
 PROBE_PROMPT = "Reply with the single word ok."
@@ -898,7 +902,7 @@ def installed_version(out: str, err: str) -> str | None:
 @dataclass(frozen=True)
 class CliStatus:
     name: str
-    package: str
+    package: str | None
     binary: str
     where: Literal["project", "system", "absent"]
     version: str | None
@@ -917,7 +921,9 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
     for status in present:
         adapter = ADAPTERS[status.name]
         listing = listings[status.name]
-        lines.extend([f"  - name: {status.name}", "    kind: cli", f"    package: '{adapter.PACKAGE}'"])
+        lines.extend([f"  - name: {status.name}", "    kind: cli"])
+        if adapter.PACKAGE is not None:
+            lines.append(f"    package: '{adapter.PACKAGE}'")
         if adapter.AUTH_ENV:
             lines.append(f"    auth: {adapter.AUTH_ENV}")
         if adapter.uses_base_url:
@@ -1008,6 +1014,8 @@ class ProviderLLM:
             package = adapter.provider.package
             _, out, err = await self._exec.run([adapter.binary, "--version"], cwd=self._cwd, env=tool_env(child_env(self._env, self._config), self._cwd), timeout=PREFLIGHT_TIMEOUT_S)
             installed = adapter.cli_version = installed_version(out, err)
+            if package is None:
+                continue
             try:
                 _, latest, _ = await self._exec.run(["pnpm", "view", str(package), "version"], cwd=self._cwd, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S)
             except TimeoutError, ExecutableNotFound:
@@ -1037,7 +1045,8 @@ class ProviderLLM:
             await asyncio.gather(*tasks, return_exceptions=True)
         for (provider, model, adapter, _), result in zip(probes, results, strict=True):
             if isinstance(result, Exception):
-                problems.append(f"{provider} model {model!r} failed its probe: {result} -- run: clutch provider install {provider}, or route a model this login serves in config.yaml")
+                road = f"check {adapter.binary} (clutch/docs/host-{provider}.md)" if adapter.provider.package is None else f"run: clutch provider install {provider}"
+                problems.append(f"{provider} model {model!r} failed its probe: {result} -- {road}, or route a model this login serves in config.yaml")
             elif isinstance(result, BaseException):
                 raise result
         if not problems:

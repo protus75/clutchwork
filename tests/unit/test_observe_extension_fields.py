@@ -4,8 +4,8 @@
 # purpose: Pins the exact extension snapshot fields from observe.extension_fields and checks that every extension command argv parses with the clutch CLI parser
 # relates: [clutch/__main__.py, clutch/observe.py]
 # owner: engine
-# verified: 1b61bdb2
-# hash: 4362b150f55cd05a55bf297f2be37f28d2fb7544a4fa9856ed9dbfc7123e575c
+# verified: 69d790e1
+# hash: ace3d6296f20bafc7a5e3c4c575a846960e4d14544b926a5c8073b3ff0d76f01
 from clutch.observe import extension_fields
 
 
@@ -32,9 +32,8 @@ def test_extension_fields(tmp_path):
         "providerInstalls": [
             {"label": "Update claude", "detail": "installs @anthropic-ai/claude-code@latest", "argv": ["provider", "install", "claude"]},
             {"label": "Update codex", "detail": "installs @openai/codex@latest", "argv": ["provider", "install", "codex"]},
-            {"label": "Update gemini", "detail": "installs @google/gemini-cli@latest", "argv": ["provider", "install", "gemini"]},
             {"label": "Update qwen", "detail": "installs @qwen-code/qwen-code@latest", "argv": ["provider", "install", "qwen"]},
-            {"label": "Update all providers", "detail": "installs all provider CLIs", "argv": ["provider", "install", "claude", "codex", "gemini", "qwen"]},
+            {"label": "Update all providers", "detail": "installs all provider CLIs", "argv": ["provider", "install", "claude", "codex", "qwen"]},
         ],
     }
 

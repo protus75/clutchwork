@@ -4,8 +4,8 @@
 # purpose: test init config verb
 # relates: [clutch/__main__.py, clutch/config.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 0a308920
-# hash: 5bc164f088eb4981f82c5df69f53554eafdf90ff167c317e65b5fce9b3d4b51f
+# verified: 69d790e1
+# hash: 634662c104e98209bbc24246214932034209209dc212910f6af59709db3a3b5a
 import json
 from pathlib import Path
 from unittest.mock import Mock
@@ -134,7 +134,7 @@ def test_verb(monkeypatch, capsys):
     assert "config.yaml already exists" in capsys.readouterr().err
     absent[0] = True
     assert run() == 2
-    assert "run: clutch provider install claude|codex|gemini|qwen" in capsys.readouterr().err
+    assert "run: clutch provider install claude|codex|qwen" in capsys.readouterr().err
     absent[0] = False
     fs.publish.reset_mock()
     monkeypatch.setattr(cli, "load_config_text", Mock(side_effect=ConfigError(Path("/repo/config.yaml"), None, "bad")))

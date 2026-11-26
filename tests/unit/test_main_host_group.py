@@ -4,8 +4,8 @@
 # purpose: test main host group
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/hostfiles.py]
 # owner: engine
-# verified: 0a308920
-# hash: b038a72a947daf3a355d5ecba3df8da03233deb5b37a3fd97f1bd0e7c0d99418
+# verified: 69d790e1
+# hash: 051d8d6b60dd067ae125c1a61ee4667d77f4c1c3579075886bc095dba88c0405
 import argparse
 from pathlib import Path
 from types import SimpleNamespace
@@ -45,7 +45,7 @@ def test_docs_and_doctor_need_no_config(tmp_path, capsys):
     out, err = capsys.readouterr()
     assert err == ""
     assert [line.split("  ")[0] for line in out.splitlines()] == [
-        str(Path(clutch.__file__).parent / "docs" / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "gemini", "training")
+        str(Path(clutch.__file__).parent / "docs" / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "antigravity", "training")
     ]
     assert entry.main(["host", "doctor"], cwd=tmp_path, env={}) == 2
     out, err = capsys.readouterr()

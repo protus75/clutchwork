@@ -4,8 +4,8 @@
 # purpose: test docs verb
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/runner.py]
 # owner: engine
-# verified: 0a308920
-# hash: c3b015bc31cce9ef94dc89bf6688f23a9968b9d83de3da2cd9bd27c5a919efe0
+# verified: 69d790e1
+# hash: 8376f22ff1b208dde1aeb651a76aa6b14896a827c6c39edbba46e9c81fbf3ce2
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -22,7 +22,7 @@ def test_docs_without_config_or_lock(monkeypatch, capsys):
     assert cli.main(["host", "docs"], cwd=Path("/absent-host")) == 0
     lines = capsys.readouterr().out.splitlines()
     directory = Path(clutch.__file__).parent / "docs"
-    assert [line.split("  ")[0] for line in lines] == [str(directory / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "gemini", "training")]
+    assert [line.split("  ")[0] for line in lines] == [str(directory / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "antigravity", "training")]
     assert all(line.split("  ")[1] for line in lines)
 
 

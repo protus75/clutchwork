@@ -3,12 +3,12 @@
 import json
 from collections import Counter
 
-from clutch.evidence import claude, codex, gemini
+from clutch.evidence import antigravity, claude, codex
 from clutch.evidence.store import SKIP
 
 
 def normalizer(provider):
-    return {"claude": claude, "qwen": claude, "codex": codex, "gemini": gemini}.get(provider)
+    return {"claude": claude, "qwen": claude, "codex": codex, "antigravity": antigravity}.get(provider)
 
 
 def build_view(start, stdout, times_ns, put_blob):

@@ -5,8 +5,8 @@
 # purpose: Evidence views from streams and an in-memory store
 # relates: [clutch/evidence/claude.py, clutch/evidence/codex.py, clutch/evidence/schema.py, clutch/evidence/store.py, clutch/evidence/views.py, tests/fakes.py]
 # owner: engine
-# verified: 75d75946
-# hash: 3085f90ad6f7b74f045d82237681527457264ebaf5bfbd659b3492e9ed80e7e5
+# verified: 69d790e1
+# hash: 421ff20c88ebbe30ffc0c681847afb556c58444f424a33074f8b5b648192ece4
 
 import json
 
@@ -80,7 +80,7 @@ def test_claude_verification(tmp_path, provider, unverified):
 
 def test_selection():
     # Rules out dropping Gemini support or routing an unsupported provider to Claude.
-    assert (views.normalizer("gemini").NORMALIZER_ID, views.normalizer("other")) == ("gemini-stream/1", None)
+    assert (views.normalizer("antigravity").NORMALIZER_ID, views.normalizer("other")) == ("antigravity-stream/1", None)
 
 
 def test_coverage(tmp_path):

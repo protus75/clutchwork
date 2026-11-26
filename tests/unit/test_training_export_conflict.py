@@ -4,8 +4,8 @@
 # purpose: Tests conflict-resolution export records: ordering, merged/neutral labels, Gemini stream assembly, skipping declined or incomplete calls, since filter, holdout, and scrubbing.
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: cb71e4f8
-# hash: 45736cbf1cbae526de3168f5aa31140da13782d165274168bb1d148d7b209fa2
+# verified: 69d790e1
+# hash: 506c78e128e325facb3f71eb31a71929a6166e0994bdbfbca3ad601e8baa3935
 import asyncio
 import json
 from pathlib import Path
@@ -39,8 +39,8 @@ class Store:
         self.ends[key] = NS(raw=NS(stdout=key))
         parts = reply if isinstance(reply, list) else [reply]
         events = (
-            [{"type": "message", "role": "assistant", "content": part, "delta": True} for part in parts]
-            if adapter == "GeminiAdapter"
+            [{"event": "step_update", "step_update": {"step_type": "agent_response", "text_delta": part}} for part in parts]
+            if adapter == "AntigravityAdapter"
             else [{"type": "assistant", "message": {"content": [{"type": "text", "text": part}]}} for part in parts]
         )
         self.blobs[key] = "\n".join(map(json.dumps, events)).encode()
@@ -77,7 +77,7 @@ def test_records_and_order():
     store = Store()
     reply = '{"verdict": "resolved", "reason": "fixed", "files": {}}'
     key = store.add("merged", "resolve2abc-1", reply)
-    store.add("other", "resolve9-2", [reply[:20], reply[20:]], adapter="GeminiAdapter")
+    store.add("other", "resolve9-2", [reply[:20], reply[20:]], adapter="AntigravityAdapter")
     store.add("merged", "resolve1-1", reply, prompt="another prompt")
     files, counts = export(store, kinds=("conflict",))
     result = rows(files)

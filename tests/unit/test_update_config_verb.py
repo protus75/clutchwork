@@ -4,8 +4,8 @@
 # purpose: Unit tests for the `clutch config update` verb and the claude, codex and qwen adapter model listings it uses to report served models and stale config model names
 # relates: [clutch/__main__.py, clutch/config.py, clutch/providers.py, clutch/seams.py]
 # owner: clutch/__main__.py
-# verified: f444aaa8
-# hash: e7711cdaf35be79b6f3c87b6a2bb70225f30b32cc21284a142c52f3ef9bce6a8
+# verified: 69d790e1
+# hash: 806a0eae3922eb6615d5525a259f6c984bea26a467f25cf79fc39b2bec75282b
 import asyncio
 import json
 from pathlib import Path
@@ -153,7 +153,7 @@ def test_verb(monkeypatch, capsys):
     assert "OPERATOR-SETS-THIS is the placeholder; pick a served name" in out
     config.providers = [provider("llama", ["x"] * 4)]
     assert run() == 1
-    assert "llama: no shipped cli adapter; name one of claude, codex, gemini, qwen" in capsys.readouterr().out
+    assert "llama: no shipped cli adapter; name one of antigravity, claude, codex, qwen" in capsys.readouterr().out
     config.providers = [codex]
     exec_.responses["codex"] = (1, "", "error: not logged in\n")
     assert run() == 1

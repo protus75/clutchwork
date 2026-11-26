@@ -735,8 +735,10 @@ def extension_fields(root: Path) -> dict:
             "askBox": ["prompt", "box"],
         },
         "orderFlags": {"priority": "--priority", "runsBefore": "--runs-before"},
-        "providerInstalls": [{"label": f"Update {name}", "detail": f"installs {ADAPTERS[name].PACKAGE}@latest", "argv": ["provider", "install", name]} for name in sorted(ADAPTERS)]
-        + [{"label": "Update all providers", "detail": "installs all provider CLIs", "argv": ["provider", "install", *sorted(ADAPTERS)]}],
+        "providerInstalls": [
+            {"label": f"Update {name}", "detail": f"installs {ADAPTERS[name].PACKAGE}@latest", "argv": ["provider", "install", name]} for name in sorted(ADAPTERS) if ADAPTERS[name].PACKAGE is not None
+        ]
+        + [{"label": "Update all providers", "detail": "installs all provider CLIs", "argv": ["provider", "install", *[name for name in sorted(ADAPTERS) if ADAPTERS[name].PACKAGE is not None]]}],
     }
 
 

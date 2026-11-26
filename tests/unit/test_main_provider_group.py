@@ -4,8 +4,8 @@
 # purpose: test main provider group
 # relates: [clutch/__main__.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 0a308920
-# hash: 427a5a4393e0d6dd0a9c9187d6211d5f976ac76751ad3ba1167a52db227f7734
+# verified: 69d790e1
+# hash: e82371af3cecb2c813f5dd1857ee079c3c88c4a4bb2d5252f15eb199e5e9ea4a
 import argparse
 
 import pytest
@@ -51,7 +51,12 @@ def test_install_needs_no_config(tmp_path, monkeypatch, capsys):
     out, err = capsys.readouterr()
     assert err == ""
     assert [line for line in out.splitlines() if not line.startswith("ollama:")] == [
-        f"{name}: absent, package {adapter.PACKAGE} -- run: clutch provider install {name}" for name, adapter in ADAPTERS.items()
+        (
+            f"{name}: absent, installed outside pnpm -- follow clutch/docs/host-{name}.md"
+            if adapter.PACKAGE is None
+            else f"{name}: absent, package {adapter.PACKAGE} -- run: clutch provider install {name}"
+        )
+        for name, adapter in ADAPTERS.items()
     ]
     assert list(tmp_path.iterdir()) == []
 

@@ -2,7 +2,7 @@
 
 *CLI Lifecycle for Unattended Ticket-Chewing Hatchlings*
 
-ClutchWork orchestrates CLI coding agents (`claude`, `codex`, `gemini`, and `qwen`) through author → requisition → implement → check → review → merge to local `main`. It runs tickets in isolated worktrees with scope fences, mechanical gates, and cross-model review. Each ticket lives in `tickets/<stem>/`; its markdown and JSON files, including `ticket.md`, `run.md`, `review.md`, `diagnosis.json`, and others, pass work between stages. Reviewed work merges to local `main`. See the [ticket lifecycle diagram](https://github.com/protus75/clutchwork/blob/main/vscode-clutchwork/media/ticket-lifecycle.svg).
+ClutchWork orchestrates CLI coding agents (`claude`, `codex`, `antigravity`, and `qwen`) through author → requisition → implement → check → review → merge to local `main`. It runs tickets in isolated worktrees with scope fences, mechanical gates, and cross-model review. Each ticket lives in `tickets/<stem>/`; its markdown and JSON files, including `ticket.md`, `run.md`, `review.md`, `diagnosis.json`, and others, pass work between stages. Reviewed work merges to local `main`. See the [ticket lifecycle diagram](https://github.com/protus75/clutchwork/blob/main/vscode-clutchwork/media/ticket-lifecycle.svg).
 
 The engine plane owns the ClutchWork process and gates; the host plane supplies the target repository’s code, tests, `config.yaml`, and roadmap. Run `clutch engine drain` unattended until the queue is quiet, or `clutch engine serve` continuously as new work arrives. The Suggestion Box captures second problems and follow-ups without derailing a ticket. For Antigravity, an MCP server exposes tools and a live interactive dashboard, while thin supervising skills retrieve the engine’s procedures.
 
@@ -143,7 +143,7 @@ The host guides ship inside the installed package; `uv run clutch host docs` pri
 - [Host ticket authoring](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-authoring.md): what to write in a ticket.
 - [Host contract](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md): the config schema and host-facing contract.
 - [Local qwen provider setup](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-qwen.md).
-- [Gemini provider setup](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-gemini.md).
+- [Antigravity provider setup](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-antigravity.md).
 - [Training data guide](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-training.md).
 - [How clutch works](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md): how clutch behaves today. Tickets keep it current.
 

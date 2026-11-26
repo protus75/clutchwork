@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 5fee4e67
-hash: e1ddada8a33e131b1becccac90b1ed6e3ce33b6142745a79a5d5c9170f095f66
+verified: 69d790e1
+hash: fe890bd7d9e3398039cc08b2a89c91363f75fdee9a0a163dc86dbc17e42dd7c6
 -->
 # How ClutchWork works
 
@@ -76,7 +76,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
-| `provider install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
+| `provider install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version; non-pnpm providers are installed separately. |
 | `config update` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
 | `config init [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
 | `help [command ...]` | no | Prints command help and examples from each command parser in `clutch/__main__.py`; `--help` or `-h` before a command does the same. Exits 0, or 2 for an unknown command. |
@@ -642,21 +642,21 @@ The supervising agent loop is printed by `clutch prompt drain-loop`. It releases
 
 ### 8.1 Providers
 
-Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Ollama model at the provider’s `base_url`), and `gemini` (Google's Gemini CLI with an API key). Only `kind: cli` providers are accepted.
+Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Ollama model at the provider’s `base_url`), and `antigravity` (Antigravity CLI with ambient login). Only `kind: cli` providers are accepted.
 
 - Implement is the only surface with write access (`claude --permission-mode
-  bypassPermissions`, `codex --dangerously-bypass-approvals-and-sandbox`, `qwen --approval-mode yolo`, `gemini --approval-mode yolo`) and runs in the
-  ticket's worktree. Every other surface is read-only. Gemini's grant is also a packaged system settings file chosen per call: `gemini-readonly.json` allows only read tools and `gemini-write.json` allows every tool.
-`claude` and `qwen` read `CLAUDE.md`, and `codex` reads `AGENTS.md`. clutch points qwen at `CLAUDE.md` through its packaged `qwen-settings.json`. `gemini` reads `AGENTS.md` through the packaged settings files' `context.fileName`, and also loads any `GEMINI.md`, which that setting cannot exclude.
+  bypassPermissions`, `codex --dangerously-bypass-approvals-and-sandbox`, `qwen --approval-mode yolo`, `agy --mode auto --dangerously-skip-permissions`) and runs in the
+  ticket's worktree. Every other surface is read-only. Antigravity uses `--mode plan` for read-only calls.
+`claude` and `qwen` read `CLAUDE.md`, and `codex` reads `AGENTS.md`. clutch points qwen at `CLAUDE.md` through its packaged `qwen-settings.json`. `antigravity` reads `AGENTS.md`.
 
-**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `gemini` lists none because the CLI has no listing command; a gemini call records the model its stream's `stats.models` names, because `-m` does not pin flash-family names. `clutch config update` prints listings beside the configured names.
+**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `antigravity` lists models through `agy models` and records the model from its init event. `clutch config update` prints listings beside the configured names.
 
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
   calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch release publish` upload receives it as `UV_PUBLISH_TOKEN`.
 - **Preflight** (once per engine session, and again after a config reload changes `providers` or `routing`; also at the start of `box triage`/`ticket review` and standalone `engine retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
-- A CLI installed in the host project (`clutch provider install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch provider install <provider>`.
+- A CLI installed in the host project (`clutch provider install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road for pnpm-installed providers is `clutch provider install <provider>`. Antigravity is installed separately; see `clutch/docs/host-antigravity.md`.
 
 ### 8.2 Routing
 
@@ -859,7 +859,7 @@ Nothing prunes automatically. The writer-locked `clutch evidence prune --to-gb N
 
 `write_record` validates records against the strict pydantic `Start` or `End` model (strict types, `extra="forbid"`). `read_record` accepts any `clutch.evidence.call/1.<minor>` record, drops fields unknown to the current model and returns `SKIP` for another major version. `json_schema` generates JSON Schema for `start`, `end` and `event` from the models; `clutch evidence schema` prints it.
 
-Each normalizer is a pure `normalize(stdout, times_ns, put_blob)` function turning raw stdout bytes and arrival offsets into `clutch.evidence.events/1.0` events. Their `NORMALIZER_ID`s are `claude-stream/2`, `codex-stream/1` and `gemini-stream/1`. A normalizer does no I/O: large text, including assistant text, thinking and tool output, goes through `put_blob` and the event carries the ref. Each event's `kind` comes from the closed `Event.kind` list; tool events carry a `class` from the closed `Tool.class_` list and the native tool name. Unmapped lines or content blocks become `unknown` events with their native payload; a non-JSON line is kept as `{"line": ...}`. `t_ms` is the line's arrival offset in milliseconds, or 0 without offsets.
+Each normalizer is a pure `normalize(stdout, times_ns, put_blob)` function turning raw stdout bytes and arrival offsets into `clutch.evidence.events/1.0` events. Their `NORMALIZER_ID`s are `claude-stream/2`, `codex-stream/1` and `antigravity-stream/1`. A normalizer does no I/O: large text, including assistant text, thinking and tool output, goes through `put_blob` and the event carries the ref. Each event's `kind` comes from the closed `Event.kind` list; tool events carry a `class` from the closed `Tool.class_` list and the native tool name. Unmapped lines or content blocks become `unknown` events with their native payload; a non-JSON line is kept as `{"line": ...}`. `t_ms` is the line's arrival offset in milliseconds, or 0 without offsets.
 
 The Claude normalizer is verified only for `claude`, so qwen's Claude-shaped stream is unverified. Codex `input_tokens` includes cached tokens, so `input_uncached` is `input_tokens` minus `cached_input_tokens`. Each normalizer has a golden fixture under `tests/fixtures/evidence/<provider>/`. `CliAdapter.parse` and `CallMeter` read normalized events from the adapter’s normalizer. Claude assistant lines with usage also yield an `assistant/usage` event. The last `result` or `usage` event with a non-null status closes the call; it carries the outcome, final text blob, optional USD cost and optional model. Claude’s preceding usage event carries its tokens. `Event` provides optional `usd` and `model` fields. `clutch evidence renormalize` writes `normalized/<escaped normalizer id>.json` beside the record.
 
@@ -874,7 +874,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | Area | Controls |
 |---|---|
 | `schema_version`, `state_dir`, `worktree_root` | config version; where state and worktrees live |
-| `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
+| `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); pnpm-installed `kind: cli` providers require `package`, the pnpm package preflight reads; antigravity omits it |
 | `snapshot_merged_limit` | Merged rows included by `view snapshot` (default 100), unless `--all-merged` is passed. |
 | `roadmap.ahead` | Default window for `roadmap author --ahead` (default 2). |
 | `evidence.warn_gb` | Evidence blob size warning threshold in GB; defaults to 20. |

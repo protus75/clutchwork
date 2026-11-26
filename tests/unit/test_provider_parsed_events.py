@@ -2,17 +2,17 @@
 # schema: clutch.meta/1.0
 # kind: test
 # purpose: test provider parsed events
-# relates: [clutch/evidence/claude.py, clutch/evidence/codex.py, clutch/evidence/gemini.py, clutch/evidence/schema.py, clutch/providers.py]
+# relates: [clutch/evidence/claude.py, clutch/evidence/codex.py, clutch/evidence/schema.py, clutch/providers.py]
 # owner: engine
-# verified: 9a610809
-# hash: bbf771652dbb09f62d699e081f4ddb9d137f492edc0b9c216c34380518ba3db0
+# verified: 69d790e1
+# hash: 3b25d23f5d77d6777c09fe66321755e863c09800347b21907e68a6e1b6f302a4
 import json
 
 import pytest
 
-from clutch.evidence import claude, codex, gemini
+from clutch.evidence import antigravity, claude, codex
 from clutch.evidence.schema import Event
-from clutch.providers import ClaudeAdapter, CliAdapter, CodexAdapter, GeminiAdapter
+from clutch.providers import AntigravityAdapter, ClaudeAdapter, CliAdapter, CodexAdapter
 
 
 def stream(*lines):
@@ -56,17 +56,16 @@ def test_codex_closing():
         parse(CodexAdapter, {"type": "item.started", "item": {"type": "command_execution"}})
 
 
-def test_gemini_closing():
-    chunks = [{"type": "message", "role": "assistant", "content": text} for text in ("DO", "NE")]
-    result = {"type": "result", "status": "success", "stats": {"models": {"model-a": {}}}}
-    event = normalize(gemini, *chunks, result)[-1]
+def test_antigravity_closing():
+    init = {"event": "init", "init": {"model": "model-a"}}
+    chunks = [{"event": "step_update", "step_update": {"step_type": "agent_response", "text_delta": text}} for text in ("DO", "NE")]
+    done = {"event": "step_update", "step_update": {"step_type": "agent_response", "state": "DONE"}}
+    result = {"event": "result", "result": {"status": "SUCCESS"}}
+    event = normalize(antigravity, init, *chunks, done, result)[-1]
     assert (event.status, event.text_blob, event.model) == ("success", "blob:DONE", "model-a")
-    result["stats"]["models"]["model-b"] = {}
-    assert normalize(gemini, *chunks, result)[-1].model is None
-    error = {"type": "result", "status": "error", "error": {"message": "bad"}}
-    event = normalize(gemini, error)[-1]
-    assert (event.status, event.text_blob) == ("error", "blob:bad")
-    assert parse(GeminiAdapter, {"type": "error", "message": "bad"}, *chunks, result).text == "DONE"
+    assert parse(AntigravityAdapter, init, *chunks, done, result).text == "DONE"
+    error = {"event": "result", "result": {"status": "ERROR", "error": "bad"}}
+    assert normalize(antigravity, error)[-1].text_blob == "blob:bad"
 
 
 def test_claude_tolerates_incomplete_lines():
@@ -82,6 +81,6 @@ def test_claude_tolerates_incomplete_lines():
 
 
 def test_single_parser():
-    assert all("parse" not in vars(cls) for cls in (ClaudeAdapter, CodexAdapter, GeminiAdapter))
+    assert all("parse" not in vars(cls) for cls in (ClaudeAdapter, CodexAdapter, AntigravityAdapter))
     with pytest.raises(ValueError, match="no terminal result event"):
         CliAdapter.parse(object.__new__(ClaudeAdapter), "")
