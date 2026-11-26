@@ -1,0 +1,25 @@
+Observed on /home/djp/source/clutch (2026-11-26) when opening or refreshing the ClutchWork MCP dashboard and running `clutch view snapshot`:
+
+$ time .venv/bin/clutch view snapshot > /dev/null
+real    0m13.124s
+user    0m6.350s
+sys     0m1.894s
+
+cProfile of observe.snapshot(ctx, merged_limit=cfg.snapshot_merged_limit):
+evidence/calls count: 4406
+tickets count: 1092
+observe.snapshot: 15.925s
+         12698278 function calls (12671589 primitive calls) in 15.900 seconds
+
+   Ordered by: cumulative time
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.025    0.025   15.901   15.901 /home/djp/source/clutch/clutch/observe.py:774(snapshot)
+       28    0.726    0.026   13.203    0.472 /home/djp/source/clutch/clutch/observe.py:274(step_session)
+   129594    0.204    0.000   10.348    0.000 pathlib/__init__.py:780(read_text)
+   129672    0.062    0.000    9.426    0.000 pathlib/__init__.py:763(open)
+   129703    8.157    0.000    9.354    0.000 {built-in method _io.open}
+   191067    0.151    0.000    1.946    0.000 json/__init__.py:304(loads)
+
+stats.collect_stats: 4.564s
+
+Cause: observe.step_session globs every directory under evidence/calls/* and parses start.json for all 4,406 calls on each of the 28 recent steps (129,594 file opens per snapshot).
