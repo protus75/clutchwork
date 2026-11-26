@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d803ea3fa2e7583d569e3df4b06702d46be7449c",
+  "stem": "antigravity-cli-provider",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "tests/integration/test_git_fake_adoption.py fails because tests/integration/test_antigravity_provider.py:50 builds `git = SimpleNamespace(...)`. Replace it with the shared `GitFake` from tests/git_fake.py, passing `tree_id`, `rev_parse`, and `tree_changes` as GitFake overrides.",
+    "tests/unit/test_preflight_once_per_session.py::test_failed_and_raising_preflight_retry fails because the rig's fake Adapter has no `PACKAGE` attribute. The new probe-failure road in ProviderLLM.preflight reads `adapter.PACKAGE` and raises AttributeError instead of the expected Refusal.",
+    "In clutch/providers.py ProviderLLM.preflight, choose the probe-failure road by `adapter.provider.package is None`, the same check that skips `pnpm view`, instead of `adapter.PACKAGE`. Do not edit test_preflight_once_per_session.py, which is outside the fence.",
+    "Before you commit, run the full `./dev.py test`, not only the Verification list. Both failures came from suite-wide tests outside the targeted files."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
